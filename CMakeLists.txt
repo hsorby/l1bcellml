@@ -117,7 +117,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Find libxml2
 if (WIN32)
-	find_package(LibXml2 CONFIG)
+	find_package(LibXml2 CONFIG QUIET)
 	if (NOT LibXml2_FOUND)
 		message(STATUS "libCellML tests may not run if libxml2.dll is not on the PATH.")
 		find_package(LibXml2 REQUIRED)
