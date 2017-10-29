@@ -141,9 +141,6 @@ del(
 )
 
 import libcellml.enumerations
-class Format:
-    XML = libcellml.enumerations.Format_XML
-Format = Format()
 class Prefix:
     YOTTA = libcellml.enumerations.Prefix_YOTTA
     ZETTA = libcellml.enumerations.Prefix_ZETTA
@@ -289,28 +286,6 @@ convert(Units, 'StandardUnit', [
     'WATT',
     'WEBER',
     ])
-convert(enumerations, 'Prefix', [
-    'YOTTA',
-    'ZETTA',
-    'EXA',
-    'PETA',
-    'TERA',
-    'GIGA',
-    'MEGA',
-    'KILO',
-    'HECTO',
-    'DECA',
-    'DECI',
-    'CENTI',
-    'MILLI',
-    'MICRO',
-    'NANO',
-    'PICO',
-    'FEMTO',
-    'ATTO',
-    'ZEPTO',
-    'YOCTO',
-    ], new_base = Units)
 import libcellml
 import libcellml.specificationrule
 convert(specificationrule, 'SpecificationRule', [
