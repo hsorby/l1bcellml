@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "libcellml/importsource.h"
+#include "libcellml/model.h"
 
 namespace libcellml {
 
@@ -25,12 +26,14 @@ namespace libcellml {
  */
 struct ImportSource::ImportSourceImpl
 {
-    std::string mSource;
+    std::string mUrl;
+    ModelPtr mModel;
 };
 
 ImportSource::ImportSource()
     : mPimpl(new ImportSourceImpl())
 {
+    mPimpl->mModel = nullptr;
 }
 
 ImportSource::~ImportSource()
@@ -38,40 +41,45 @@ ImportSource::~ImportSource()
     delete mPimpl;
 }
 
-ImportSource::ImportSource(const ImportSource& rhs)
-    : Entity(rhs)
-    , mPimpl(new ImportSourceImpl())
+ImportSourcePtr ImportSource::create() noexcept
 {
-    mPimpl->mSource = rhs.mPimpl->mSource;
+    return std::shared_ptr<ImportSource> {new ImportSource {}};
 }
 
-ImportSource::ImportSource(ImportSource &&rhs)
-    : Entity(std::move(rhs))
-    , mPimpl(rhs.mPimpl)
+std::string ImportSource::url() const
 {
-    rhs.mPimpl = nullptr;
+    return mPimpl->mUrl;
 }
 
-ImportSource& ImportSource::operator=(ImportSource e)
+void ImportSource::setUrl(const std::string &url)
 {
-    Entity::operator= (e);
-    e.swap(*this);
-    return *this;
+    mPimpl->mUrl = url;
 }
 
-void ImportSource::swap(ImportSource &rhs)
+ModelPtr ImportSource::model() const
 {
-    std::swap(this->mPimpl, rhs.mPimpl);
+    return mPimpl->mModel;
 }
 
-void ImportSource::setSource(const std::string &source)
+void ImportSource::setModel(const ModelPtr &model)
 {
-    mPimpl->mSource = source;
+    mPimpl->mModel = model;
 }
 
-std::string ImportSource::getSource() const
+bool ImportSource::hasModel() const
 {
-    return mPimpl->mSource;
+    return mPimpl->mModel != nullptr;
 }
 
+ImportSourcePtr ImportSource::clone() const
+{
+    auto i = create();
+
+    i->setId(id());
+    i->setUrl(url());
+    i->setModel(model());
+
+    return i;
 }
+
+} // namespace libcellml

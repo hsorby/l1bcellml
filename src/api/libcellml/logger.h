@@ -16,11 +16,11 @@ limitations under the License.
 
 #pragma once
 
-#include <string>
-
 #include "libcellml/error.h"
 #include "libcellml/exportdefinitions.h"
 #include "libcellml/types.h"
+
+#include <string>
 
 namespace libcellml {
 
@@ -32,18 +32,17 @@ namespace libcellml {
 class LIBCELLML_EXPORT Logger
 {
 public:
-    Logger(); /**< Constructor */
-    ~Logger(); /**< Destructor */
-    Logger(const Logger &rhs); /**< Copy constructor */
-    Logger(Logger &&rhs); /**< Move constructor */
-    Logger& operator=(Logger rhs); /**< Assignment operator */
+    virtual ~Logger(); /**< Destructor */
+    Logger(const Logger &rhs) = delete; /**< Copy constructor */
+    Logger(Logger &&rhs) noexcept = delete; /**< Move constructor */
+    Logger &operator=(Logger rhs) = delete; /**< Assignment operator */
 
     /**
      * @brief Clear the errors from the logger.
      *
      * Clear the errors from the logger.
      */
-    void clearErrors();
+    void removeAllErrors();
 
     /**
      * @brief Add an error to the logger.
@@ -52,7 +51,7 @@ public:
      *
      * @param error The @c ErrorPtr to add.
      */
-    void addError(const ErrorPtr error);
+    void addError(const ErrorPtr &error);
 
     /**
      * @brief Get the number of errors.
@@ -68,19 +67,20 @@ public:
      *
      * Returns an error at the @p index.  If the @p index
      * is not valid a @c nullptr is returned, the valid range for the @p index
-     * is [0, #errors).
+     * is [0, \#errors).
      *
      * @param index The index of the error to return.
      *
      * @return A reference to the error at the given index on success, @c nullptr otherwise.
      */
-    ErrorPtr getError(size_t index) const;
+    ErrorPtr error(size_t index) const;
+
+protected:
+    Logger(); /**< Constructor */
 
 private:
-    void swap(Logger &rhs); /**< Swap method required for C++ 11 move semantics. */
-
     struct LoggerImpl; /**< Forward declaration for pImpl idiom. */
     LoggerImpl *mPimpl; /**< Private member to implementation pointer */
 };
 
-}
+} // namespace libcellml

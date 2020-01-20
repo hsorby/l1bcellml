@@ -1,6 +1,8 @@
+# OS X hidden system files
+.DS_Store
 
-# Ignore build/ directories
-_build/
+# Ignore the build directory
+build/
 
 # Eclipse project files
 .project
@@ -9,7 +11,10 @@ _build/
 
 # Qt Creator generated files
 CMakeLists.txt.user
+*.autosave
 
-# OS X hidden system files
-.DS_Store
+# PyCharm generated files
+.idea/
 
+# VS Code system files
+.vscode/

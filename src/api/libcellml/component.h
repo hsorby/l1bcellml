@@ -18,6 +18,11 @@ limitations under the License.
 
 #include "libcellml/componententity.h"
 #include "libcellml/exportdefinitions.h"
+#include "libcellml/importedentity.h"
+
+#ifndef SWIG
+template class LIBCELLML_EXPORT std::weak_ptr<libcellml::Component>;
+#endif
 
 namespace libcellml {
 
@@ -26,14 +31,38 @@ namespace libcellml {
  *
  * The Component class is for representing a CellML Component.
  */
-class LIBCELLML_EXPORT Component: public ComponentEntity
+class LIBCELLML_EXPORT Component: public ComponentEntity, public ImportedEntity
+#ifndef SWIG
+    ,
+                                  public std::enable_shared_from_this<Component>
+#endif
 {
 public:
-    Component(); /**< Constructor */
-    ~Component(); /**< Destructor */
-    Component(const Component &rhs); /**< Copy constructor */
-    Component(Component &&rhs); /**< Move constructor */
-    Component& operator=(Component m); /**< Assignment operator */
+    ~Component() override; /**< Destructor */
+    Component(const Component &rhs) = delete; /**< Copy constructor */
+    Component(Component &&rhs) noexcept = delete; /**< Move constructor */
+    Component &operator=(Component rhs) = delete; /**< Assignment operator */
+
+    /**
+     * @brief Create a @c Component object.
+     *
+     * Factory method to create a @c Component.  Create a
+     * blank component with::
+     *
+     *   ComponentPtr component = libcellml::Component::create();
+     *
+     * or a named component with name "Component" with::
+     *
+     *   ComponentPtr component = libcellml::Component::create("Component");
+     *
+     * @return A smart pointer to a @c Component object.
+     */
+    static ComponentPtr create() noexcept;
+
+    /**
+     * @overload
+     */
+    static ComponentPtr create(const std::string &name) noexcept;
 
     /**
      * @brief Set the source component for this component.
@@ -63,7 +92,7 @@ public:
      *
      * @return @c std::string math for this component.
      */
-    std::string getMath() const;
+    std::string math() const;
 
     /**
      * @brief Set the math string for this component.
@@ -76,22 +105,29 @@ public:
     void setMath(const std::string &math);
 
     /**
+     * @brief Clear the math from this component.
+     *
+     * Clears the math string from this component.
+     */
+    void removeMath();
+
+    /**
      * @brief Add a variable by reference as part of this component.
      *
      * Add a variable by reference as part of the given component.
      *
      * @sa removeVariable
      *
-     * @param v The variable to add.
+     * @param variable The variable to add.
      */
-    void addVariable(const VariablePtr &v);
+    void addVariable(const VariablePtr &variable);
 
     /**
      * @brief Remove the variable at the given @p index from this component.
      *
      * Remove the variable at the given index from this component.
      * If the index is not valid @c false is returned, the valid
-     * range for the index is [0, #variables).
+     * range for the index is [0, \#variables).
      * If the variable to be removed is in a connection (is equivalent to
      * another variable), this component will not be serialised in the
      * connection.
@@ -103,8 +139,10 @@ public:
      * @return True if the variable was removed, false otherwise.
      */
     bool removeVariable(size_t index);
-    
+
     /**
+     * @overload
+     *
      * @brief Remove the variable with the given @p name from this component.
      *
      * Remove the variable with the given name from this component. If the named variable to
@@ -120,6 +158,8 @@ public:
     bool removeVariable(const std::string &name);
 
     /**
+     * @overload
+     *
      * @brief Remove the variable by the given @p variable pointer from this component.
      *
      * Remove the variable with the given pointer from this component. If the @p variable to
@@ -127,8 +167,6 @@ public:
      * component will not be serialised in the connection.
      *
      * @sa addVariable
-     *
-     * @overload
      *
      * @param variable The pointer to the variable to remove.
      *
@@ -150,27 +188,56 @@ public:
      *
      * Returns a reference to a variable at the index @p index for this
      * component. If the index is not valid a @c nullptr is returned, the valid
-     * range for the index is [0, #variables).
+     * range for the index is [0, \#variables).
      *
      * @param index The index of the variable to return.
      *
      * @return A reference to the variable at the given index on success, @c nullptr otherwise.
      */
-    VariablePtr getVariable(size_t index) const;
+    VariablePtr variable(size_t index) const;
 
     /**
+     * @overload
+     *
      * @brief Get a variable with the given name @p name.
      *
      * Returns a reference to a variable with the name @p name for this
      * component.  If the name is not found a @c nullptr is returned.
      *
+     * @param name The name of the variable to return.
+     *
+     * @return A reference to the Variable with the given name on success, @c nullptr otherwise.
+     */
+    VariablePtr variable(const std::string &name) const;
+
+    /**
+     * @brief Take a variable at index.
+     *
+     * Remove the variable at the given index from this component and
+     * returns a reference to a variable at the index @p index for this
+     * component. If the index is not valid a @c nullptr is returned, the valid
+     * range for the index is [0, \#variables).
+     *
+     * @param index The index of the variable to return.
+     *
+     * @return A reference to the variable at the given index on success, @c nullptr otherwise.
+     */
+    VariablePtr takeVariable(size_t index);
+
+    /**
      * @overload
+     *
+     * @brief Take a variable with the given name @p name.
+     *
+     * Remove the variable with the given name from this component and
+     * returns a reference to a variable with the name @p name for this
+     * component.  If the name is not found a @c nullptr is returned.
      *
      * @param name The name of the variable to return.
      *
      * @return A reference to the Variable with the given name on success, @c nullptr otherwise.
      */
-    VariablePtr getVariable(const std::string &name) const;
+    VariablePtr takeVariable(const std::string &name);
 
     /**
      * @brief Get the number of variables in the component.
@@ -195,13 +262,13 @@ public:
     bool hasVariable(const VariablePtr &variable) const;
 
     /**
+     * @overload
+     *
      * @brief Test whether the variable named @p name is in this component.
      *
      * Tests whether a variable with the argument @p name exists in the set of this
      * component's variables. Returns @c true if the named variable is in this
      * component's variables and @c false otherwise.
-     *
-     * @overload
      *
      * @param name The name of the variable to check for in this component.
      *
@@ -210,14 +277,110 @@ public:
      */
     bool hasVariable(const std::string &name) const;
 
-private:
-    void swap(Component &rhs); /**< Swap method required for C++ 11 move semantics. */
+    /**
+     * @brief Add a reset by reference as part of this component.
+     *
+     * Add a reset by reference as part of the given component.
+     *
+     * @sa removeReset
+     *
+     * @param reset The reset to add.
+     */
+    void addReset(const ResetPtr &reset);
 
-    void doAddComponent(const ComponentPtr &c);
+    /**
+     * @brief Remove the reset at the given @p index from this component.
+     *
+     * Remove the reset at the given index from this component.
+     * If the index is not valid @c false is returned, the valid
+     * range for the index is [0, \#resets).
+     *
+     * @sa addReset
+     *
+     * @param index The index of the reset to remove.
+     *
+     * @return True if the reset was removed, false otherwise.
+     */
+    bool removeReset(size_t index);
+
+    /**
+     * @overload
+     *
+     * @brief Remove the reset by the given @p reset pointer from this component.
+     *
+     * Remove the reset with the given pointer from this component.
+     *
+     * @sa addReset
+     *
+     * @param reset The pointer to the reset to remove.
+     *
+     * @return True if the reset was removed, false otherwise.
+     */
+    bool removeReset(const ResetPtr &reset);
+
+    /**
+     * @brief Remove all resets stored in this component.
+     *
+     * Clears all resets that have been added to this component.
+     */
+    void removeAllResets();
+
+    /**
+     * @brief Get a reset at index.
+     *
+     * Returns a reference to a reset at the index @p index for this
+     * component. If the index is not valid a @c nullptr is returned, the valid
+     * range for the index is [0, \#resets).
+     *
+     * @param index The index of the reset to return.
+     *
+     * @return A reference to the reset at the given index on success, @c nullptr otherwise.
+     */
+    ResetPtr reset(size_t index) const;
+
+    /**
+     * @brief Get the number of resets in the component.
+     *
+     * Returns the number of resets the component contains.
+     *
+     * @return the number of resets.
+     */
+    size_t resetCount() const;
+
+    /**
+     * @brief Test whether the argument @p reset is in this component.
+     *
+     * Tests whether the argument @p reset exists in the set of this component's
+     * resets. Returns @c true if the @p reset is in this component's
+     * resets and @c false otherwise.
+     *
+     * @param reset The reset to check for in this component.
+     *
+     * @return @c true if the @p reset is in this component and @c false otherwise.
+     */
+    bool hasReset(const ResetPtr &reset) const;
+
+    /**
+     * @brief Create a clone of this component.
+     *
+     * Creates a full separate copy of this component without copying
+     * the parent.  Thus the cloned (returned) version of this component
+     * will not have a parent set even if this component does.  Any and
+     * all child components will also be cloned recreating the full
+     * component hierarchy that this component is the root of.
+     *
+     * @return a new @c ComponentPtr to the cloned component.
+     */
+    ComponentPtr clone() const;
+
+private:
+    Component(); /**< Constructor */
+    explicit Component(const std::string &name);
+
+    bool doAddComponent(const ComponentPtr &component) override;
 
     struct ComponentImpl; /**< Forward declaration for pImpl idiom. */
     ComponentImpl *mPimpl; /**< Private member to implementation pointer */
 };
 
-}
-
+} // namespace libcellml

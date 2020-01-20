@@ -16,22 +16,11 @@ limitations under the License.
 
 #pragma once
 
-#include <string>
-
 #include "libcellml/exportdefinitions.h"
 
-//! Everything in libCellML is in this namespace.
-namespace libcellml {
+#include <string>
 
-/**
- * @brief Get the version string.
- *
- * The version string is in the format x.y.z, where the "."s are literal, and x,y and z represent counting numbers,
- * in which case x is the major version, y the minor version, and z the patch level.
- *
- *  @return A string to represent the version.
- */
-LIBCELLML_EXPORT const std::string versionString();
+namespace libcellml {
 
 /**
  * @brief Get the version number.
@@ -42,4 +31,14 @@ LIBCELLML_EXPORT const std::string versionString();
  */
 LIBCELLML_EXPORT unsigned int version();
 
-}  // namespace libcellml
+/**
+ * @brief Get the version string.
+ *
+ * The version string is in the format x.y.z, where the "."s are literal, and x,y and z represent counting numbers,
+ * in which case x is the major version, y the minor version, and z the patch level.
+ *
+ * @return A string to represent the version.
+ */
+LIBCELLML_EXPORT std::string versionString();
+
+} // namespace libcellml
