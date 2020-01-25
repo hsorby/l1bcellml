@@ -142,7 +142,6 @@ void Error::setKind(Error::Kind kind)
     mPimpl->mKind = kind;
 }
 
-
 Error::Kind Error::kind() const
 {
     return mPimpl->mKind;
