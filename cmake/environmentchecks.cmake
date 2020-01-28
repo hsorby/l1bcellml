@@ -16,7 +16,6 @@ include(CheckCXXCompilerFlag)
 
 get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
-set(CMAKE_FIND_FRAMEWORK LAST)
 find_package(Python ${PREFERRED_PYTHON_VERSION} COMPONENTS Interpreter Development)
 
 find_program(CLANG_FORMAT_EXE NAMES ${PREFERRED_CLANG_FORMAT_NAMES} clang-format)
