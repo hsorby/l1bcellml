@@ -17,6 +17,9 @@ cmake_minimum_required(VERSION 3.10.2)
 set(PROJECT_NAME libCellML)
 project(${PROJECT_NAME} VERSION 0.2.0 LANGUAGES CXX)
 
+message(STATUS "CURRENT PATH: $ENV{PATH}")
+
+
 # Set policies that affect the build.
 if(POLICY CMP0078)
   cmake_policy(SET CMP0078 NEW)
