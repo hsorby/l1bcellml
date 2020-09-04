@@ -213,7 +213,7 @@ TEST(Encapsulation, hierarchyCircular)
 
 TEST(Encapsulation, hierarchyRepeatedComponent)
 {
-    const std::string expected =
+    const std::string e =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         "<model xmlns=\"http://www.cellml.org/cellml/2.0#\" name=\"main\">\n"
         "  <component name=\"repeated_component\"/>\n"
@@ -225,7 +225,7 @@ TEST(Encapsulation, hierarchyRepeatedComponent)
         "  </encapsulation>\n"
         "</model>\n";
 
-    const std::vector<std::string> expectedErrors = {
+    const std::vector<std::string> expectedIssues = {
         "Model 'main' contains multiple components with the name 'repeated_component'. Valid component names must be unique to their model.",
     };
 
@@ -241,12 +241,12 @@ TEST(Encapsulation, hierarchyRepeatedComponent)
 
     libcellml::PrinterPtr printer = libcellml::Printer::create();
     std::string actual = printer->printModel(model);
-    EXPECT_EQ(expected, actual);
+    EXPECT_EQ(e, actual);
 
     libcellml::ValidatorPtr v = libcellml::Validator::create();
     v->validateModel(model);
 
-    EXPECT_EQ_ERRORS(expectedErrors, v);
+    EXPECT_EQ_ISSUES(expectedIssues, v);
 }
 
 TEST(Encapsulation, hierarchyWaterfallAndParse)
@@ -297,7 +297,7 @@ TEST(Encapsulation, hierarchyWaterfallAndParse)
 
 TEST(Encapsulation, parseAlternateFormHierarchy)
 {
-    const std::string input =
+    const std::string in =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         "<model xmlns=\"http://www.cellml.org/cellml/2.0#\">\n"
         "  <component name=\"parent_component\"/>\n"
@@ -316,9 +316,9 @@ TEST(Encapsulation, parseAlternateFormHierarchy)
         "</model>\n";
 
     libcellml::ParserPtr parser = libcellml::Parser::create();
-    libcellml::ModelPtr model = parser->parseModel(input);
+    libcellml::ModelPtr model = parser->parseModel(in);
 
-    EXPECT_EQ(size_t(0), parser->errorCount());
+    EXPECT_EQ(size_t(0), parser->issueCount());
     EXPECT_EQ(size_t(1), model->componentCount());
     auto component = model->component(0);
     for (size_t i = 0; i < 3; ++i) {
@@ -330,7 +330,6 @@ TEST(Encapsulation, parseAlternateFormHierarchy)
 
 TEST(Encapsulation, encapsulatedComponentMethods)
 {
-    const std::string e = "<component/>\n";
     libcellml::ComponentPtr c = libcellml::Component::create();
     libcellml::ComponentPtr c1 = libcellml::Component::create();
     libcellml::ComponentPtr c2 = libcellml::Component::create();

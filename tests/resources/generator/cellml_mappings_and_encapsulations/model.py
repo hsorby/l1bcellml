@@ -17,10 +17,10 @@ class VariableType(Enum):
     ALGEBRAIC = 3
 
 
-VOI_INFO = {"name": "t", "units": "ms", "component": "circle_x"}
+VOI_INFO = {"name": "t", "units": "ms", "component": "environment"}
 
 STATE_INFO = [
-    {"name": "x", "units": "mM", "component": "circle_x_source"},
+    {"name": "x", "units": "mM", "component": "circle_x"},
     {"name": "y", "units": "mM", "component": "circle_y_implementation"}
 ]
 
@@ -31,11 +31,11 @@ VARIABLE_INFO = [
 
 
 def create_states_array():
-    return [nan]*2
+    return [nan]*STATE_COUNT
 
 
 def create_variables_array():
-    return [nan]*2
+    return [nan]*VARIABLE_COUNT
 
 
 def initialize_states_and_constants(states, variables):

@@ -17,7 +17,7 @@ class VariableType(Enum):
     ALGEBRAIC = 3
 
 
-VOI_INFO = {"name": "time", "units": "millisecond", "component": "membrane"}
+VOI_INFO = {"name": "time", "units": "millisecond", "component": "environment"}
 
 STATE_INFO = [
     {"name": "m", "units": "dimensionless", "component": "sodium_channel_m_gate"},
@@ -32,9 +32,9 @@ VARIABLE_INFO = [
     {"name": "Cm", "units": "microF_per_cm2", "component": "membrane", "type": VariableType.CONSTANT},
     {"name": "E_Na", "units": "millivolt", "component": "sodium_channel", "type": VariableType.CONSTANT},
     {"name": "g_Na_max", "units": "milliS_per_cm2", "component": "sodium_channel", "type": VariableType.CONSTANT},
-    {"name": "i_Leak", "units": "microA_per_cm2", "component": "membrane", "type": VariableType.ALGEBRAIC},
+    {"name": "i_Leak", "units": "microA_per_cm2", "component": "leakage_current", "type": VariableType.ALGEBRAIC},
     {"name": "g_Na", "units": "milliS_per_cm2", "component": "sodium_channel", "type": VariableType.ALGEBRAIC},
-    {"name": "i_Na", "units": "microA_per_cm2", "component": "membrane", "type": VariableType.ALGEBRAIC},
+    {"name": "i_Na", "units": "microA_per_cm2", "component": "sodium_channel", "type": VariableType.ALGEBRAIC},
     {"name": "alpha_m", "units": "per_millisecond", "component": "sodium_channel_m_gate", "type": VariableType.ALGEBRAIC},
     {"name": "beta_m", "units": "per_millisecond", "component": "sodium_channel_m_gate", "type": VariableType.ALGEBRAIC},
     {"name": "alpha_h", "units": "per_millisecond", "component": "sodium_channel_h_gate", "type": VariableType.ALGEBRAIC},
@@ -43,28 +43,28 @@ VARIABLE_INFO = [
     {"name": "g_K2", "units": "milliS_per_cm2", "component": "potassium_channel", "type": VariableType.ALGEBRAIC},
     {"name": "alpha_n", "units": "per_millisecond", "component": "potassium_channel_n_gate", "type": VariableType.ALGEBRAIC},
     {"name": "beta_n", "units": "per_millisecond", "component": "potassium_channel_n_gate", "type": VariableType.ALGEBRAIC},
-    {"name": "i_K", "units": "microA_per_cm2", "component": "membrane", "type": VariableType.ALGEBRAIC}
+    {"name": "i_K", "units": "microA_per_cm2", "component": "potassium_channel", "type": VariableType.ALGEBRAIC}
 ]
 
 
 def create_states_array():
-    return [nan]*4
+    return [nan]*STATE_COUNT
 
 
 def create_variables_array():
-    return [nan]*17
+    return [nan]*VARIABLE_COUNT
 
 
 def initialize_states_and_constants(states, variables):
-    states[0] = 0.01
-    states[1] = 0.8
-    states[2] = 0.01
-    states[3] = -87.0
     variables[0] = -60.0
     variables[1] = 0.075
     variables[2] = 12.0
     variables[3] = 40.0
     variables[4] = 400.0
+    states[0] = 0.01
+    states[1] = 0.8
+    states[2] = 0.01
+    states[3] = -87.0
 
 
 def compute_computed_constants(variables):

@@ -11,7 +11,7 @@ const char LIBCELLML_VERSION[] = "0.2.0";
 const size_t STATE_COUNT = 1;
 const size_t VARIABLE_COUNT = 2;
 
-const VariableInfo VOI_INFO = {"t", "second", "my_ode"};
+const VariableInfo VOI_INFO = {"t", "second", "environment"};
 
 const VariableInfo STATE_INFO[] = {
     {"x", "dimensionless", "my_ode"}
@@ -24,12 +24,12 @@ const VariableInfoWithType VARIABLE_INFO[] = {
 
 double * createStatesArray()
 {
-    return (double *) malloc(1*sizeof(double));
+    return (double *) malloc(STATE_COUNT*sizeof(double));
 }
 
 double * createVariablesArray()
 {
-    return (double *) malloc(2*sizeof(double));
+    return (double *) malloc(VARIABLE_COUNT*sizeof(double));
 }
 
 void deleteArray(double *array)
@@ -39,8 +39,8 @@ void deleteArray(double *array)
 
 void initializeStatesAndConstants(double *states, double *variables)
 {
-    states[0] = 1.0;
     variables[0] = 1.0;
+    states[0] = 1.0;
 }
 
 void computeComputedConstants(double *variables)

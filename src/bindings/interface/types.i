@@ -8,15 +8,15 @@ Only meant to be included, shouldn't be passed to cmake as a module!
 %shared_ptr(libcellml::Component)
 %shared_ptr(libcellml::ComponentEntity)
 %shared_ptr(libcellml::Entity)
-%shared_ptr(libcellml::Error)
 %shared_ptr(libcellml::Generator)
 %shared_ptr(libcellml::GeneratorProfile)
+%shared_ptr(libcellml::Importer)
 %shared_ptr(libcellml::ImportSource)
 %shared_ptr(libcellml::ImportedEntity)
+%shared_ptr(libcellml::Issue)
 %shared_ptr(libcellml::Logger)
 %shared_ptr(libcellml::Model)
 %shared_ptr(libcellml::NamedEntity)
-%shared_ptr(libcellml::OrderedEntity)
 %shared_ptr(libcellml::Parser)
 %shared_ptr(libcellml::Printer)
 %shared_ptr(libcellml::Reset)
@@ -26,48 +26,12 @@ Only meant to be included, shouldn't be passed to cmake as a module!
 
 // Shared typemaps
 
-%typemap(in) libcellml::Prefix (int val, int ecode) {
-  ecode = SWIG_AsVal(int)($input, &val);
-  if (!SWIG_IsOK(ecode)) {
-    %argument_fail(ecode, "$type", $symname, $argnum);
-  } else {
-    if (val < %static_cast(libcellml::Prefix::YOTTA, int) || %static_cast(libcellml::Prefix::YOCTO, int) < val) {
-      %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
-    }
-    $1 = %static_cast(val,$basetype);
-  }
-}
-
-%typemap(in) libcellml::Units::StandardUnit (int val, int ecode) {
-  ecode = SWIG_AsVal(int)($input, &val);
-  if (!SWIG_IsOK(ecode)) {
-    %argument_fail(ecode, "$type", $symname, $argnum);
-  } else {
-    if (val < %static_cast(libcellml::Units::StandardUnit::AMPERE, int) || %static_cast(libcellml::Units::StandardUnit::WEBER, int) < val) {
-      %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
-    }
-    $1 = %static_cast(val,$basetype);
-  }
-}
-
-%typemap(in) libcellml::Error::Kind (int val, int ecode) {
-  ecode = SWIG_AsVal(int)($input, &val);
-  if (!SWIG_IsOK(ecode)) {
-    %argument_fail(ecode, "$type", $symname, $argnum);
-  } else {
-    if (val < %static_cast(libcellml::Error::Kind::COMPONENT, int) || %static_cast(libcellml::Error::Kind::XML, int) < val) {
-      %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
-    }
-    $1 = %static_cast(val,$basetype);
-  }
-}
-
 %typemap(in) libcellml::Generator::ModelType (int val, int ecode) {
   ecode = SWIG_AsVal(int)($input, &val);
   if (!SWIG_IsOK(ecode)) {
     %argument_fail(ecode, "$type", $symname, $argnum);
   } else {
-    if (val < %static_cast(libcellml::Generator::ModelType::UNKNOWN, int) || %static_cast(libcellml::Generator::ModelType::UNSUITABLY_CONSTRAINED, int) < val) {
+    if (val < %static_cast($type::UNKNOWN, int) || %static_cast($type::UNSUITABLY_CONSTRAINED, int) < val) {
       %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
     }
     $1 = %static_cast(val,$basetype);
@@ -79,19 +43,67 @@ Only meant to be included, shouldn't be passed to cmake as a module!
   if (!SWIG_IsOK(ecode)) {
     %argument_fail(ecode, "$type", $symname, $argnum);
   } else {
-    if (val < %static_cast(libcellml::GeneratorProfile::Profile::C, int) || %static_cast(libcellml::GeneratorProfile::Profile::PYTHON, int) < val) {
+    if (val < %static_cast($type::C, int) || %static_cast($type::PYTHON, int) < val) {
       %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
     }
     $1 = %static_cast(val,$basetype);
   }
 }
 
-%typemap(in) libcellml::SpecificationRule (int val, int ecode) {
+%typemap(in) libcellml::Issue::Cause (int val, int ecode) {
   ecode = SWIG_AsVal(int)($input, &val);
   if (!SWIG_IsOK(ecode)) {
     %argument_fail(ecode, "$type", $symname, $argnum);
   } else {
-    if (val < %static_cast(libcellml::SpecificationRule::UNDEFINED, int) || %static_cast(libcellml::SpecificationRule::MAP_VARIABLES_VARIABLE2, int) < val) {
+    if (val < %static_cast($type::COMPONENT, int) || %static_cast($type::XML, int) < val) {
+      %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
+    }
+    $1 = %static_cast(val,$basetype);
+  }
+}
+
+%typemap(in) libcellml::Issue::Level (int val, int ecode) {
+  ecode = SWIG_AsVal(int)($input, &val);
+  if (!SWIG_IsOK(ecode)) {
+    %argument_fail(ecode, "$type", $symname, $argnum);
+  } else {
+    if (val < %static_cast($type::ERROR, int) || %static_cast($type::MESSAGE, int) < val) {
+      %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
+    }
+    $1 = %static_cast(val,$basetype);
+  }
+}
+
+%typemap(in) libcellml::Issue::ReferenceRule (int val, int ecode) {
+  ecode = SWIG_AsVal(int)($input, &val);
+  if (!SWIG_IsOK(ecode)) {
+    %argument_fail(ecode, "$type", $symname, $argnum);
+  } else {
+    if (val < %static_cast($type::UNDEFINED, int) || %static_cast($type::MAP_VARIABLES_VARIABLE2, int) < val) {
+      %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
+    }
+    $1 = %static_cast(val,$basetype);
+  }
+}
+
+%typemap(in) libcellml::Units::Prefix (int val, int ecode) {
+  ecode = SWIG_AsVal(int)($input, &val);
+  if (!SWIG_IsOK(ecode)) {
+    %argument_fail(ecode, "$type", $symname, $argnum);
+  } else {
+    if (val < %static_cast($type::YOTTA, int) || %static_cast($type::YOCTO, int) < val) {
+      %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
+    }
+    $1 = %static_cast(val,$basetype);
+  }
+}
+
+%typemap(in) libcellml::Units::StandardUnit (int val, int ecode) {
+  ecode = SWIG_AsVal(int)($input, &val);
+  if (!SWIG_IsOK(ecode)) {
+    %argument_fail(ecode, "$type", $symname, $argnum);
+  } else {
+    if (val < %static_cast($type::AMPERE, int) || %static_cast($type::WEBER, int) < val) {
       %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
     }
     $1 = %static_cast(val,$basetype);
@@ -103,11 +115,9 @@ Only meant to be included, shouldn't be passed to cmake as a module!
   if (!SWIG_IsOK(ecode)) {
     %argument_fail(ecode, "$type", $symname, $argnum);
   } else {
-    if (val < %static_cast(libcellml::Variable::InterfaceType::NONE, int) || %static_cast(libcellml::Variable::InterfaceType::PUBLIC_AND_PRIVATE, int) < val) {
+    if (val < %static_cast($type::NONE, int) || %static_cast($type::PUBLIC_AND_PRIVATE, int) < val) {
       %argument_fail(ecode, "$type is not a valid value for the enumeration.", $symname, $argnum);
     }
     $1 = %static_cast(val,$basetype);
   }
 }
-
-

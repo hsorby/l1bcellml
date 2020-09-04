@@ -16,18 +16,28 @@ limitations under the License.
 
 #pragma once
 
-#include "libcellml/types.h"
-
+#include <algorithm>
+#include <cctype>
 #include <map>
 #include <string>
 #include <vector>
 
+#include "libcellml/types.h"
+#include "libcellml/variable.h"
+
+#include "internaltypes.h"
+
 namespace libcellml {
+
+/**
+ * Base URLs of specification and example sites from which the Issue::url() will be constructed.
+ */
+static const std::string baseSpecificationUrl = "https://cellml-specification.readthedocs.io/en/latest/reference/formal_and_informative/";
 
 /**
  * Vector of base units.
  */
-const std::vector<std::string> baseUnitsList = {
+static const std::vector<std::string> baseUnitsList = {
     "ampere",
     "candela",
     "dimensionless",
@@ -40,7 +50,7 @@ const std::vector<std::string> baseUnitsList = {
 /**
  *  Map connecting standard built-in units to their base unit components and their exponents.
  */
-const std::map<std::string, std::map<std::string, double>> standardUnitsList = {
+static const std::map<std::string, std::map<std::string, double>> standardUnitsList = {
     {"ampere", {{"ampere", 1.0}}},
     {"becquerel", {{"second", -1.0}}},
     {"candela", {{"candela", 1.0}}},
@@ -76,7 +86,7 @@ const std::map<std::string, std::map<std::string, double>> standardUnitsList = {
 /**
  * Map connecting standard built-in units to the multiplier exponent of their base unit components.
  */
-const std::map<std::string, double> standardMultiplierList = {
+static const std::map<std::string, double> standardMultiplierList = {
     {"ampere", 0.0},
     {"becquerel", 0.0},
     {"candela", 0.0},
@@ -112,7 +122,7 @@ const std::map<std::string, double> standardMultiplierList = {
 /**
  * Map connecting prefix strings to their exponent (eg: "kilo" -> 10^3).
  */
-const std::map<std::string, int> standardPrefixList = {
+static const std::map<std::string, int> standardPrefixList = {
     {"yotta", 24},
     {"zetta", 21},
     {"exa", 18},
@@ -187,7 +197,7 @@ const std::map<std::string, int> standardPrefixList = {
 /**
  * List of MathML elements supported by CellML.
  */
-const std::vector<std::string> supportedMathMLElements = {
+static const std::vector<std::string> supportedMathMLElements = {
     "ci", "cn", "sep", "apply", "piecewise", "piece", "otherwise", "eq", "neq", "gt", "lt", "geq", "leq", "and", "or",
     "xor", "not", "plus", "minus", "times", "divide", "power", "root", "abs", "exp", "ln", "log", "floor",
     "ceiling", "min", "max", "rem", "diff", "bvar", "logbase", "degree", "sin", "cos", "tan", "sec", "csc",
@@ -196,37 +206,49 @@ const std::vector<std::string> supportedMathMLElements = {
     "notanumber", "infinity", "true", "false"};
 
 /**
- * @brief Convert the @p candidate @c std::string to a @c double.
+ * @brief Map to convert an interface type into its string form.
  *
- * Convert the @p candidate @c std::string to a @c double. If @p candidate
- * cannot be converted using @c std::stod an exception will be raised.  To
- * avoid raising an exception the candidate string must be known to be convertible
- * to a double before calling this function.
+ * An internal map used to convert a Variable InterfaceType enum class member into its string form.
+ */
+static const std::map<Variable::InterfaceType, std::string> interfaceTypeToString = {
+    {Variable::InterfaceType::NONE, "none"},
+    {Variable::InterfaceType::PRIVATE, "private"},
+    {Variable::InterfaceType::PUBLIC, "public"},
+    {Variable::InterfaceType::PUBLIC_AND_PRIVATE, "public_and_private"}};
+
+/**
+ * @brief Convert the @p in @c std::string to the @p out @c double.
+ *
+ * Convert the @p in @c std::string to a @c double. If @p in can be converted
+ * using @c std::stod, return @c true and update @p out, otherwise return
+ * @c false. To avoid returning @c false, @p in must be known to be convertible
+ * to a @c double before calling this function.
  *
  * @sa isCellMLReal
  *
- * @param candidate The @c std::string value to convert to a @c double.
+ * @param in The @c std::string value to convert to a @c double.
+ * @param out The @c double value resulting in the conversion.
  *
- * @return The @c double value of the candidate.
- *
+ * @return @c true if @in represents a @c double, @c false otherwise.
  */
-double convertToDouble(const std::string &candidate);
+bool convertToDouble(const std::string &in, double &out);
 
 /**
- * @brief Convert the @p candidate @c std::string to an @c int.
+ * @brief Convert the @p in @c std::string to the @p out @c int.
  *
- * Convert the @p candidate @c std::string to an @c int. If @p candidate
- * cannot be converted using @c std::stoi an exception will be raised.  To
- * avoid raising an exception the candidate string must be known to be convertible
- * to an int before calling this function.
+ * Convert the @p in @c std::string to an @c int. If @p in can be converted
+ * using @c std::stoi, return @c true and update @p out, otherwise return
+ * @c false. To avoid returning @c false, @p in must be known to be convertible
+ * to an @c int before calling this function.
  *
  * @sa isCellMLInteger
  *
- * @param candidate The @c std::string value to convert to an @c int.
+ * @param in The @c std::string value to convert to an @c int.
+ * @param out The @c int value resulting in the conversion.
  *
- * @return The @c int value of the candidate.
+ * @return @c true if @in represents an @c int, @c false otherwise.
  */
-int convertToInt(const std::string &candidate);
+bool convertToInt(const std::string &in, int &out);
 
 /**
  * @brief Convert a @c int to @c std::string format.
@@ -341,18 +363,6 @@ bool areEqual(double value1, double value2);
 std::string sha1(const std::string &string);
 
 /**
- * @brief Get the name of the entity.
- *
- * If the entity is a @c NamedEntity then the name of the entity will
- * be returned (which could be the empty string).  If the entity is not
- * a @c NamedEntity then the empty string will be returned.
- *
- * @param entity The entity to get the name for.
- * @return The @c std::string name of the entity.
- */
-std::string entityName(const EntityPtr &entity);
-
-/**
  * @brief Get the @c Model that the entity is owned by.
  *
  * Travel up the entities hierarchy to find the owning model. If
@@ -361,7 +371,17 @@ std::string entityName(const EntityPtr &entity);
  * @param entity The entity to get the owning model for.
  * @return The owning @c Model or the @c nullptr if no model owns this entity.
  */
-ModelPtr owningModel(const EntityPtr &entity);
+ModelPtr owningModel(const EntityConstPtr &entity);
+
+/**
+ * @brief Get the @c Component that the variable is owned by.
+ *
+ * Return the owning component for this variable.
+ *
+ * @param entity The entity to get the owning component for.
+ * @return The owning @c Component of this entity.
+ */
+ComponentPtr owningComponent(const EntityConstPtr &entity);
 
 /**
  * @brief Remove the given component from the given entity.
@@ -381,7 +401,7 @@ void removeComponentFromEntity(const EntityPtr &entity, const ComponentPtr &comp
  * @brief Check if the provided @p name is a standard unit.
  *
  * Checks if the provided @p name is one of the standard units in the
- * @c Units::StandardUnit @c enum. Returns @c true if @name is a standard unit
+ * @c Units::StandardUnit @c enum. Returns @c true if @p name is a standard unit
  * and @c false otherwise.
  *
  * @param name The @c std::string name to check against the list of standard units.
@@ -389,6 +409,19 @@ void removeComponentFromEntity(const EntityPtr &entity, const ComponentPtr &comp
  * @return @c true if @name is a standard unit and @c false otherwise.
  */
 bool isStandardUnitName(const std::string &name);
+
+/**
+ * @brief Test if the provided @c Units is a standard unit.
+ *
+ * Tests to determine if the provided @p units is equivalent to
+ * a standard unit.  Returns @c true if the @p units is a standard unit
+ * and @c false otherwise.
+ *
+ * @param units The @c Units to test.
+ *
+ * @return @c true if @p units is a standard unit, @c false otherwise.
+ */
+bool isStandardUnit(const UnitsPtr &units);
 
 /**
  * @brief Check if the provided @p name is a standard prefix.
@@ -416,5 +449,143 @@ bool isStandardPrefixName(const std::string &name);
  * number of variables in the component if the variable was not found.
  */
 size_t getVariableIndexInComponent(const ComponentPtr &component, const VariablePtr &variable);
+
+/**
+ * @brief Test to determine if @p entity1 is a child of @p entity2.
+ *
+ * Test to see if @p entity1 is a child of @p entity2.  Returns @c true if
+ * @p entity1 is a child of @p entity2 and @c false otherwise.
+ *
+ * @param entity1 The @c Entity to test if it is a child of @p entity2.
+ * @param entity2 The @c Entity that is potentially the parent of @p entity1.
+ *
+ * @return @c true if @p entity1 is a child of @p entity2 and @c false otherwise.
+ */
+bool isEntityChildOf(const EntityPtr &entity1, const EntityPtr &entity2);
+
+/**
+ * @brief Test to determine if @p entity1 and @p entity2 are siblings.
+ *
+ * Test to determine if @p entity1 and @p entity2 are siblings.  Returns
+ * @c true if @p entity1 and @p entity2 are siblings, @c false otherwise.
+ *
+ * @param entity1 An @c Entity to test if it is a sibling to @p entity2.
+ * @param entity2 An @c Entity to test if it is a sibling to @p entity1.
+ *
+ * @return @c true if @p entity1 and @p entity2 are siblings, @c false otherwise.
+ */
+bool areEntitiesSiblings(const EntityPtr &entity1, const EntityPtr &entity2);
+
+/**
+ * @brief Determine the interface type of the @p variable.
+ *
+ * Determine the interface type of the given @p variable. For variables with
+ * at least one equivalent variable, returning an interface type of
+ * Variable::InterfaceType::NONE indicates an error.
+ *
+ * @param variable The variable to determine the interface type for.
+ *
+ * @return The @p variable's interface type.
+ */
+Variable::InterfaceType determineInterfaceType(const VariablePtr &variable);
+
+/**
+ * @brief Traverse the component tree looking for variables with equivalences.
+ *
+ * Search through the component tree starting at @p component looking for variables
+ * with equivalences.  Variables found in the component tree with equivalences are added
+ * to the @p variables list.
+ *
+ * @param component The @c Component to search.
+ * @param variables The list of equivalent variables found.
+ */
+void findAllVariablesWithEquivalences(const ComponentPtr &component, VariablePtrs &variables);
+
+/**
+ * @brief Trim whitespace from the front of a string (in place).
+ *
+ * Remove whitespace from the front of a string, modifying the passed string.
+ *
+ * @param s The @c std::string to trim.
+ */
+static inline void leftTrim(std::string &s)
+{
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+                return std::isspace(ch) == 0;
+            }));
+}
+
+/**
+ * @brief Trim whitespace from the end of a string (in place).
+ *
+ * Remove whitespace from the end of a string, modifying the passed string.
+ *
+ * @param s The @c std::string to trim.
+ */
+static inline void rightTrim(std::string &s)
+{
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+                return std::isspace(ch) == 0;
+            }).base(),
+            s.end());
+}
+
+/**
+ * @brief Trim whitespace from the beginning and end of a string(in place).
+ *
+ * Remove whitespace from the beginning and end of a string, modifying the passed
+ * string.
+ *
+ * @param s The @c std::string to trim.
+ */
+static inline void trim(std::string &s)
+{
+    leftTrim(s);
+    rightTrim(s);
+}
+
+/**
+ * @brief Trim whitespace from the beginning and end of a string.
+ *
+ * Remove whitespace from the beginning and end of a string
+ * returning the result.
+ *
+ * @param s The @c std::string to trim.
+ *
+ * @return The trimmed string.
+ */
+static inline std::string trimCopy(std::string s)
+{
+    trim(s);
+    return s;
+}
+
+/**
+ * @brief Collect all existing id attributes within the given model.
+ *
+ * @param model The @c ModelPtr to interrogate.
+ *
+ * @return An @c IdList collection of existing ids.
+ */
+IdList listIds(const ModelPtr &model);
+
+/**
+ * @brief Creates an id string for a "type" object, unique in the context of @p idList.
+ *
+ * The id format is a 6-digit hexadecimal string.
+ *
+ * @return A string representing a unique id.
+ */
+std::string makeUniqueId(IdList &idList);
+
+void recordVariableEquivalences(const ComponentPtr &component, EquivalenceMap &equivalenceMap, IndexStack &indexStack);
+void generateEquivalenceMap(const ComponentPtr &component, EquivalenceMap &map, IndexStack &indexStack);
+void applyEquivalenceMapToModel(const EquivalenceMap &map, const ModelPtr &model);
+NameList componentNames(const ModelPtr &model);
+IndexStack reverseEngineerIndexStack(const ComponentPtr &component);
+EquivalenceMap rebaseEquivalenceMap(const EquivalenceMap &map, const IndexStack &originStack, const IndexStack &destinationStack);
+std::vector<UnitsPtr> unitsUsed(const ModelPtr &model, const ComponentPtr &component);
+ComponentNameMap createComponentNamesMap(const ComponentPtr &component);
+void findAndReplaceComponentsCnUnitsNames(const ComponentPtr &component, const StringStringMap &replaceMap);
 
 } // namespace libcellml

@@ -29,17 +29,6 @@ limitations under the License.
 
 namespace libcellml {
 
-/**
- * @brief Map to convert an interface type into its string form.
- *
- * An internal map used to convert a Variable InterfaceType enum class member into its string form.
- */
-static const std::map<Variable::InterfaceType, const std::string> interfaceTypeToString = {
-    {Variable::InterfaceType::NONE, "none"},
-    {Variable::InterfaceType::PRIVATE, "private"},
-    {Variable::InterfaceType::PUBLIC, "public"},
-    {Variable::InterfaceType::PUBLIC_AND_PRIVATE, "public_and_private"}};
-
 using VariableWeakPtr = std::weak_ptr<Variable>; /**< Type definition for weak variable pointer. */
 
 /**
@@ -55,7 +44,7 @@ struct Variable::VariableImpl
     std::map<VariableWeakPtr, std::string, std::owner_less<VariableWeakPtr>> mConnectionIdMap; /**< Connection id map for equivalent variable.*/
     std::string mInitialValue; /**< Initial value for this Variable.*/
     std::string mInterfaceType; /**< Interface type for this Variable.*/
-    UnitsPtr mUnits = nullptr; /**< The units defined for this Variable.*/
+    UnitsPtr mUnits = nullptr; /**< The Units defined for this Variable.*/
 
     /**
      * @brief Clean expired equivalent variables.
@@ -226,7 +215,16 @@ VariablePtr Variable::create(const std::string &name) noexcept
 
 bool Variable::addEquivalence(const VariablePtr &variable1, const VariablePtr &variable2)
 {
-    return (variable1 != nullptr && variable1->mPimpl->setEquivalentTo(variable2) && variable2 != nullptr && variable2->mPimpl->setEquivalentTo(variable1));
+    if ((variable1 != nullptr) && (variable2 != nullptr)) {
+        bool canAdd1 = variable1->mPimpl->setEquivalentTo(variable2);
+        bool canAdd2 = variable2->mPimpl->setEquivalentTo(variable1);
+        if (canAdd1 && !canAdd2) {
+            // Remove connection from variable1, since it can't be added to variable2.
+            variable1->mPimpl->unsetEquivalentTo(variable2);
+        }
+        return canAdd1 && canAdd2;
+    }
+    return false;
 }
 
 bool Variable::addEquivalence(const VariablePtr &variable1, const VariablePtr &variable2, const std::string &mappingId, const std::string &connectionId)
@@ -272,6 +270,7 @@ VariablePtr Variable::equivalentVariable(size_t index) const
 
 size_t Variable::equivalentVariableCount() const
 {
+    mPimpl->cleanExpiredVariables();
     return mPimpl->mEquivalentVariables.size();
 }
 
@@ -413,15 +412,7 @@ std::string Variable::VariableImpl::equivalentConnectionId(const VariablePtr &eq
 
 void Variable::setUnits(const std::string &name)
 {
-    UnitsPtr u;
-    auto model = owningModel(shared_from_this());
-    if (model != nullptr && model->hasUnits(name)) {
-        u = model->units(name);
-    } else {
-        u = Units::create();
-        u->setName(name);
-    }
-    mPimpl->mUnits = u;
+    mPimpl->mUnits = Units::create(name);
 }
 
 void Variable::setUnits(const UnitsPtr &units)
@@ -484,6 +475,14 @@ std::string Variable::interfaceType() const
 void Variable::removeInterfaceType()
 {
     mPimpl->mInterfaceType.clear();
+}
+
+bool Variable::hasInterfaceType(InterfaceType interfaceType) const
+{
+    if (interfaceType == Variable::InterfaceType::NONE && mPimpl->mInterfaceType.empty()) {
+        return true;
+    }
+    return mPimpl->mInterfaceType == interfaceTypeToString.find(interfaceType)->second;
 }
 
 void Variable::setEquivalenceMappingId(const VariablePtr &variable1, const VariablePtr &variable2, const std::string &mappingId)

@@ -11,7 +11,7 @@ const char LIBCELLML_VERSION[] = "0.2.0";
 const size_t STATE_COUNT = 33;
 const size_t VARIABLE_COUNT = 217;
 
-const VariableInfo VOI_INFO = {"time", "second", "Nai_concentration"};
+const VariableInfo VOI_INFO = {"time", "second", "environment"};
 
 const VariableInfo STATE_INFO[] = {
     {"R", "dimensionless", "Ca_SR_release"},
@@ -141,39 +141,18 @@ const VariableInfoWithType VARIABLE_INFO[] = {
     {"g_f", "microS", "i_f", CONSTANT},
     {"y_shift", "millivolt", "i_f_y_gate", CONSTANT},
     {"g_to", "microS", "i_to", CONSTANT},
+    {"Nai", "millimolar", "Nai_concentration", ALGEBRAIC},
     {"Iso_increase", "dimensionless", "i_NaK", COMPUTED_CONSTANT},
-    {"k34", "dimensionless", "i_NaCa", COMPUTED_CONSTANT},
-    {"b_up", "dimensionless", "Ca_intracellular_fluxes", COMPUTED_CONSTANT},
-    {"P_up", "millimolar_per_second", "Ca_intracellular_fluxes", COMPUTED_CONSTANT},
-    {"V_cell", "millimetre3", "Cell_parameters", COMPUTED_CONSTANT},
-    {"V_sub", "millimetre3", "Nai_concentration", COMPUTED_CONSTANT},
-    {"V_jsr", "millimetre3", "Ca_dynamics", COMPUTED_CONSTANT},
-    {"V_i", "millimetre3", "Nai_concentration", COMPUTED_CONSTANT},
-    {"V_nsr", "millimetre3", "Ca_dynamics", COMPUTED_CONSTANT},
-    {"RTONF", "millivolt", "Ionic_values", COMPUTED_CONSTANT},
-    {"G_f", "microS", "i_f", COMPUTED_CONSTANT},
-    {"G_f_K", "microS", "i_f", COMPUTED_CONSTANT},
-    {"G_f_Na", "microS", "i_f", COMPUTED_CONSTANT},
-    {"g_f_Na", "microS", "i_f", COMPUTED_CONSTANT},
-    {"g_f_K", "microS", "i_f", COMPUTED_CONSTANT},
-    {"ACh_shift", "millivolt", "i_f_y_gate", COMPUTED_CONSTANT},
-    {"Iso_shift", "millivolt", "i_f_y_gate", COMPUTED_CONSTANT},
-    {"Iso_increase", "dimensionless", "i_CaL", COMPUTED_CONSTANT},
-    {"ACh_block", "dimensionless", "i_CaL", COMPUTED_CONSTANT},
-    {"Iso_shift_dL", "millivolt", "i_CaL_dL_gate", COMPUTED_CONSTANT},
-    {"Iso_slope_dL", "dimensionless", "i_CaL_dL_gate", COMPUTED_CONSTANT},
-    {"g_Ks", "microS", "i_Ks", COMPUTED_CONSTANT},
-    {"Iso_shift", "millivolt", "i_Ks_n_gate", COMPUTED_CONSTANT},
-    {"alpha_a", "per_second", "i_KACh_a_gate", COMPUTED_CONSTANT},
-    {"E_K", "millivolt", "Ionic_values", COMPUTED_CONSTANT},
-    {"Nai", "millimolar", "Ionic_values", ALGEBRAIC},
     {"k43", "dimensionless", "i_NaCa", ALGEBRAIC},
+    {"k34", "dimensionless", "i_NaCa", COMPUTED_CONSTANT},
     {"j_SRCarel", "millimolar_per_second", "Ca_SR_release", ALGEBRAIC},
     {"diff", "millimolar", "Ca_SR_release", ALGEBRAIC},
     {"kCaSR", "dimensionless", "Ca_SR_release", ALGEBRAIC},
     {"koSRCa", "per_millimolar2_second", "Ca_SR_release", ALGEBRAIC},
     {"kiSRCa", "per_millimolar_second", "Ca_SR_release", ALGEBRAIC},
     {"P_tot", "dimensionless", "Ca_SR_release", ALGEBRAIC},
+    {"b_up", "dimensionless", "Ca_intracellular_fluxes", COMPUTED_CONSTANT},
+    {"P_up", "millimolar_per_second", "Ca_intracellular_fluxes", COMPUTED_CONSTANT},
     {"j_Ca_dif", "millimolar_per_second", "Ca_intracellular_fluxes", ALGEBRAIC},
     {"j_up", "millimolar_per_second", "Ca_intracellular_fluxes", ALGEBRAIC},
     {"j_tr", "millimolar_per_second", "Ca_intracellular_fluxes", ALGEBRAIC},
@@ -183,22 +162,43 @@ const VariableInfoWithType VARIABLE_INFO[] = {
     {"delta_fCMi", "per_second", "Ca_buffering", ALGEBRAIC},
     {"delta_fCMs", "per_second", "Ca_buffering", ALGEBRAIC},
     {"delta_fCQ", "per_second", "Ca_buffering", ALGEBRAIC},
-    {"V_clamp", "millivolt", "Membrane", ALGEBRAIC},
+    {"V_cell", "millimetre3", "Cell_parameters", COMPUTED_CONSTANT},
+    {"V_sub", "millimetre3", "Cell_parameters", COMPUTED_CONSTANT},
+    {"V_jsr", "millimetre3", "Cell_parameters", COMPUTED_CONSTANT},
+    {"V_i", "millimetre3", "Cell_parameters", COMPUTED_CONSTANT},
+    {"V_nsr", "millimetre3", "Cell_parameters", COMPUTED_CONSTANT},
+    {"RTONF", "millivolt", "Membrane", COMPUTED_CONSTANT},
+    {"V_clamp", "millivolt", "Voltage_clamp", ALGEBRAIC},
+    {"G_f", "microS", "i_f", COMPUTED_CONSTANT},
+    {"G_f_K", "microS", "i_f", COMPUTED_CONSTANT},
+    {"G_f_Na", "microS", "i_f", COMPUTED_CONSTANT},
+    {"g_f_Na", "microS", "i_f", COMPUTED_CONSTANT},
+    {"g_f_K", "microS", "i_f", COMPUTED_CONSTANT},
+    {"ACh_shift", "millivolt", "i_f_y_gate", COMPUTED_CONSTANT},
+    {"Iso_shift", "millivolt", "i_f_y_gate", COMPUTED_CONSTANT},
     {"E_mh", "millivolt", "i_Na", ALGEBRAIC},
+    {"Iso_increase", "dimensionless", "i_CaL", COMPUTED_CONSTANT},
+    {"ACh_block", "dimensionless", "i_CaL", COMPUTED_CONSTANT},
+    {"Iso_shift_dL", "millivolt", "i_CaL_dL_gate", COMPUTED_CONSTANT},
+    {"Iso_slope_dL", "dimensionless", "i_CaL_dL_gate", COMPUTED_CONSTANT},
     {"fCa_infinity", "dimensionless", "i_CaL_fCa_gate", ALGEBRAIC},
     {"tau_fCa", "second", "i_CaL_fCa_gate", ALGEBRAIC},
+    {"g_Ks", "microS", "i_Ks", COMPUTED_CONSTANT},
     {"E_Ks", "millivolt", "i_Ks", ALGEBRAIC},
+    {"Iso_shift", "millivolt", "i_Ks_n_gate", COMPUTED_CONSTANT},
+    {"alpha_a", "per_second", "i_KACh_a_gate", COMPUTED_CONSTANT},
     {"E_Na", "millivolt", "Ionic_values", ALGEBRAIC},
+    {"E_K", "millivolt", "Ionic_values", COMPUTED_CONSTANT},
     {"E_Ca", "millivolt", "Ionic_values", ALGEBRAIC},
-    {"V", "millivolt", "i_NaK", ALGEBRAIC},
-    {"i_fNa", "nanoA", "Nai_concentration", ALGEBRAIC},
+    {"V", "millivolt", "Membrane", ALGEBRAIC},
+    {"i_fNa", "nanoA", "i_f", ALGEBRAIC},
     {"i_fK", "nanoA", "i_f", ALGEBRAIC},
-    {"i_f", "nanoA", "Membrane", ALGEBRAIC},
+    {"i_f", "nanoA", "i_f", ALGEBRAIC},
     {"tau_y", "second", "i_f_y_gate", ALGEBRAIC},
     {"y_infinity", "dimensionless", "i_f_y_gate", ALGEBRAIC},
     {"i_Na_", "nanoA", "i_Na", ALGEBRAIC},
     {"i_Na_L", "nanoA", "i_Na", ALGEBRAIC},
-    {"i_Na", "nanoA", "Nai_concentration", ALGEBRAIC},
+    {"i_Na", "nanoA", "i_Na", ALGEBRAIC},
     {"m_infinity", "dimensionless", "i_Na_m_gate", ALGEBRAIC},
     {"E0_m", "millivolt", "i_Na_m_gate", ALGEBRAIC},
     {"alpha_m", "per_second", "i_Na_m_gate", ALGEBRAIC},
@@ -208,31 +208,31 @@ const VariableInfoWithType VARIABLE_INFO[] = {
     {"alpha_h", "per_second", "i_Na_h_gate", ALGEBRAIC},
     {"beta_h", "per_second", "i_Na_h_gate", ALGEBRAIC},
     {"tau_h", "second", "i_Na_h_gate", ALGEBRAIC},
-    {"i_Kur", "nanoA", "Membrane", ALGEBRAIC},
+    {"i_Kur", "nanoA", "i_Kur", ALGEBRAIC},
     {"r_Kur_infinity", "dimensionless", "i_Kur_rKur_gate", ALGEBRAIC},
     {"tau_r_Kur", "second", "i_Kur_rKur_gate", ALGEBRAIC},
     {"s_Kur_infinity", "dimensionless", "i_Kur_sKur_gate", ALGEBRAIC},
     {"tau_s_Kur", "second", "i_Kur_sKur_gate", ALGEBRAIC},
-    {"i_siCa", "nanoA", "Ca_dynamics", ALGEBRAIC},
+    {"i_siCa", "nanoA", "i_CaL", ALGEBRAIC},
     {"i_siK", "nanoA", "i_CaL", ALGEBRAIC},
-    {"i_siNa", "nanoA", "Nai_concentration", ALGEBRAIC},
-    {"i_CaL", "nanoA", "Membrane", ALGEBRAIC},
+    {"i_siNa", "nanoA", "i_CaL", ALGEBRAIC},
+    {"i_CaL", "nanoA", "i_CaL", ALGEBRAIC},
     {"dL_infinity", "dimensionless", "i_CaL_dL_gate", ALGEBRAIC},
     {"adVm", "millivolt", "i_CaL_dL_gate", ALGEBRAIC},
     {"bdVm", "millivolt", "i_CaL_dL_gate", ALGEBRAIC},
     {"fL_infinity", "dimensionless", "i_CaL_fL_gate", ALGEBRAIC},
     {"tau_fL", "second", "i_CaL_fL_gate", ALGEBRAIC},
-    {"i_CaT", "nanoA", "Ca_dynamics", ALGEBRAIC},
+    {"i_CaT", "nanoA", "i_CaT", ALGEBRAIC},
     {"dT_infinity", "dimensionless", "i_CaT_dT_gate", ALGEBRAIC},
     {"tau_dT", "second", "i_CaT_dT_gate", ALGEBRAIC},
     {"fT_infinity", "dimensionless", "i_CaT_fT_gate", ALGEBRAIC},
     {"tau_fT", "second", "i_CaT_fT_gate", ALGEBRAIC},
-    {"i_to", "nanoA", "Membrane", ALGEBRAIC},
+    {"i_to", "nanoA", "i_to", ALGEBRAIC},
     {"q_infinity", "dimensionless", "i_to_q_gate", ALGEBRAIC},
     {"tau_q", "second", "i_to_q_gate", ALGEBRAIC},
     {"r_infinity", "dimensionless", "i_to_r_gate", ALGEBRAIC},
     {"tau_r", "second", "i_to_r_gate", ALGEBRAIC},
-    {"i_Kr", "nanoA", "Membrane", ALGEBRAIC},
+    {"i_Kr", "nanoA", "i_Kr", ALGEBRAIC},
     {"alfapaF", "per_second", "i_Kr_pa_gate", ALGEBRAIC},
     {"betapaF", "per_second", "i_Kr_pa_gate", ALGEBRAIC},
     {"pa_infinity", "dimensionless", "i_Kr_pa_gate", ALGEBRAIC},
@@ -240,15 +240,15 @@ const VariableInfoWithType VARIABLE_INFO[] = {
     {"tau_paF", "second", "i_Kr_pa_gate", ALGEBRAIC},
     {"tau_pi", "second", "i_Kr_pi_gate", ALGEBRAIC},
     {"pi_infinity", "dimensionless", "i_Kr_pi_gate", ALGEBRAIC},
-    {"i_Ks", "nanoA", "Membrane", ALGEBRAIC},
+    {"i_Ks", "nanoA", "i_Ks", ALGEBRAIC},
     {"n_infinity", "dimensionless", "i_Ks_n_gate", ALGEBRAIC},
     {"alpha_n", "per_second", "i_Ks_n_gate", ALGEBRAIC},
     {"beta_n", "per_second", "i_Ks_n_gate", ALGEBRAIC},
-    {"i_KACh", "nanoA", "Membrane", ALGEBRAIC},
+    {"i_KACh", "nanoA", "i_KACh", ALGEBRAIC},
     {"beta_a", "per_second", "i_KACh_a_gate", ALGEBRAIC},
     {"a_infinity", "dimensionless", "i_KACh_a_gate", ALGEBRAIC},
     {"tau_a", "second", "i_KACh_a_gate", ALGEBRAIC},
-    {"i_NaK", "nanoA", "Nai_concentration", ALGEBRAIC},
+    {"i_NaK", "nanoA", "i_NaK", ALGEBRAIC},
     {"k41", "dimensionless", "i_NaCa", ALGEBRAIC},
     {"di", "dimensionless", "i_NaCa", ALGEBRAIC},
     {"k32", "dimensionless", "i_NaCa", ALGEBRAIC},
@@ -265,18 +265,18 @@ const VariableInfoWithType VARIABLE_INFO[] = {
     {"x2", "dimensionless", "i_NaCa", ALGEBRAIC},
     {"x3", "dimensionless", "i_NaCa", ALGEBRAIC},
     {"x4", "dimensionless", "i_NaCa", ALGEBRAIC},
-    {"i_NaCa", "nanoA", "Nai_concentration", ALGEBRAIC},
+    {"i_NaCa", "nanoA", "i_NaCa", ALGEBRAIC},
     {"i_tot", "nanoA", "Membrane", ALGEBRAIC}
 };
 
 double * createStatesArray()
 {
-    return (double *) malloc(33*sizeof(double));
+    return (double *) malloc(STATE_COUNT*sizeof(double));
 }
 
 double * createVariablesArray()
 {
-    return (double *) malloc(217*sizeof(double));
+    return (double *) malloc(VARIABLE_COUNT*sizeof(double));
 }
 
 void deleteArray(double *array)
@@ -286,39 +286,6 @@ void deleteArray(double *array)
 
 void initializeStatesAndConstants(double *states, double *variables)
 {
-    states[0] = 0.9308;
-    states[1] = 6.181512e-9;
-    states[2] = 4.595622e-10;
-    states[3] = 0.069199;
-    states[4] = 0.409551;
-    states[5] = 0.844449;
-    states[6] = 0.017929;
-    states[7] = 0.259947;
-    states[8] = 0.653777;
-    states[9] = 0.217311;
-    states[10] = 0.158521;
-    states[11] = 0.138975;
-    states[12] = 9.15641e-6;
-    states[13] = 0.435148;
-    states[14] = 0.009508;
-    states[15] = 0.447724;
-    states[16] = 0.003058;
-    states[17] = 0.846702;
-    states[18] = 0.268909;
-    states[19] = 0.020484;
-    states[20] = 0.430836;
-    states[21] = 0.014523;
-    states[22] = 0.283185;
-    states[23] = 0.011068;
-    states[24] = 0.709051;
-    states[25] = 0.00277;
-    states[26] = 0.011845;
-    states[27] = 0.845304;
-    states[28] = 0.1162;
-    states[29] = 0.001921;
-    states[30] = 6.226104e-5;
-    states[31] = -47.787168;
-    states[32] = 5.0;
     variables[0] = 0.45;
     variables[1] = 2.5;
     variables[2] = 15.0;
@@ -410,6 +377,39 @@ void initializeStatesAndConstants(double *states, double *variables)
     variables[88] = 0.00427;
     variables[89] = 0.0;
     variables[90] = 3.5e-3;
+    states[0] = 0.9308;
+    states[1] = 6.181512e-9;
+    states[2] = 4.595622e-10;
+    states[3] = 0.069199;
+    states[4] = 0.409551;
+    states[5] = 0.844449;
+    states[6] = 0.017929;
+    states[7] = 0.259947;
+    states[8] = 0.653777;
+    states[9] = 0.217311;
+    states[10] = 0.158521;
+    states[11] = 0.138975;
+    states[12] = 9.15641e-6;
+    states[13] = 0.435148;
+    states[14] = 0.009508;
+    states[15] = 0.447724;
+    states[16] = 0.003058;
+    states[17] = 0.846702;
+    states[18] = 0.268909;
+    states[19] = 0.020484;
+    states[20] = 0.430836;
+    states[21] = 0.014523;
+    states[22] = 0.283185;
+    states[23] = 0.011068;
+    states[24] = 0.709051;
+    states[25] = 0.00277;
+    states[26] = 0.011845;
+    states[27] = 0.845304;
+    states[28] = 0.1162;
+    states[29] = 0.001921;
+    states[30] = 6.226104e-5;
+    states[31] = -47.787168;
+    states[32] = 5.0;
 }
 
 void computeComputedConstants(double *variables)

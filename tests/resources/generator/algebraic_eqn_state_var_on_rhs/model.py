@@ -17,7 +17,7 @@ class VariableType(Enum):
     ALGEBRAIC = 3
 
 
-VOI_INFO = {"name": "t", "units": "second", "component": "my_ode"}
+VOI_INFO = {"name": "t", "units": "second", "component": "environment"}
 
 STATE_INFO = [
     {"name": "x", "units": "dimensionless", "component": "my_ode"}
@@ -30,16 +30,16 @@ VARIABLE_INFO = [
 
 
 def create_states_array():
-    return [nan]*1
+    return [nan]*STATE_COUNT
 
 
 def create_variables_array():
-    return [nan]*2
+    return [nan]*VARIABLE_COUNT
 
 
 def initialize_states_and_constants(states, variables):
-    states[0] = 1.0
     variables[0] = 1.0
+    states[0] = 1.0
 
 
 def compute_computed_constants(variables):

@@ -16,12 +16,12 @@ limitations under the License.
 
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "libcellml/exportdefinitions.h"
 #include "libcellml/importedentity.h"
 #include "libcellml/types.h"
-
-#include <string>
-#include <vector>
 
 // MSVC (and some other compilers?) may define PASCAL as __stdcall, resulting in
 // some compilation errors for our StandardUnit enum class below. However, that
@@ -30,6 +30,10 @@ limitations under the License.
 // information.)
 #undef PASCAL
 
+#ifndef SWIG
+template class LIBCELLML_EXPORT std::weak_ptr<libcellml::Units>;
+#endif
+
 namespace libcellml {
 
 /**
@@ -37,6 +41,10 @@ namespace libcellml {
  * Class for Units.
  */
 class LIBCELLML_EXPORT Units: public NamedEntity, public ImportedEntity
+#ifndef SWIG
+    ,
+                              public std::enable_shared_from_this<Units>
+#endif
 {
 public:
     ~Units() override; /**< Destructor */
@@ -64,6 +72,36 @@ public:
      * @overload
      */
     static UnitsPtr create(const std::string &name) noexcept;
+
+    /**
+     * @brief The Prefix enum class.
+     *
+     * Enum describing the prefixes that are available for
+     * units.
+     */
+    enum class Prefix
+    {
+        YOTTA,
+        ZETTA,
+        EXA,
+        PETA,
+        TERA,
+        GIGA,
+        MEGA,
+        KILO,
+        HECTO,
+        DECA,
+        DECI,
+        CENTI,
+        MILLI,
+        MICRO,
+        NANO,
+        PICO,
+        FEMTO,
+        ATTO,
+        ZEPTO,
+        YOCTO
+    };
 
     /**
      * @brief The Standard Unit enum class.
@@ -330,7 +368,7 @@ public:
      *
      * @param index The index of the unit to remove.
      *
-     * @return True if the units were replaced, false otherwise.
+     * @return @c true if the units were replaced, false otherwise.
      */
     bool removeUnit(size_t index);
 
@@ -343,7 +381,7 @@ public:
      *
      * @param reference The @c std::string unit reference of the unit to remove.
      *
-     * @return True if the units were replaced, false otherwise.
+     * @return @c true if the units were replaced, @c false otherwise.
      */
     bool removeUnit(const std::string &reference);
 
@@ -356,7 +394,7 @@ public:
      *
      * @param standardRef The @c StandardUnit enum unit reference of the unit to remove.
      *
-     * @return True if the units were replaced, false otherwise.
+     * @return @c true if the units were replaced, @c false otherwise.
      */
     bool removeUnit(StandardUnit standardRef);
 
@@ -371,12 +409,13 @@ public:
      * @brief Set the source of the units for this Units.
      *
      * Make this Units an imported units by defining an import model
-     * from which to extract the named Units from.
+     * from which to extract the named Units.  This Units will be added to the
+     * importSource's list of dependent entities.
      *
      * @param importSource The import source from which the named Units originates.
      * @param name The name of the Units in the imported model to use.
      */
-    void setSourceUnits(const ImportSourcePtr &importSource, const std::string &name);
+    void setSourceUnits(ImportSourcePtr &importSource, const std::string &name);
 
     /**
      * @brief Get the number of units that compose this units.
@@ -388,46 +427,59 @@ public:
     size_t unitCount() const;
 
     /**
+     * @brief Check whether there are any imported child @c Units.
+     *
+     * Test to determine whether this units has any imported units.
+     *
+     * @return @c true when this @c Units relies on @c Units which are imported,
+     * @c false otherwise.
+     */
+    bool requiresImports() const;
+
+    /**
      * @brief Return the scaling factor difference between two @c Units.
      *
-     * This can be interpreted as factor, where units2 = (factor)*units1.  This method
-     * does not check to see if the units are compatible.
+     * This can be interpreted as `factor`, where units2 = factor*units1.  If compatibility checking is
+     * turned on and the units are not compatible the factor returned is 0.0.
      *
      * @param units1 The first units to compare.
      * @param units2 The second units to compare.
+     * @param checkCompatibility Set @c true for compatibility checking, or @c false to ignore base units.
+     * The default is @c true.
      *
-     * @return The factor units1/units2.
+     * @return The factor units2/units1.  Where the units are incompatible and @p checkCompatibility
+     * is @c true then the factor returned is 0.0.
      */
-    static double scalingFactor(const UnitsPtr &units1, const UnitsPtr &units2);
+    static double scalingFactor(const UnitsPtr &units1, const UnitsPtr &units2, bool checkCompatibility = true);
 
     /**
-     * @brief Test to determine whether two @c Units are equivalent or not.
+     * @brief Test to determine whether two @c Units are compatible or not.
      *
-     * Two @c Units are considered to be equivalent if they share the same units,
-     * independently of their dimension (e.g. volt and volt are equivalent as are 
+     * Two @c Units are considered to be compatible if they share the same units,
+     * independently of their scaling (e.g. volt and volt are compatible as are
      * volt and millivolt).
      *
      * @param1 units1 The first units to compare.
      * @param2 units2 The second units to compare.
      *
-     * @return @c true if the two @c Units are equivalent, @c false otherwise.
+     * @return @c true if the two @c Units are compatible, @c false otherwise.
      */
-    static bool equivalent(const UnitsPtr &units1, const UnitsPtr &units2);
+    static bool compatible(const UnitsPtr &units1, const UnitsPtr &units2);
 
     /**
-     * @brief Test to determine whether two @c Units are dimensionally equivalent or not.
+     * @brief Test to determine whether two @c Units are equivalent or not.
      *
-     * Two @c Units are considered to be dimensionally equivalent if they share the
-     * exact same units (e.g. volt and volt are dimensionally equivalent but 
+     * Two @c Units are considered to be equivalent if they share the
+     * same unit base as well as a scaling factor of 1.0 (e.g. volt and volt are equivalent but
      * volt and millivolt are not).
      *
      * @param1 units1 The first units to compare.
      * @param2 units2 The second units to compare.
      *
-     * @return @c true if the two @c Units are dimensionally equivalent, @c false
+     * @return @c true if the two @c Units are equivalent, @c false
      * otherwise.
      */
-    static bool dimensionallyEquivalent(const UnitsPtr &units1, const UnitsPtr &units2);
+    static bool equivalent(const UnitsPtr &units1, const UnitsPtr &units2);
 
     /**
      * @brief Create a clone of this units.
@@ -439,6 +491,16 @@ public:
      * @return a new @c UnitsPtr to the cloned units.
      */
     UnitsPtr clone() const;
+
+    /**
+     * @brief Set the import source of these units.
+     *
+     * If these units are already located in a Model instance, then the
+     * import source is added to the Model too.
+     *
+     * @param importSource The @c ImportSourcePtr to add to this @c Units item.
+     */
+    void setImportSource(ImportSourcePtr &importSource);
 
 private:
     Units(); /**< Constructor */

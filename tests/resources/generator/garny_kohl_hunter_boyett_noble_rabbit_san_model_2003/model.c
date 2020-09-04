@@ -11,7 +11,7 @@ const char LIBCELLML_VERSION[] = "0.2.0";
 const size_t STATE_COUNT = 15;
 const size_t VARIABLE_COUNT = 185;
 
-const VariableInfo VOI_INFO = {"time", "second", "membrane"};
+const VariableInfo VOI_INFO = {"time", "second", "environment"};
 
 const VariableInfo STATE_INFO[] = {
     {"m", "dimensionless", "sodium_current_m_gate"},
@@ -148,34 +148,26 @@ const VariableInfoWithType VARIABLE_INFO[] = {
     {"g_b_K", "microS", "potassium_background_current", COMPUTED_CONSTANT},
     {"g_b_Ca", "microS", "calcium_background_current", COMPUTED_CONSTANT},
     {"k_NaCa", "nanoA", "sodium_calcium_exchanger", COMPUTED_CONSTANT},
+    {"i_NaCa", "nanoA", "sodium_calcium_exchanger", ALGEBRAIC},
     {"i_p_max", "nanoA", "sodium_potassium_pump", COMPUTED_CONSTANT},
+    {"i_p", "nanoA", "sodium_potassium_pump", ALGEBRAIC},
     {"i_Ca_p_max", "nanoA", "persistent_calcium_current", COMPUTED_CONSTANT},
-    {"i_Ca_p", "nanoA", "membrane", COMPUTED_CONSTANT},
-    {"E_Na", "millivolt", "sodium_background_current", COMPUTED_CONSTANT},
-    {"E_K", "millivolt", "potassium_background_current", COMPUTED_CONSTANT},
-    {"E_Ca", "millivolt", "calcium_background_current", COMPUTED_CONSTANT},
+    {"i_Ca_p", "nanoA", "persistent_calcium_current", COMPUTED_CONSTANT},
+    {"E_Na", "millivolt", "reversal_and_equilibrium_potentials", COMPUTED_CONSTANT},
+    {"E_K", "millivolt", "reversal_and_equilibrium_potentials", COMPUTED_CONSTANT},
+    {"E_Ca", "millivolt", "reversal_and_equilibrium_potentials", COMPUTED_CONSTANT},
     {"E_K_s", "millivolt", "reversal_and_equilibrium_potentials", COMPUTED_CONSTANT},
     {"g_Na", "microlitre_per_second", "sodium_current", COMPUTED_CONSTANT},
-    {"g_Ca_L", "microS", "L_type_Ca_channel", COMPUTED_CONSTANT},
-    {"g_Ca_T", "microS", "T_type_Ca_channel", COMPUTED_CONSTANT},
-    {"g_to", "microS", "four_AP_sensitive_currents", COMPUTED_CONSTANT},
-    {"g_sus", "microS", "four_AP_sensitive_currents", COMPUTED_CONSTANT},
-    {"g_K_r", "microS", "rapid_delayed_rectifying_potassium_current", COMPUTED_CONSTANT},
-    {"tau_P_i", "second", "rapid_delayed_rectifying_potassium_current_P_i_gate", COMPUTED_CONSTANT},
-    {"g_K_s", "microS", "slow_delayed_rectifying_potassium_current", COMPUTED_CONSTANT},
-    {"g_f_Na", "microS", "hyperpolarisation_activated_current", COMPUTED_CONSTANT},
-    {"g_f_K", "microS", "hyperpolarisation_activated_current", COMPUTED_CONSTANT},
-    {"i_NaCa", "nanoA", "membrane", ALGEBRAIC},
-    {"i_p", "nanoA", "membrane", ALGEBRAIC},
     {"m_infinity", "dimensionless", "sodium_current_m_gate", ALGEBRAIC},
     {"tau_m", "second", "sodium_current_m_gate", ALGEBRAIC},
     {"F_Na", "dimensionless", "sodium_current_h_gate", ALGEBRAIC},
-    {"h", "dimensionless", "sodium_current", ALGEBRAIC},
+    {"h", "dimensionless", "sodium_current_h_gate", ALGEBRAIC},
     {"h1_infinity", "dimensionless", "sodium_current_h_gate", ALGEBRAIC},
     {"h2_infinity", "dimensionless", "sodium_current_h_gate", ALGEBRAIC},
     {"tau_h1", "second", "sodium_current_h_gate", ALGEBRAIC},
     {"tau_h2", "second", "sodium_current_h_gate", ALGEBRAIC},
-    {"i_Ca_L", "nanoA", "membrane", ALGEBRAIC},
+    {"g_Ca_L", "microS", "L_type_Ca_channel", COMPUTED_CONSTANT},
+    {"i_Ca_L", "nanoA", "L_type_Ca_channel", ALGEBRAIC},
     {"alpha_d_L", "per_second", "L_type_Ca_channel_d_gate", ALGEBRAIC},
     {"beta_d_L", "per_second", "L_type_Ca_channel_d_gate", ALGEBRAIC},
     {"tau_d_L", "second", "L_type_Ca_channel_d_gate", ALGEBRAIC},
@@ -184,7 +176,8 @@ const VariableInfoWithType VARIABLE_INFO[] = {
     {"beta_f_L", "per_second", "L_type_Ca_channel_f_gate", ALGEBRAIC},
     {"tau_f_L", "second", "L_type_Ca_channel_f_gate", ALGEBRAIC},
     {"f_L_infinity", "dimensionless", "L_type_Ca_channel_f_gate", ALGEBRAIC},
-    {"i_Ca_T", "nanoA", "membrane", ALGEBRAIC},
+    {"g_Ca_T", "microS", "T_type_Ca_channel", COMPUTED_CONSTANT},
+    {"i_Ca_T", "nanoA", "T_type_Ca_channel", ALGEBRAIC},
     {"alpha_d_T", "per_second", "T_type_Ca_channel_d_gate", ALGEBRAIC},
     {"beta_d_T", "per_second", "T_type_Ca_channel_d_gate", ALGEBRAIC},
     {"tau_d_T", "second", "T_type_Ca_channel_d_gate", ALGEBRAIC},
@@ -193,40 +186,47 @@ const VariableInfoWithType VARIABLE_INFO[] = {
     {"beta_f_T", "per_second", "T_type_Ca_channel_f_gate", ALGEBRAIC},
     {"tau_f_T", "second", "T_type_Ca_channel_f_gate", ALGEBRAIC},
     {"f_T_infinity", "dimensionless", "T_type_Ca_channel_f_gate", ALGEBRAIC},
-    {"i_to", "nanoA", "membrane", ALGEBRAIC},
-    {"i_sus", "nanoA", "membrane", ALGEBRAIC},
+    {"g_to", "microS", "four_AP_sensitive_currents", COMPUTED_CONSTANT},
+    {"g_sus", "microS", "four_AP_sensitive_currents", COMPUTED_CONSTANT},
+    {"i_to", "nanoA", "four_AP_sensitive_currents", ALGEBRAIC},
+    {"i_sus", "nanoA", "four_AP_sensitive_currents", ALGEBRAIC},
     {"q_infinity", "dimensionless", "four_AP_sensitive_currents_q_gate", ALGEBRAIC},
     {"tau_q", "second", "four_AP_sensitive_currents_q_gate", ALGEBRAIC},
     {"r_infinity", "dimensionless", "four_AP_sensitive_currents_r_gate", ALGEBRAIC},
     {"tau_r", "second", "four_AP_sensitive_currents_r_gate", ALGEBRAIC},
+    {"g_K_r", "microS", "rapid_delayed_rectifying_potassium_current", COMPUTED_CONSTANT},
     {"P_a", "dimensionless", "rapid_delayed_rectifying_potassium_current", ALGEBRAIC},
     {"P_af_infinity", "dimensionless", "rapid_delayed_rectifying_potassium_current_P_af_gate", ALGEBRAIC},
     {"tau_P_af", "second", "rapid_delayed_rectifying_potassium_current_P_af_gate", ALGEBRAIC},
     {"P_as_infinity", "dimensionless", "rapid_delayed_rectifying_potassium_current_P_as_gate", ALGEBRAIC},
     {"tau_P_as", "second", "rapid_delayed_rectifying_potassium_current_P_as_gate", ALGEBRAIC},
+    {"tau_P_i", "second", "rapid_delayed_rectifying_potassium_current_P_i_gate", COMPUTED_CONSTANT},
     {"P_i_infinity", "dimensionless", "rapid_delayed_rectifying_potassium_current_P_i_gate", ALGEBRAIC},
-    {"i_K_s", "nanoA", "membrane", ALGEBRAIC},
+    {"g_K_s", "microS", "slow_delayed_rectifying_potassium_current", COMPUTED_CONSTANT},
+    {"i_K_s", "nanoA", "slow_delayed_rectifying_potassium_current", ALGEBRAIC},
     {"alpha_xs", "per_second", "slow_delayed_rectifying_potassium_current_xs_gate", ALGEBRAIC},
     {"beta_xs", "per_second", "slow_delayed_rectifying_potassium_current_xs_gate", ALGEBRAIC},
-    {"i_f_Na", "nanoA", "membrane", ALGEBRAIC},
-    {"i_f_K", "nanoA", "membrane", ALGEBRAIC},
+    {"g_f_Na", "microS", "hyperpolarisation_activated_current", COMPUTED_CONSTANT},
+    {"i_f_Na", "nanoA", "hyperpolarisation_activated_current", ALGEBRAIC},
+    {"g_f_K", "microS", "hyperpolarisation_activated_current", COMPUTED_CONSTANT},
+    {"i_f_K", "nanoA", "hyperpolarisation_activated_current", ALGEBRAIC},
     {"alpha_y", "per_second", "hyperpolarisation_activated_current_y_gate", ALGEBRAIC},
     {"beta_y", "per_second", "hyperpolarisation_activated_current_y_gate", ALGEBRAIC},
-    {"i_b_Na", "nanoA", "membrane", ALGEBRAIC},
-    {"i_b_K", "nanoA", "membrane", ALGEBRAIC},
-    {"i_b_Ca", "nanoA", "membrane", ALGEBRAIC},
-    {"i_Na", "nanoA", "membrane", ALGEBRAIC},
-    {"i_K_r", "nanoA", "membrane", ALGEBRAIC}
+    {"i_b_Na", "nanoA", "sodium_background_current", ALGEBRAIC},
+    {"i_b_K", "nanoA", "potassium_background_current", ALGEBRAIC},
+    {"i_b_Ca", "nanoA", "calcium_background_current", ALGEBRAIC},
+    {"i_Na", "nanoA", "sodium_current", ALGEBRAIC},
+    {"i_K_r", "nanoA", "rapid_delayed_rectifying_potassium_current", ALGEBRAIC}
 };
 
 double * createStatesArray()
 {
-    return (double *) malloc(15*sizeof(double));
+    return (double *) malloc(STATE_COUNT*sizeof(double));
 }
 
 double * createVariablesArray()
 {
-    return (double *) malloc(185*sizeof(double));
+    return (double *) malloc(VARIABLE_COUNT*sizeof(double));
 }
 
 void deleteArray(double *array)
@@ -236,21 +236,6 @@ void deleteArray(double *array)
 
 void initializeStatesAndConstants(double *states, double *variables)
 {
-    states[0] = 0.092361701692;
-    states[1] = 0.015905380261;
-    states[2] = 0.01445216109;
-    states[3] = 0.04804900895;
-    states[4] = 0.48779845203;
-    states[5] = 0.42074047435;
-    states[6] = 0.038968420558;
-    states[7] = 0.29760539675;
-    states[8] = 0.064402950262;
-    states[9] = 0.13034201158;
-    states[10] = 0.46960956028;
-    states[11] = 0.87993375273;
-    states[12] = 0.082293827208;
-    states[13] = 0.03889291759;
-    states[14] = -39.013558536;
     variables[0] = 46.4;
     variables[1] = 0.0057938;
     variables[2] = 0.0082;
@@ -361,6 +346,21 @@ void initializeStatesAndConstants(double *states, double *variables)
     variables[107] = 0.1551936;
     variables[108] = 0.16;
     variables[109] = 0.16;
+    states[0] = 0.092361701692;
+    states[1] = 0.015905380261;
+    states[2] = 0.01445216109;
+    states[3] = 0.04804900895;
+    states[4] = 0.48779845203;
+    states[5] = 0.42074047435;
+    states[6] = 0.038968420558;
+    states[7] = 0.29760539675;
+    states[8] = 0.064402950262;
+    states[9] = 0.13034201158;
+    states[10] = 0.46960956028;
+    states[11] = 0.87993375273;
+    states[12] = 0.082293827208;
+    states[13] = 0.03889291759;
+    states[14] = -39.013558536;
 }
 
 void computeComputedConstants(double *variables)

@@ -32,6 +32,8 @@ limitations under the License.
 
 #include "internaltypes.h"
 #include "utilities.h"
+#include "xmldoc.h"
+#include "xmlutils.h"
 
 namespace libcellml {
 
@@ -45,6 +47,7 @@ namespace libcellml {
 struct Model::ModelImpl
 {
     std::vector<UnitsPtr> mUnits;
+    std::vector<ImportSourcePtr> mImports;
 
     std::vector<UnitsPtr>::iterator findUnits(const std::string &name);
     std::vector<UnitsPtr>::iterator findUnits(const UnitsPtr &units);
@@ -59,7 +62,7 @@ std::vector<UnitsPtr>::iterator Model::ModelImpl::findUnits(const std::string &n
 std::vector<UnitsPtr>::iterator Model::ModelImpl::findUnits(const UnitsPtr &units)
 {
     return std::find_if(mUnits.begin(), mUnits.end(),
-                        [=](const UnitsPtr &u) -> bool { return units->name().empty() ? false : u->name() == units->name() && Units::dimensionallyEquivalent(u, units); });
+                        [=](const UnitsPtr &u) -> bool { return units->name().empty() ? false : u->name() == units->name() && Units::equivalent(u, units); });
 }
 
 Model::Model()
@@ -95,13 +98,37 @@ bool Model::doAddComponent(const ComponentPtr &component)
         removeComponentFromEntity(parent, component);
     }
     component->setParent(shared_from_this());
+
+    if (component->isImport()) {
+        auto importSource = component->importSource();
+        addImportSource(importSource);
+    }
     return ComponentEntity::doAddComponent(component);
 }
 
-void Model::addUnits(const UnitsPtr &units)
+bool Model::addUnits(const UnitsPtr &units)
 {
+    if (units == nullptr) {
+        return false;
+    }
+
+    // Prevent adding multiple times to list.
+    if (hasUnits(units)) {
+        return false;
+    }
+
+    // Prevent adding to multiple models: move units to this model.
+    if (units->hasParent()) {
+        auto otherParent = std::dynamic_pointer_cast<Model>(units->parent());
+        otherParent->removeUnits(units);
+    }
     mPimpl->mUnits.push_back(units);
     units->setParent(shared_from_this());
+
+    if (units->isImport()) {
+        addImportSource(units->importSource());
+    }
+    return true;
 }
 
 bool Model::removeUnits(size_t index)
@@ -145,6 +172,9 @@ bool Model::removeUnits(const UnitsPtr &units)
 
 void Model::removeAllUnits()
 {
+    for (const auto &u : mPimpl->mUnits) {
+        u->removeParent();
+    }
     mPimpl->mUnits.clear();
 }
 
@@ -222,6 +252,73 @@ size_t Model::unitsCount() const
     return mPimpl->mUnits.size();
 }
 
+bool Model::hasImportSource(const ImportSourcePtr &importSrc) const
+{
+    return std::find(mPimpl->mImports.begin(), mPimpl->mImports.end(), importSrc) != mPimpl->mImports.end();
+}
+
+bool Model::addImportSource(const ImportSourcePtr &importSrc)
+{
+    if (importSrc == nullptr) {
+        return false;
+    }
+    if (hasImportSource(importSrc)) {
+        return false;
+    }
+    auto otherModel = owningModel(importSrc);
+    if (otherModel != nullptr) {
+        otherModel->removeImportSource(importSrc);
+    }
+    importSrc->setParent(shared_from_this());
+    mPimpl->mImports.push_back(importSrc);
+    return true;
+}
+
+size_t Model::importSourceCount() const
+{
+    return mPimpl->mImports.size();
+}
+
+ImportSourcePtr Model::importSource(size_t index) const
+{
+    ImportSourcePtr importSrc = nullptr;
+    if (index < mPimpl->mImports.size()) {
+        importSrc = mPimpl->mImports.at(index);
+    }
+
+    return importSrc;
+}
+
+bool Model::removeImportSource(size_t index)
+{
+    bool status = false;
+    auto importSrc = importSource(index);
+    status = removeImportSource(importSrc);
+    return status;
+}
+
+bool Model::removeImportSource(const ImportSourcePtr &importSrc)
+{
+    bool status = false;
+    auto result = std::find(mPimpl->mImports.begin(), mPimpl->mImports.end(), importSrc);
+    if (result != mPimpl->mImports.end()) {
+        importSrc->removeParent();
+        mPimpl->mImports.erase(result);
+        status = true;
+    }
+    return status;
+}
+
+bool Model::removeAllImportSources()
+{
+    bool status = true;
+    for (const auto &imp : mPimpl->mImports) {
+        imp->removeParent();
+    }
+    mPimpl->mImports.clear();
+    return status;
+}
+
 void linkComponentVariableUnits(const ComponentPtr &component)
 {
     for (size_t index = 0; index < component->variableCount(); ++index) {
@@ -229,14 +326,11 @@ void linkComponentVariableUnits(const ComponentPtr &component)
         auto u = v->units();
         if (u != nullptr) {
             auto model = owningModel(u);
-            if (model == nullptr && !isStandardUnitName(u->name())) {
+            if (model == nullptr && !isStandardUnit(u)) {
                 model = owningModel(component);
-                auto modelUnits = model->units(u->name());
-                if (modelUnits == nullptr) {
-                    model->addUnits(u);
-                    modelUnits = u;
+                if (model->hasUnits(u->name())) {
+                    v->setUnits(model->units(u->name()));
                 }
-                v->setUnits(modelUnits);
             }
         }
     }
@@ -267,7 +361,7 @@ bool areComponentVariableUnitsUnlinked(const ComponentPtr &component)
         auto u = v->units();
         if (u != nullptr) {
             auto model = owningModel(u);
-            unlinked = model == nullptr && !isStandardUnitName(u->name());
+            unlinked = model == nullptr && !isStandardUnit(u);
         }
     }
 
@@ -294,76 +388,12 @@ bool Model::hasUnlinkedUnits()
     return unlinkedUnits;
 }
 
-/**
- * @brief Resolve the path of the given filename using the given base.
- *
- * Resolves the full path to the given @p filename using the @p base.
- *
- * This function is only intended to work with local files.  It may not
- * work with bases that use the 'file://' prefix.
- *
- * @param filename The @c std::string relative path from the base path.
- * @param base The @c std::string location on local disk for determining the full path from.
- *
- * @return The full path from the @p base location to the @p filename
- */
-std::string resolvePath(const std::string &filename, const std::string &base)
-{
-    // We can be naive here as we know what we are dealing with
-    std::string path = base.substr(0, base.find_last_of('/') + 1) + filename;
-    return path;
-}
-
-void resolveImport(const ImportedEntityPtr &importedEntity,
-                   const std::string &baseFile)
-{
-    if (importedEntity->isImport()) {
-        ImportSourcePtr importSource = importedEntity->importSource();
-        if (!importSource->hasModel()) {
-            std::string url = resolvePath(importSource->url(), baseFile);
-            std::ifstream file(url);
-            if (file.good()) {
-                std::stringstream buffer;
-                buffer << file.rdbuf();
-                ParserPtr parser = Parser::create();
-                ModelPtr model = parser->parseModel(buffer.str());
-                importSource->setModel(model);
-                model->resolveImports(url);
-            }
-        }
-    }
-}
-
-void resolveComponentImports(const ComponentEntityPtr &parentComponentEntity,
-                             const std::string &baseFile)
-{
-    for (size_t n = 0; n < parentComponentEntity->componentCount(); ++n) {
-        libcellml::ComponentPtr component = parentComponentEntity->component(n);
-        if (component->isImport()) {
-            resolveImport(component, baseFile);
-        } else {
-            resolveComponentImports(component, baseFile);
-        }
-    }
-}
-
-void Model::resolveImports(const std::string &baseFile)
-{
-    for (size_t n = 0; n < unitsCount(); ++n) {
-        libcellml::UnitsPtr units = Model::units(n);
-        resolveImport(units, baseFile);
-    }
-    resolveComponentImports(shared_from_this(), baseFile);
-}
-
 bool isUnresolvedImport(const ImportedEntityPtr &importedEntity)
 {
     bool unresolvedImport = false;
     if (importedEntity->isImport()) {
         ImportSourcePtr importedSource = importedEntity->importSource();
-        if (!importedSource->hasModel()) {
-            unresolvedImport = true;
-        }
+        unresolvedImport = !importedSource->hasModel();
     }
     return unresolvedImport;
 }
@@ -377,15 +407,13 @@ bool doHasUnresolvedComponentImports(const ComponentPtr &component)
         unresolvedImports = isUnresolvedImport(component);
         if (!unresolvedImports) {
             // Check that the imported component can import all it needs from its model.
-            ImportSourcePtr importedSource = component->importSource();
-            if (importedSource->hasModel()) {
-                ModelPtr importedModel = importedSource->model();
-                ComponentPtr importedComponent = importedModel->component(component->importReference());
-                if (importedComponent == nullptr) {
-                    unresolvedImports = true;
-                } else {
-                    unresolvedImports = doHasUnresolvedComponentImports(importedComponent);
-                }
+            auto importedSource = component->importSource();
+            auto importedModel = importedSource->model();
+            auto importedComponent = importedModel->component(component->importReference());
+            if (importedComponent == nullptr) {
+                unresolvedImports = true;
+            } else {
+                unresolvedImports = doHasUnresolvedComponentImports(importedComponent);
             }
         }
     } else {
@@ -447,101 +475,42 @@ bool Model::hasImports() const
     return importsPresent;
 }
 
-size_t getComponentIndexInComponentEntity(const ComponentEntityPtr &componentParent, const ComponentEntityPtr &component)
+void fixComponentUnits(const ModelPtr &model, const ComponentPtr &component)
 {
-    size_t index = 0;
-    bool found = false;
-    while (index < componentParent->componentCount() && !found) {
-        if (componentParent->component(index) == component) {
-            found = true;
-        } else {
-            ++index;
-        }
-    }
-
-    return index;
-}
-
-IndexStack reverseEngineerIndexStack(const VariablePtr &variable)
-{
-    IndexStack indexStack;
-    ComponentPtr component = std::dynamic_pointer_cast<Component>(variable->parent());
-    indexStack.push_back(getVariableIndexInComponent(component, variable));
-
-    ComponentEntityPtr parent = component;
-    ComponentEntityPtr grandParent = std::dynamic_pointer_cast<ComponentEntity>(parent->parent());
-    while (grandParent != nullptr) {
-        indexStack.push_back(getComponentIndexInComponentEntity(grandParent, parent));
-        parent = grandParent;
-        grandParent = std::dynamic_pointer_cast<ComponentEntity>(grandParent->parent());
-    }
-
-    std::reverse(std::begin(indexStack), std::end(indexStack));
-
-    return indexStack;
-}
-
-void recordVariableEquivalences(const ComponentPtr &component, EquivalenceMap &equivalenceMap, IndexStack &indexStack)
-{
-    for (size_t index = 0; index < component->variableCount(); ++index) {
-        auto variable = component->variable(index);
-        for (size_t j = 0; j < variable->equivalentVariableCount(); ++j) {
-            if (j == 0) {
-                indexStack.push_back(index);
+    for (size_t v = 0; v < component->variableCount(); ++v) {
+        auto variable = component->variable(v);
+        if (variable->units() != nullptr) {
+            // Find the units in the model and switch out.
+            auto units = model->units(variable->units()->name());
+            if (units != nullptr) {
+                variable->setUnits(units);
             }
-            auto equivalentVariable = variable->equivalentVariable(j);
-            auto equivalentVariableIndexStack = reverseEngineerIndexStack(equivalentVariable);
-            if (equivalenceMap.count(indexStack) == 0) {
-                equivalenceMap[indexStack] = std::vector<IndexStack>();
-            }
-            equivalenceMap[indexStack].push_back(equivalentVariableIndexStack);
         }
-        if (variable->equivalentVariableCount() > 0) {
-            indexStack.pop_back();
-        }
+    }
+    for (size_t c = 0; c < component->componentCount(); ++c) {
+        fixComponentUnits(model, component->component(c));
     }
 }
 
-void generateEquivalenceMap(const ComponentPtr &component, EquivalenceMap &map, IndexStack &indexStack)
+void fixImportSourceUnits(const ImportSourcePtr &i1, ImportSourcePtr &i2)
 {
-    for (size_t index = 0; index < component->componentCount(); ++index) {
-        indexStack.push_back(index);
-        auto c = component->component(index);
-        recordVariableEquivalences(c, map, indexStack);
-        generateEquivalenceMap(c, map, indexStack);
-        indexStack.pop_back();
+    auto m2 = owningModel(i2);
+
+    // Go through all the imported units in this import source and update their sources.
+    for (size_t index = 0; index < i1->unitsCount(); ++index) {
+        auto u1 = i1->units(index);
+        auto u2 = m2->units(u1->name());
+        u2->setImportSource(i2);
     }
 }
 
-VariablePtr getVariableLocatedAt(const IndexStack &stack, const ModelPtr &model)
+void fixImportSourceComponents(const ImportSourcePtr &i1, ImportSourcePtr &i2)
 {
-    ComponentPtr component;
-    for (size_t index = 0; index < stack.size() - 1; ++index) {
-        if (index == 0) {
-            component = model->component(stack.at(index));
-        } else {
-            component = component->component(stack.at(index));
-        }
-    }
-
-    return component->variable(stack.back());
-}
-
-void makeEquivalence(const IndexStack &stack1, const IndexStack &stack2, const ModelPtr &model)
-{
-    auto v1 = getVariableLocatedAt(stack1, model);
-    auto v2 = getVariableLocatedAt(stack2, model);
-    Variable::addEquivalence(v1, v2);
-}
-
-void applyEquivalenceMapToModel(const EquivalenceMap &map, const ModelPtr &model)
-{
-    for (const auto &iter : map) {
-        auto key = iter.first;
-        auto vector = iter.second;
-        for (auto vectorIter = vector.begin(); vectorIter < vector.end(); ++vectorIter) {
-            makeEquivalence(key, *vectorIter, model);
-        }
+    auto m2 = owningModel(i2);
+    for (size_t index = 0; index < i1->componentCount(); ++index) {
+        auto c1 = i1->component(index);
+        auto c2 = m2->component(c1->name(), true);
+        c2->setImportSource(i2);
     }
 }
 
@@ -562,6 +531,22 @@ ModelPtr Model::clone() const
         m->addComponent(component(index)->clone());
     }
 
+    for (size_t index = 0; index < m->componentCount(); ++index) {
+        fixComponentUnits(m, m->component(index));
+    }
+
+    // Remove all import sources from the cloned model as they will
+    // be duplicates.  The real ones will be copied below.
+    m->removeAllImportSources();
+
+    for (size_t index = 0; index < importSourceCount(); ++index) {
+        auto i1 = importSource(index);
+        auto i2 = i1->clone();
+        m->addImportSource(i2);
+        fixImportSourceUnits(i1, i2);
+        fixImportSourceComponents(i1, i2);
+    }
+
     // Generate equivalence map starting from the models components.
     EquivalenceMap map;
     IndexStack indexStack;
@@ -577,208 +562,25 @@ ModelPtr Model::clone() const
     return m;
 }
 
-IndexStack reverseEngineerIndexStack(const ComponentPtr &component)
+bool Model::fixVariableInterfaces()
 {
-    auto dummyVariable = Variable::create();
-    component->addVariable(dummyVariable);
-    IndexStack indexStack = reverseEngineerIndexStack(dummyVariable);
-    indexStack.pop_back();
-    component->removeVariable(dummyVariable);
+    VariablePtrs variables;
 
-    return indexStack;
-}
-
-IndexStack rebaseIndexStack(const IndexStack &stack, const IndexStack &originStack, const IndexStack &destinationStack)
-{
-    auto rebasedStack = stack;
-
-    rebasedStack.resize(originStack.size(), SIZE_MAX);
-    if (rebasedStack == originStack) {
-        rebasedStack = destinationStack;
-        auto offsetIt = stack.begin() + static_cast<int64_t>(originStack.size());
-        rebasedStack.insert(rebasedStack.end(), offsetIt, stack.end());
-    } else {
-        rebasedStack.clear();
+    for (size_t index = 0; index < componentCount(); ++index) {
+        findAllVariablesWithEquivalences(component(index), variables);
     }
 
-    return rebasedStack;
-}
-
-EquivalenceMap rebaseEquivalenceMap(const EquivalenceMap &map, const IndexStack &originStack, const IndexStack &destinationStack)
-{
-    EquivalenceMap rebasedMap;
-    for (const auto &entry : map) {
-        auto key = entry.first;
-        auto rebasedKey = rebaseIndexStack(key, originStack, destinationStack);
-        if (!rebasedKey.empty()) {
-            auto vector = entry.second;
-            std::vector<IndexStack> rebasedVector;
-            for (const auto &stack : vector) {
-                auto rebasedTarget = rebaseIndexStack(stack, originStack, destinationStack);
-                if (!rebasedTarget.empty()) {
-                    rebasedVector.push_back(rebasedTarget);
-                }
-            }
-
-            if (!rebasedVector.empty()) {
-                rebasedMap[rebasedKey] = rebasedVector;
-            }
+    bool allOk = true;
+    for (const auto &variable : variables) {
+        Variable::InterfaceType interfaceType = determineInterfaceType(variable);
+        if (interfaceType == Variable::InterfaceType::NONE) {
+            allOk = false;
+        } else if (!variable->hasInterfaceType(interfaceType)) {
+            variable->setInterfaceType(interfaceType);
         }
     }
 
-    return rebasedMap;
-}
-
-void componentNames(const ComponentPtr &component, NameList &names)
-{
-    for (size_t index = 0; index < component->componentCount(); ++index) {
-        auto c = component->component(index);
-        names.push_back(c->name());
-        componentNames(c, names);
-    }
-}
-
-NameList componentNames(const ModelPtr &model)
-{
-    NameList names;
-    for (size_t index = 0; index < model->componentCount(); ++index) {
-        auto component = model->component(index);
-        names.push_back(component->name());
-        componentNames(component, names);
-    }
-    return names;
-}
-
-ComponentNameMap createComponentNamesMap(const ComponentPtr &component)
-{
-    ComponentNameMap nameMap;
-    for (size_t index = 0; index < component->componentCount(); ++index) {
-        auto c = component->component(index);
-        nameMap[c->name()] = c;
-        ComponentNameMap childrenNameMap = createComponentNamesMap(c);
-        nameMap.insert(childrenNameMap.begin(), childrenNameMap.end());
-    }
-
-    return nameMap;
-}
-
-void flattenComponent(const ComponentEntityPtr &parent, const ComponentPtr &component, size_t index)
-{
-    if (component->isImport()) {
-        auto model = owningModel(component);
-        auto importSource = component->importSource();
-        auto importModel = importSource->model();
-        auto importedComponent = importModel->component(component->importReference());
-
-        // Determine names of components already in use.
-        NameList compNames = componentNames(model);
-
-        // Determine the stack for the destination component.
-        IndexStack destinationComponentBaseIndexStack = reverseEngineerIndexStack(component);
-
-        // Determine the stack for the source component.
-        IndexStack importedComponentBaseIndexStack = reverseEngineerIndexStack(importedComponent);
-
-        // Generate equivalence map for the source component.
-        EquivalenceMap map;
-        recordVariableEquivalences(importedComponent, map, importedComponentBaseIndexStack);
-        generateEquivalenceMap(importedComponent, map, importedComponentBaseIndexStack);
-
-        // Rebase the generated equivalence map from the source component to the destination component.
-        auto rebasedMap = rebaseEquivalenceMap(map, importedComponentBaseIndexStack, destinationComponentBaseIndexStack);
-
-        // Take a copy of the imported component which will be used to replace the import defined in this model.
-        auto importedComponentCopy = importedComponent->clone();
-        importedComponentCopy->setName(component->name());
-
-        // Temporarily add component to new model to find units used.
-        auto tempModel = Model::create();
-        tempModel->addComponent(importedComponentCopy);
-        tempModel->linkUnits();
-        std::vector<UnitsPtr> requiredUnits;
-        for (size_t i = 0; i < tempModel->unitsCount(); ++i) {
-            auto u = tempModel->units(i);
-            requiredUnits.push_back(u);
-        }
-
-        // Make a map of component name to component pointer.
-        ComponentNameMap newComponentNames = createComponentNamesMap(importedComponentCopy);
-        for (const auto &entry : newComponentNames) {
-            std::string newName = entry.first;
-            size_t count = 1;
-            while (std::find(compNames.begin(), compNames.end(), newName) != compNames.end()) {
-                newName += "_" + convertToString(count++);
-            }
-            if (newName != entry.first) {
-                entry.second->setName(newName);
-            }
-        }
-
-        // If the component 'component' has variables then they are equivalent variables and they
-        // need to be exchanged with the real variables from the component 'importedComponent'.
-        for (size_t i = 0; i < component->variableCount(); ++i) {
-            auto placeholderVariable = component->variable(i);
-            for (size_t j = 0; j < placeholderVariable->equivalentVariableCount(); ++j) {
-                auto localModelVariable = placeholderVariable->equivalentVariable(j);
-                auto importedComponentVariable = importedComponentCopy->variable(placeholderVariable->name());
-                Variable::removeEquivalence(placeholderVariable, localModelVariable);
-                Variable::addEquivalence(importedComponentVariable, localModelVariable);
-            }
-        }
-        parent->replaceComponent(index, importedComponentCopy);
-
-        // Apply the rebased equivalence map onto the modified model.
-        applyEquivalenceMapToModel(rebasedMap, model);
-
-        // Copy over units used in imported component to this model.
-        for (const auto &u : requiredUnits) {
-            if (!model->hasUnits(u)) {
-                size_t count = 0;
-                while (!model->hasUnits(u) && model->hasUnits(u->name())) {
-                    auto name = u->name();
-                    name += "_" + convertToString(++count);
-                    u->setName(name);
-                }
-                model->addUnits(u);
-            }
-        }
-    }
-}
-
-void flattenComponentTree(const ComponentEntityPtr &parent, const ComponentPtr &component, size_t componentIndex)
-{
-    flattenComponent(parent, component, componentIndex);
-
-    for (size_t index = 0; index < component->componentCount(); ++index) {
-        auto c = component->component(index);
-        flattenComponentTree(component, c, index);
-    }
-}
-
-void Model::flatten()
-{
-    if (hasUnresolvedImports()) {
-        return;
-    }
-
-    while (hasImports()) {
-        // Go through Units and instantiate any imported Units.
-        for (size_t index = 0; index < unitsCount(); ++index) {
-            auto u = units(index);
-            if (u->isImport()) {
-                auto importedUnits = u->importSource()->model()->units(u->importReference());
-                auto importedUnitsCopy = importedUnits->clone();
-                importedUnitsCopy->setName(u->name());
-                replaceUnits(index, importedUnitsCopy);
-            }
-        }
-
-        // Go through Components and instatiate any imported Components
-        for (size_t index = 0; index < componentCount(); ++index) {
-            auto c = component(index);
-            flattenComponentTree(shared_from_this(), c, index);
-        }
-    }
+    return allOk;
 }
 
 } // namespace libcellml

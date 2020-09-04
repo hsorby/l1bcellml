@@ -18,6 +18,31 @@ limitations under the License.
 
 #include <libcellml>
 
+TEST(Variable, addEquivalenceNullptrFirstParameter)
+{
+    libcellml::VariablePtr v1 = nullptr;
+    libcellml::VariablePtr v2 = libcellml::Variable::create();
+    libcellml::Variable::addEquivalence(v1, v2);
+    EXPECT_EQ(size_t(0), v2->equivalentVariableCount());
+    EXPECT_FALSE(v2->hasEquivalentVariable(v1));
+}
+
+TEST(Variable, addEquivalenceNullptrSecondParameter)
+{
+    libcellml::VariablePtr v1 = libcellml::Variable::create();
+    libcellml::VariablePtr v2 = nullptr;
+    libcellml::Variable::addEquivalence(v1, v2);
+    EXPECT_EQ(size_t(0), v1->equivalentVariableCount());
+    EXPECT_FALSE(v1->hasEquivalentVariable(v2));
+}
+
+TEST(Variable, addEquivalenceNullptrBothParameters)
+{
+    libcellml::VariablePtr v1 = nullptr;
+    libcellml::VariablePtr v2 = nullptr;
+    libcellml::Variable::addEquivalence(v1, v2);
+}
+
 TEST(Variable, addAndGetEquivalentVariable)
 {
     libcellml::VariablePtr v1 = libcellml::Variable::create();
@@ -197,7 +222,7 @@ TEST(Connection, validConnectionAndParse)
 
 TEST(Connection, parseValidAlternateFormConnection)
 {
-    const std::string input =
+    const std::string in =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         "<model xmlns=\"http://www.cellml.org/cellml/2.0#\">\n"
         "  <connection component_1=\"component1\" component_2=\"component2\">\n"
@@ -213,9 +238,9 @@ TEST(Connection, parseValidAlternateFormConnection)
 
     // Parse
     libcellml::ParserPtr parser = libcellml::Parser::create();
-    libcellml::ModelPtr model = parser->parseModel(input);
+    libcellml::ModelPtr model = parser->parseModel(in);
 
-    EXPECT_EQ(size_t(0), parser->errorCount());
+    EXPECT_EQ(size_t(0), parser->issueCount());
     EXPECT_EQ(size_t(2), model->componentCount());
     EXPECT_EQ(size_t(1), model->component("component1")->variable("variable1")->equivalentVariableCount());
 }
@@ -1080,7 +1105,8 @@ TEST(Connection, importedComponentConnectionAndParse)
     m->addComponent(componentBob);
     componentImported->addVariable(variableImported);
     componentBob->addVariable(variableBob);
-    EXPECT_EQ(componentImported->variable(0), variableImported);
+    EXPECT_EQ(variableImported, componentImported->variable(0));
+
     libcellml::Variable::addEquivalence(variableImported, variableBob);
     libcellml::PrinterPtr printer = libcellml::Printer::create();
     std::string a = printer->printModel(m);
@@ -1089,7 +1115,7 @@ TEST(Connection, importedComponentConnectionAndParse)
     // Parse
     libcellml::ParserPtr parser = libcellml::Parser::create();
     libcellml::ModelPtr model = parser->parseModel(e);
-    EXPECT_EQ(size_t(0), parser->errorCount());
+    EXPECT_EQ(size_t(0), parser->issueCount());
 
     a = printer->printModel(model);
     EXPECT_EQ(e, a);
@@ -1121,18 +1147,57 @@ TEST(Connection, componentConnectionAndParseMissingVariable)
         "  </component>\n"
         "</model>\n";
 
-    const std::string expectError = "Variable 'variable_angus' is specified as variable_1 in a connection but it does not exist in component_1 component 'component_dave' of model ''.";
+    const std::string expectIssue = "Variable 'variable_angus' is specified as variable_1 in a connection but it does not exist in component_1 component 'component_dave' of model ''.";
 
     // Parse
     libcellml::ParserPtr parser = libcellml::Parser::create();
     libcellml::ModelPtr model = parser->parseModel(s);
-    EXPECT_EQ(size_t(1), parser->errorCount());
+    EXPECT_EQ(size_t(1), parser->issueCount());
 
-    EXPECT_EQ(expectError, parser->error(0)->description());
-    parser->removeAllErrors();
-    EXPECT_EQ(size_t(0), parser->errorCount());
+    EXPECT_EQ(expectIssue, parser->issue(0)->description());
+    parser->removeAllIssues();
+    EXPECT_EQ(size_t(0), parser->issueCount());
 
     libcellml::PrinterPtr printer = libcellml::Printer::create();
     const std::string a = printer->printModel(model);
     EXPECT_EQ(e, a);
+}
+
+TEST(Connection, mappingId)
+{
+    const std::string in = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                           "<model xmlns=\"http://www.cellml.org/cellml/2.0#\"  name=\"everything\" >\n"
+                           "  <component name=\"c1\" >\n"
+                           "    <variable name=\"v1\" units=\"units2\" interface=\"private\"/>\n"
+                           "  </component>\n"
+                           "  <component name=\"c2\">\n"
+                           "    <variable name=\"v2a\" units=\"units2\" interface=\"public\"/>\n"
+                           "    <variable name=\"v2b\" units=\"units2\" interface=\"public\"/>\n"
+                           "  </component>\n"
+                           "  <component name=\"c3\">\n"
+                           "    <variable name=\"v3\" units=\"units2\" interface=\"public\"/>\n"
+                           "  </component>\n"
+                           "  <connection component_1=\"c1\" component_2=\"c2\">\n"
+                           "    <map_variables variable_1=\"v1\" variable_2=\"v2a\" id=\"id12a\"/>\n"
+                           "    <map_variables variable_1=\"v1\" variable_2=\"v2b\" id=\"id12b\"/>\n"
+                           "  </connection>\n"
+                           "  <connection component_1=\"c1\" component_2=\"c3\">\n"
+                           "    <map_variables variable_1=\"v1\" variable_2=\"v3\" id=\"id13\"/>\n"
+                           "  </connection>\n"
+
+                           "</model>\n";
+    auto parser = libcellml::Parser::create();
+    auto model = parser->parseModel(in);
+    EXPECT_EQ("id12a",
+              libcellml::Variable::equivalenceMappingId(
+                  model->component("c1")->variable("v1"),
+                  model->component("c2")->variable("v2a")));
+    EXPECT_EQ("id12b",
+              libcellml::Variable::equivalenceMappingId(
+                  model->component("c1")->variable("v1"),
+                  model->component("c2")->variable("v2b")));
+    EXPECT_EQ("id13",
+              libcellml::Variable::equivalenceMappingId(
+                  model->component("c1")->variable("v1"),
+                  model->component("c3")->variable("v3")));
 }
