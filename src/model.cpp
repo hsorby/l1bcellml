@@ -492,15 +492,15 @@ void fixComponentUnits(const ModelPtr &model, const ComponentPtr &component)
     }
 }
 
-void fixImportSourceUnits(const ImportSourcePtr &i1, ImportSourcePtr &i2)
+void fixImportSourceUnits(const ImportSourcePtr &importSource1, ImportSourcePtr &importSource2)
 {
-    auto m2 = owningModel(i2);
+    auto model2 = owningModel(importSource2);
 
     // Go through all the imported units in this import source and update their sources.
-    for (size_t index = 0; index < i1->unitsCount(); ++index) {
-        auto u1 = i1->units(index);
-        auto u2 = m2->units(u1->name());
-        u2->setImportSource(i2);
+    for (size_t index = 0; index < importSource1->unitsCount(); ++index) {
+        auto units1 = importSource1->units(index);
+        auto units2 = model2->units(units1->name());
+        units2->setImportSource(importSource2);
     }
 }
 
