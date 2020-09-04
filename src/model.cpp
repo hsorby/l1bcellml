@@ -504,13 +504,13 @@ void fixImportSourceUnits(const ImportSourcePtr &importSource1, ImportSourcePtr 
     }
 }
 
-void fixImportSourceComponents(const ImportSourcePtr &i1, ImportSourcePtr &i2)
+void fixImportSourceComponents(const ImportSourcePtr &importSource1, ImportSourcePtr &importSource2)
 {
-    auto m2 = owningModel(i2);
-    for (size_t index = 0; index < i1->componentCount(); ++index) {
-        auto c1 = i1->component(index);
-        auto c2 = m2->component(c1->name(), true);
-        c2->setImportSource(i2);
+    auto model2 = owningModel(importSource2);
+    for (size_t index = 0; index < importSource1->componentCount(); ++index) {
+        auto component1 = importSource1->component(index);
+        auto component2 = model2->component(component1->name(), true);
+        component2->setImportSource(importSource2);
     }
 }
 
