@@ -1,4 +1,4 @@
-name: trc-data-reader-deploy
+name: libcellml-deploy-on-release
 
 on:
   release:
