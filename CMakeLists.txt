@@ -15,7 +15,7 @@
 cmake_minimum_required(VERSION 3.10.2)
 
 set(PROJECT_NAME l1bCellML)
-set(_PROJECT_VERSION 0.3.0)
+set(_PROJECT_VERSION ${version_tag})
 project(${PROJECT_NAME} VERSION ${_PROJECT_VERSION} LANGUAGES CXX)
 
 # Set policies that affect the build.
