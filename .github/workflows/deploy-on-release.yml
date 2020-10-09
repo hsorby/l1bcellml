@@ -120,7 +120,7 @@ jobs:
           execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}")
           execute_process(COMMAND "${ACTION_DIR}/swigwin-4.0.2/bin/swig" --version)
           execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib")
-          execute_process(COMMAND echo "${CMAKE_COMMAND} -S ${ACTION_DIR}/zlib-develop -B ${ACTION_DIR}/build-zlib)
+          execute_process(COMMAND echo "${CMAKE_COMMAND} -S ${ACTION_DIR}/zlib-develop -B ${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib-develop" -B "${ACTION_DIR}/build-zlib"
             COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --target all --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-zlib"
