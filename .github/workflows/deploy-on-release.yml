@@ -29,7 +29,7 @@ jobs:
           }
         - {
             name: "Ubuntu Latest GCC Py36", artifact: "Linux.tar.xz",
-            os: ubuntu-latest,
+            os: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.6
           }
         - {
@@ -232,17 +232,19 @@ jobs:
           set(LIBXML2_CONFIGURE_STR_2 "-D LibXml2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"")
           execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
           execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}/swigwin-4.0.2/")
+          execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
           message(STATUS "-------- 03")
           set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
         else()
           message(STATUS "-------- 04")
-          set(ENV{PATH} "/usr/local/bin/:$ENV{PATH}")
+          set(ENV{PATH} "$ENV{PATH}")
         endif()
 
         message(STATUS "PATH: $ENV{PATH}")
         execute_process(COMMAND dir "${ACTION_DIR}/swigwin-4.0.2/")
         execute_process(COMMAND echo "========33===========")
         execute_process(COMMAND python${{ matrix.config.python_version }} --version)
+        execute_process(COMMAND which python${{ matrix.config.python_version }})
 
         execute_process(
           COMMAND ${CMAKE_COMMAND}
@@ -250,6 +252,7 @@ jobs:
             -B build
             -D BUILD_TYPE=$ENV{BUILD_TYPE}
             ${{ matrix.config.libxml2_dir }}
+            ${{ matrix.config.swig_executable }}
             -D Python_EXECUTABLE=python${{ matrix.config.python_version }}
           RESULT_VARIABLE result
         )
