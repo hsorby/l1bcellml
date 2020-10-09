@@ -80,8 +80,6 @@ jobs:
 
 
     - name: Configure
-      with:
-        python-version: ${{ matrix.config.python_version }}
       shell: cmake -P {0}
       run: |
         set(ENV{CC} ${{ matrix.config.cc }})
