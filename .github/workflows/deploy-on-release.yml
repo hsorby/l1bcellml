@@ -51,8 +51,6 @@ jobs:
         python-version: ${{ matrix.config.python_version }}
 
     - name: Prepare environment
-      with:
-        python-version: ${{ matrix.config.python_version }}
       shell: cmake -P {0}
       run: |
         message(STATUS "Using CMake version: ${CMAKE_VERSION}")
