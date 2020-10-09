@@ -106,9 +106,9 @@ jobs:
               set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
             endif()
           endforeach()
-          file(APPEND "$ENV{PATH}" "$ENV{HOME}/swigwin-4.0.2")
+          #file(APPEND "$ENV{PATH}" "$ENV{HOME}/swigwin-4.0.2")
         else()
-          file(APPEND "$ENV{PATH}" "$ENV{HOME}/swig-4.0.2")
+          #file(APPEND "$ENV{PATH}" "$ENV{HOME}/swig-4.0.2")
         endif()
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR}/../..)
@@ -139,6 +139,7 @@ jobs:
         set(ENV{CC} ${{ matrix.config.cc }})
         set(ENV{CXX} ${{ matrix.config.cxx }})
 
+        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR}/../..)
         if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
           execute_process(
             COMMAND "${{ matrix.config.environment_script }}" && set
@@ -150,9 +151,9 @@ jobs:
               set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
             endif()
           endforeach()
-          file(APPEND "$ENV{PATH}" "$ENV{HOME}/swigwin-4.0.2")
+          set(ENV{PATH} "$ENV{ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
         else()
-          file(APPEND "$ENV{PATH}" "$ENV{HOME}/swig-4.0.2")
+          set(ENV{PATH} "$ENV{HOME}/swig-4.0.2:$ENV{PATH}")
         endif()
 
         message(STATUS "PATH: $ENV{PATH}")
