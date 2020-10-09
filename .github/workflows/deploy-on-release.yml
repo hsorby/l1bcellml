@@ -63,7 +63,7 @@ jobs:
         message(STATUS "ENV GITHUB_HOME: $ENV{GITHUB_HOME}")
         message(STATUS "ENV GITHUB_WORKSPACE: $ENV{GITHUB_WORKSPACE}")
 
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR}/..)
+        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(zlib_url "https://github.com/OpenCMISS-Dependencies/zlib/archive/develop.zip")
           file(DOWNLOAD "${zlib_url}" "${ACTION_DIR}/zlib-1.2.3.zip" SHOW_PROGRESS)
@@ -115,7 +115,7 @@ jobs:
           #file(APPEND "$ENV{PATH}" "$ENV{HOME}/swig-4.0.2")
         endif()
 
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR}/..)
+        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         if ("${{ runner.os }}" STREQUAL "Windows")
           execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}")
           execute_process(COMMAND "${ACTION_DIR}/swigwin-4.0.2/bin/swig" --version)
@@ -161,7 +161,7 @@ jobs:
         set(ENV{CC} ${{ matrix.config.cc }})
         set(ENV{CXX} ${{ matrix.config.cxx }})
 
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR}/..)
+        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         if ("x${{ matrix.config.environment_script }}" STREQUAL "x")
           message(STATUS "we are on windows with environement script.")
         else()
