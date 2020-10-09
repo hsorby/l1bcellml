@@ -123,7 +123,8 @@ jobs:
           execute_process(COMMAND echo "${CMAKE_COMMAND} -S ${ACTION_DIR}/zlib-develop -B ${ACTION_DIR}/build-zlib)
           execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib-develop" -B "${ACTION_DIR}/build-zlib"
             COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --target all --config Release
-            WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
+            WORKING_DIRECTORY "${ACTION_DIR}/build-zlib"
+            COMMAND_ECHO STDOUT)
           execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2-2.9.6-3" -B "${ACTION_DIR}/build-libxml2"
             COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --target all --config Release
             COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-libxml2" --config Release)
@@ -131,7 +132,7 @@ jobs:
             COMMAND echo "===================")
         else()
           execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{HOME}/swig-4.0.2.tar.gz"
-            COMMAND cd "$ENV{HOME}/swig-4.0.2" COMMAND ./configure COMMAND make COMMAND make install WORKING_DIRECTORY "${ACTION_DIR}")
+            COMMAND cd "$ENV{HOME}/swig-4.0.2" COMMAND ./configure COMMAND make COMMAND make install WORKING_DIRECTORY "${ACTION_DIR}" COMMAND_ECHO STDOUT)
         endif()
 
 
