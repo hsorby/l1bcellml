@@ -18,7 +18,7 @@ jobs:
         config:
         - {
             name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
-            os: windows-latest, libxml2_loc: "C:/Program Files (x86)/LibXml2/LibXml2/CMake/",
+            os: windows-latest, libxml2_off: "C:/Program Files (x86)/LibXml2/LibXml2/CMake/",
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
