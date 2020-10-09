@@ -166,16 +166,19 @@ jobs:
         endif()
 
     - name: Build
+      uses: microsoft/setup-msbuild@v1.0.2
       shell: cmake -P {0}
       run: |
         # Build library script
         include(ProcessorCount)
         ProcessorCount(N)
 
+        math(EXPR JOBS "${N} + 1")
+
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(BUILD_COMMMAND msbuild libCellML.sln /t:Build /p:Configuration=$ENV{BUILD_TYPE} /m:${N})
         else()
-          set(BUILD_COMMMAND make -j ${N})
+          set(BUILD_COMMMAND make -j ${JOBS})
         endif()
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
@@ -193,14 +196,16 @@ jobs:
       run: |
         # Test library script
 
-        #include(ProcessorCount)
-        #ProcessorCount(N)
+        include(ProcessorCount)
+        ProcessorCount(N)
+
+        math(EXPR JOBS "${N} + 1")
 
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         execute_process(
-          COMMAND ${CMAKE_CTEST_COMMAND}
+          COMMAND ${CMAKE_CTEST_COMMAND} -j ${JOBS}
           WORKING_DIRECTORY "${ACTION_DIR}/build"
           RESULT_VARIABLE result
         )
