@@ -18,7 +18,7 @@ jobs:
         config:
         - {
             name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
-            os: windows-latest, libxml2_dir: '-D LibXml2_DIR="C:/Program\ Files\ (x86)/LibXml2/LibXml2/CMake/"',
+            os: windows-latest, libxml2_loc: "C:/Program Files (x86)/LibXml2/LibXml2/CMake/",
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
@@ -241,7 +241,10 @@ jobs:
           if (OUTPUT_CONTENTS)
             message(STATUS "Where said we should try this Python executable: ${OUTPUT_CONTENTS}")
           endif()
-          list(APPEND OPTIONAL_ARGUMENTS -D LibXml2_DIR="C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
+          #list(APPEND OPTIONAL_ARGUMENTS -D LibXml2_DIR="C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
+          if (NOT "x${{ matrix.config.libxml2_loc }}" STREQUAL "x")
+            list(APPEND OPTIONAL_ARGUMENTS -D LibXml2_DIR="${{ matrix.config.libxml2_loc }}")
+          endif()
         else()
           message(STATUS "-------- 04")
           execute_process(COMMAND which python${{ matrix.config.python_version }} OUTPUT_VARIABLE PYTHON_EXE OUTPUT_STRIP_TRAILING_WHITESPACE)
