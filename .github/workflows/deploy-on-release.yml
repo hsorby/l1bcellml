@@ -140,24 +140,27 @@ jobs:
         set(ENV{CXX} ${{ matrix.config.cxx }})
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
+        set(PYTHON_LOCATION $ENV{pythonLocation})
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
-          execute_process(COMMAND where python OUTPUT_VARIABLE PYTHON_EXES OUTPUT_STRIP_TRAILING_WHITESPACE)
-          if (PYTHON_EXES)
-            string(REPLACE "\n" ";" PYTHON_EXES ${PYTHON_EXES})
-            list(GET PYTHON_EXES 0 PYTHON_EXE)
-            file(TO_CMAKE_PATH "${PYTHON_EXE}" PYTHON_EXE)
-            set(PYTHON_CFG -D Python_EXECUTABLE=${PYTHON_EXE})
-          endif()
+          file(TO_CMAKE_PATH "${PYTHON_LOCATION}/python.exe" PYTHON_EXE)
+          #execute_process(COMMAND where python OUTPUT_VARIABLE PYTHON_EXES OUTPUT_STRIP_TRAILING_WHITESPACE)
+          #if (PYTHON_EXES)
+          #  string(REPLACE "\n" ";" PYTHON_EXES ${PYTHON_EXES})
+          #  list(GET PYTHON_EXES 0 PYTHON_EXE)
+          #  file(TO_CMAKE_PATH "${PYTHON_EXE}" PYTHON_EXE)
+          #  set(PYTHON_CFG -D Python_EXECUTABLE=${PYTHON_EXE})
+          #endif()
         else()
-          execute_process(COMMAND which python${{ matrix.config.python_version }} OUTPUT_VARIABLE PYTHON_EXE OUTPUT_STRIP_TRAILING_WHITESPACE)
-          if (PYTHON_EXE)
-            set(PYTHON_CFG -D Python_EXECUTABLE=${PYTHON_EXE})
-          endif()
+          #execute_process(COMMAND which python${{ matrix.config.python_version }} OUTPUT_VARIABLE PYTHON_EXE OUTPUT_STRIP_TRAILING_WHITESPACE)
+          #if (PYTHON_EXE)
+          #  set(PYTHON_CFG -D Python_EXECUTABLE=${PYTHON_EXE})
+          #endif()
+          set(PYTHON_EXE ${PYTHON_LOCATION}/python)
           list(APPEND OPTIONAL_ARGUMENTS -D BUILD_TYPE=$ENV{BUILD_TYPE})
         endif()
 
-        list(APPEND OPTIONAL_ARGUMENTS ${PYTHON_CFG})
+        #list(APPEND OPTIONAL_ARGUMENTS ${PYTHON_CFG})
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.libxml2_dir }})
 
@@ -165,6 +168,7 @@ jobs:
           COMMAND ${CMAKE_COMMAND}
             -S .
             -B build
+            -D Python_EXECUTABLE=${PYTHON_EXE}
             ${OPTIONAL_ARGUMENTS}
           RESULT_VARIABLE result
         )
@@ -177,9 +181,12 @@ jobs:
       run: |
         # Build library script
 
-        execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build" --config Release
-            WORKING_DIRECTORY "${ACTION_DIR}/build"
-            RESULT_VARIABLE result)
+        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
+        execute_process(
+          COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build" --config Release
+          WORKING_DIRECTORY "${ACTION_DIR}/build"
+          RESULT_VARIABLE result
+        )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Build failed.")
         endif()
@@ -192,9 +199,10 @@ jobs:
         include(ProcessorCount)
         ProcessorCount(N)
 
+        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         execute_process(
-          COMMAND ${CMAKE_CTEST_COMMAND}
-            -j ${N}
+          COMMAND ${CMAKE_CTEST_COMMAND} -j ${N}
+          WORKING_DIRECTORY "${ACTION_DIR}/build"
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
