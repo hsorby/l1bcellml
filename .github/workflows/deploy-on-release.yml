@@ -83,7 +83,7 @@ jobs:
 
         else()
           set(swig_url "http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz")
-          file(DOWNLOAD "${swig_url}" "$ENV{HOME}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
+          file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
         endif()
 
     - name: Prepare environment
@@ -228,8 +228,8 @@ jobs:
           #    set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
           #  endif()
           #endforeach()
-          set(LIBXML2_CONFIGURE_STR "-D LIBXML2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\")
-          set(LIBXML2_CONFIGURE_STR_2 "-D LibXml2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\")
+          set(LIBXML2_CONFIGURE_STR "-D LIBXML2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"")
+          set(LIBXML2_CONFIGURE_STR_2 "-D LibXml2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"")
           execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
           execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}/swigwin-4.0.2/")
           message(STATUS "-------- 03")
