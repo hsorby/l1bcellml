@@ -155,7 +155,7 @@ jobs:
           message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
           message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
           message(STATUS "=================")
-          execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --target all --config Release
+          execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2"
             COMMAND_ECHO STDOUT
             OUTPUT_VARIABLE OUTPUT_CONTENTS
@@ -219,6 +219,8 @@ jobs:
         endif()
 
         message(STATUS "PATH: $ENV{PATH}")
+        execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}/swigwin-4.0.2/bin"
+            COMMAND echo "========33===========")
 
         execute_process(
           COMMAND ${CMAKE_COMMAND}
