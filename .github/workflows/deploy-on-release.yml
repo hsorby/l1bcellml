@@ -121,8 +121,14 @@ jobs:
           execute_process(COMMAND "${ACTION_DIR}/swigwin-4.0.2/bin/swig" --version)
           execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND echo "${CMAKE_COMMAND} -S ${ACTION_DIR}/zlib-develop -B ${ACTION_DIR}/build-zlib")
-          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib-develop" -B "${ACTION_DIR}/build-zlib"
-            COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --config Release
+          execute_process(COMMAND ${CMAKE_COMMAND} -S "D:\\a\\zlib-develop" -B "D:\\a\\build-zlib"
+            OUTPUT_VARIABLE OUTPUT_CONTENTS
+            ERROR_VARIABLE ERROR_CONTENTS)
+          message(STATUS "=================")
+          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
+          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
+          message(STATUS "=================")
+          execute_process(COMMAND ${CMAKE_COMMAND} --build "D:\\a\\build-zlib" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-zlib"
             COMMAND_ECHO STDOUT
             OUTPUT_VARIABLE OUTPUT_CONTENTS
@@ -172,7 +178,7 @@ jobs:
               set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
             endif()
           endforeach()
-          set(ENV{PATH} "$ENV{ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
+          set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2/bin;$ENV{PATH}")
         else()
           set(ENV{PATH} "$ENV{HOME}/swig-4.0.2:$ENV{PATH}")
         endif()
