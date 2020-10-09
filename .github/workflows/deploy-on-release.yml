@@ -67,7 +67,7 @@ jobs:
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
           file(DOWNLOAD "${libxml2_url}" "$ENV{HOME}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{ACTION_DIR}/libxml2-2.9.6-3.zip
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{ACTION_DIR}/libxml2-2.9.6-3.zip"
             COMMAND ${CMAKE_COMMAND} -E make_directory build-libxml2
             COMMAND ${CMAKE_COMMAND} -S "$ENV{ACTION_DIR}/libxml2-2.9.6-3" -B "$ENV{ACTION_DIR}/build-libxml2"
             COMMAND ${CMAKE_COMMAND} --build "$ENV{ACTION_DIR}/build-libxml2" --target all --config Release
@@ -82,9 +82,8 @@ jobs:
         else()
           set(swig_url "http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz")
           file(DOWNLOAD "${swig_url}" "$ENV{ACTION_DIR}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{ACTION_DIR}/swig-4.0.2.tar.gz")
-
-          execute_process(COMMAND pwd COMMAND ./configure COMMAND make COMMAND make install WORKING_DIRECTORY "$ENV{ACTION_DIR}/swig-4.0.2")
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{ACTION_DIR}/swig-4.0.2.tar.gz"
+            COMMAND ./configure COMMAND make COMMAND make install WORKING_DIRECTORY "$ENV{ACTION_DIR}/swig-4.0.2")
         endif()
 
 
