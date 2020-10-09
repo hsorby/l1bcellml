@@ -147,8 +147,32 @@ jobs:
           message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
           message(STATUS "=================")
           execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2-2.9.6-3" -B "${ACTION_DIR}/build-libxml2"
-            COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --target all --config Release
-            COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-libxml2" --config Release)
+            WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2"
+            COMMAND_ECHO STDOUT
+            OUTPUT_VARIABLE OUTPUT_CONTENTS
+            ERROR_VARIABLE ERROR_CONTENTS)
+          message(STATUS "=================")
+          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
+          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
+          message(STATUS "=================")
+          execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --target all --config Release
+            WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2"
+            COMMAND_ECHO STDOUT
+            OUTPUT_VARIABLE OUTPUT_CONTENTS
+            ERROR_VARIABLE ERROR_CONTENTS)
+          message(STATUS "=================")
+          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
+          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
+          message(STATUS "=================")
+          execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-libxml2" --config Release)
+            WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2"
+            COMMAND_ECHO STDOUT
+            OUTPUT_VARIABLE OUTPUT_CONTENTS
+            ERROR_VARIABLE ERROR_CONTENTS)
+          message(STATUS "=================")
+          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
+          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
+          message(STATUS "=================")
           execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}"
             COMMAND echo "===================")
         else()
@@ -171,22 +195,22 @@ jobs:
         set(ENV{CXX} ${{ matrix.config.cxx }})
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        if ("x${{ matrix.config.environment_script }}" STREQUAL "x")
+        if (NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
           message(STATUS "we are on windows with environement script.")
         else()
           message(STATUS "no windows here.")
         endif()
-        if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-          execute_process(
-            COMMAND "${{ matrix.config.environment_script }}" && set
-            OUTPUT_FILE environment_script_output.txt
-          )
-          file(STRINGS environment_script_output.txt output_lines)
-          foreach(line IN LISTS output_lines)
-            if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-              set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-            endif()
-          endforeach()
+        if ("${{ runner.os }}" STREQUAL "Windows")# AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
+          #execute_process(
+          #  COMMAND "${{ matrix.config.environment_script }}" && set
+          #  OUTPUT_FILE environment_script_output.txt
+          #)
+          #file(STRINGS environment_script_output.txt output_lines)
+          #foreach(line IN LISTS output_lines)
+          #  if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+          #    set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+          #  endif()
+          #endforeach()
           message(STATUS "-------- 03")
           set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2/bin;$ENV{PATH}")
         else()
