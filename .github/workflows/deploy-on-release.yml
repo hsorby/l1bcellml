@@ -18,13 +18,13 @@ jobs:
         config:
         - {
             name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
-            os: windows-latest, libxml2_dir: '-D LibXml2_DIR="C:/Program Files (x86)/LibXml2/LibXml2/CMake/"',
+            os: windows-latest, libxml2_dir: '-D LibXml2_DIR="C:/Program\ Files\ (x86)/LibXml2/LibXml2/CMake/"',
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
             name: "Windows Latest MSVC Py37", artifact: "Windows-MSVC-2.tar.xz",
-            os: windows-latest, libxml2_dir: '-D LibXml2_DIR="C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
+            os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
           }
         - {
@@ -244,7 +244,7 @@ jobs:
           list(APPEND OPTIONAL_ARGUMENTS -D LibXml2_DIR="C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
         else()
           message(STATUS "-------- 04")
-          execute_process(COMMAND which python${{ matrix.config.python_version }} OUTPUT_VARIABLE PYTHON_EXE)
+          execute_process(COMMAND which python${{ matrix.config.python_version }} OUTPUT_VARIABLE PYTHON_EXE OUTPUT_STRIP_TRAILING_WHITESPACE)
           if (PYTHON_EXE)
             message(STATUS "Should try this Python executable: ${PYTHON_EXE}")
             set(PYTHON_CFG -D Python_EXECUTABLE="${PYTHON_EXE}")
