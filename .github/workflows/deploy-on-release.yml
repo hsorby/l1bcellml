@@ -235,19 +235,23 @@ jobs:
           execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
           message(STATUS "-------- 03")
           set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
+          execute_process(COMMAND where python${{ matrix.config.python_version }} OUTPUT_VARIABLE OUTPUT_CONTENTS)
+          if (OUTPUT_CONTENTS)
+            message(STATUS "Where said we should try this Python executable: ${OUTPUT_CONTENTS}")
+          endif()
         else()
           message(STATUS "-------- 04")
-          set(ENV{PATH} "$ENV{PATH}")
+          execute_process(COMMAND which python${{ matrix.config.python_version }} OUTPUT_VARIABLE PYTHON_EXE)
+          if (PYTHON_EXE)
+            message(STATUS "Should try this Python executable: ${PYTHON_EXE}")
+            set(PYTHON_CFG "-D Python_EXECUTABLE=${PYTHON_EXE}")
+          endif()
         endif()
 
         message(STATUS "PATH: $ENV{PATH}")
         execute_process(COMMAND dir "${ACTION_DIR}/swigwin-4.0.2/")
         execute_process(COMMAND echo "========33===========")
         execute_process(COMMAND python${{ matrix.config.python_version }} --version)
-        execute_process(COMMAND which python${{ matrix.config.python_version }} OUTPUT_VARIABLE OUTPUT_CONTENTS)
-        if (OUTPUT_CONTENTS)
-          message(STATUS "Should try this Python executable: ${OUTPUT_CONTENTS}")
-        endif()
         execute_process(COMMAND echo "========66===========")
 
         execute_process(
@@ -255,6 +259,7 @@ jobs:
             -S .
             -B build
             -D BUILD_TYPE=$ENV{BUILD_TYPE}
+            ${PYTHON_CFG}
             ${{ matrix.config.libxml2_dir }}
             ${{ matrix.config.swig_executable }}
           RESULT_VARIABLE result

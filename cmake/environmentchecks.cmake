@@ -92,7 +92,7 @@ if(MSVC)
   #
   # This does change how we get information about include paths and such so we
   # need to track how we found LibXml2.
-  find_package(LibXml2 CONFIG QUIET)
+  find_package(LibXml2 CONFIG)
   if(LibXml2_FOUND)
     set(HAVE_LIBXML2_CONFIG TRUE)
     foreach(_XML2_VAR LIBXML2_LIBRARY LIBXML2_INCLUDE_DIR LIBXML2_XMLLINT_EXECUTABLE)
