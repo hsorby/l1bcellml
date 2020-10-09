@@ -19,11 +19,7 @@ jobs:
         - {
             name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
             os: windows-latest,
-<<<<<<< HEAD
-            build_type: "Release", cc: "cl", cxx: "cl", , python_version: 3.8,
-=======
-            build_type: "Release", cc: "cl", cxx: "cl", , python_version: 3.8
->>>>>>> master
+            build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
@@ -39,20 +35,12 @@ jobs:
         - {
             name: "macOS Latest Clang Py38", artifact: "macOS.tar.xz",
             os: macos-latest,
-<<<<<<< HEAD
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
-=======
-            build_type: "Release", cc: "clang", cxx: "clang++", , python_version: 3.8
->>>>>>> master
           }
         - {
             name: "macOS Latest Clang Py37", artifact: "macOS.tar-2.xz",
             os: macos-latest,
-<<<<<<< HEAD
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.7
-=======
-            build_type: "Release", cc: "clang", cxx: "clang++", , python_version: 3.7
->>>>>>> master
           }
 
     steps:
