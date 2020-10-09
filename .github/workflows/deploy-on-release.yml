@@ -53,15 +53,18 @@ jobs:
     - name: Prepare environment
       shell: cmake -P {0}
       run: |
+        # Prepare environment script.
+
         message(STATUS "Using CMake version: ${CMAKE_VERSION}")
         message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
         message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
         message(STATUS "PWD ENV: $ENV{PWD}")
+        message(STATUS "ENV HOME: $ENV{HOME}")
 
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
           file(DOWNLOAD "${libxml2_url}" "$ENV{HOME}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./libxml2-2.9.6-3.zip WORKING_DIRECTORY "$ENV{HOME}")
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{HOME}/libxml2-2.9.6-3.zip" WORKING_DIRECTORY "$ENV{HOME}")
           execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory build-libxml2 WORKING_DIRECTORY "$ENV{HOME}")
           exectue_process(COMMAND ${CMAKE_COMMAND} -S "$ENV{HOME}/libxml2-2.9.6-3" -B "$ENV{HOME}/build-libxml2")
           exectue_process(COMMAND ${CMAKE_COMMAND} --build "$ENV{HOME}/build-libxml2" --target all --config Release)
@@ -108,6 +111,7 @@ jobs:
             -S .
             -B build
             -D BUILD_TYPE=$ENV{BUILD_TYPE}
+            -D PREFERRED_PYTHON_VERSION=${{ matrix.config.python_version }}
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
