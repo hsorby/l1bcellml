@@ -93,6 +93,7 @@ if(MSVC)
   #
   # This does change how we get information about include paths and such so we
   # need to track how we found LibXml2.
+  message(STATUS "LibXml2_DIR: ${LibXml2_DIR}")
   find_package(LibXml2 CONFIG)
   if(LibXml2_FOUND)
     set(HAVE_LIBXML2_CONFIG TRUE)

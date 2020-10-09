@@ -24,7 +24,7 @@ jobs:
           }
         - {
             name: "Windows Latest MSVC Py37", artifact: "Windows-MSVC-2.tar.xz",
-            os: windows-latest, libxml2_dir: "-DLibXml2_DIR=\"C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\"",
+            os: windows-latest, libxml2_dir: "-DLibXml2_DIR=\"C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\\"",
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
           }
         - {
@@ -260,6 +260,7 @@ jobs:
             -B build
             -D BUILD_TYPE=$ENV{BUILD_TYPE}
             ${PYTHON_CFG}
+            -DLibXml2_DIR="C:/Program Files (x86)/LibXml2/LibXml2/CMake/"
             ${{ matrix.config.libxml2_dir }}
             ${{ matrix.config.swig_executable }}
           RESULT_VARIABLE result
