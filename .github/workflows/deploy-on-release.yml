@@ -18,13 +18,13 @@ jobs:
         config:
         - {
             name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
-            os: windows-latest, libxml2_dir: "-D LibXml2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"",
+            os: windows-latest, libxml2_dir: '-D LibXml2_DIR="C:/Program Files (x86)/LibXml2/LibXml2/CMake/"',
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
             name: "Windows Latest MSVC Py37", artifact: "Windows-MSVC-2.tar.xz",
-            os: windows-latest, libxml2_dir: "-D LibXml2_DIR=\"C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\\"",
+            os: windows-latest, libxml2_dir: '-D LibXml2_DIR="C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
           }
         - {
@@ -62,6 +62,7 @@ jobs:
         message(STATUS "ENV HOME: $ENV{HOME}")
         message(STATUS "ENV GITHUB_HOME: $ENV{GITHUB_HOME}")
         message(STATUS "ENV GITHUB_WORKSPACE: $ENV{GITHUB_WORKSPACE}")
+        message(STATUS "MONSTER change...")
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         if ("${{ runner.os }}" STREQUAL "Windows")
@@ -246,7 +247,7 @@ jobs:
           execute_process(COMMAND which python${{ matrix.config.python_version }} OUTPUT_VARIABLE PYTHON_EXE)
           if (PYTHON_EXE)
             message(STATUS "Should try this Python executable: ${PYTHON_EXE}")
-            set(PYTHON_CFG "-D Python_EXECUTABLE=${PYTHON_EXE}")
+            set(PYTHON_CFG -D Python_EXECUTABLE="${PYTHON_EXE}")
           endif()
         endif()
 
