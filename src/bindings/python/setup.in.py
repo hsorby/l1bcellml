@@ -32,7 +32,7 @@ class BinaryDistribution(Distribution):
 
 setup(
     name='@PYPI_PACKAGE_NAME@',
-    version='@libCellML_VERSION@@LIBCELLML_DEVELOPER_VERSION@',
+    version='@PYPI_PACKAGE_VERSION@@PYPI_PACKAGE_DEVELOPER_VERSION@',
     author='libCellML developers',
     author_email='libcellml@googlegroups.com',
     packages=['libcellml'],
@@ -42,6 +42,7 @@ setup(
     description=doclines[0],
     classifiers=filter(None, classifiers.split("\n")),
     long_description=open('README.rst').read(),
+    long_description_content_type='text/x-rst',
     distclass=BinaryDistribution,
     include_package_data=True,
     zip_safe=False,

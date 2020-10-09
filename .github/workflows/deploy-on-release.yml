@@ -5,17 +5,86 @@ on:
     types: # This configuration does not affect the page_build event above
       - created
 
+env:
+  BUILD_TYPE: Release
+
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    name: ${ { matrix.config.name } }
+    runs-on: ${ { matrix.config.os } }
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.8]
+        config:
+        - {
+            name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
+            os: windows-latest,
+            build_type: "Release", cc: "cl", cxx: "cl", , python_version: 3.8
+            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+          }
+        - {
+            name: "Windows Latest MSVC Py37", artifact: "Windows-MSVC-2.tar.xz",
+            os: windows-latest,
+            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
+          }
+        - {
+            name: "Ubuntu Latest GCC Py36", artifact: "Linux.tar.xz",
+            os: ubuntu-latest,
+            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.6
+          }
+        - {
+            name: "macOS Latest Clang Py38", artifact: "macOS.tar.xz",
+            os: macos-latest,
+            build_type: "Release", cc: "clang", cxx: "clang++", , python_version: 3.8
+          }
+        - {
+            name: "macOS Latest Clang Py37", artifact: "macOS.tar-2.xz",
+            os: macos-latest,
+            build_type: "Release", cc: "clang", cxx: "clang++", , python_version: 3.7
+          }
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+    - uses: actions/checkout@v1
+
+    - name: Prepare environment
+      shell: cmake -P {0}
+      run: |
+        message(STATUS "Using CMake version: ${CMAKE_VERSION}")
+
+        if ("${{ runner.os }}" STREQUAL "Windows")
+          set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/releases/download/v2.9.6-3/LibXml2-2.9.6-win64.exe")
+          file(DOWNLOAD "${libxml2_url}" ./LibXml2-2.9.6-win64.exe SHOW_PROGRESS)
+          execute_process(COMMAND ./LibXml2-2.9.6-win64.exe)
+        endif()
+
+    - name: Configure
+      shell: cmake -P {0}
+      run: |
+        set(ENV{CC} ${{ matrix.config.cc }})
+        set(ENV{CXX} ${{ matrix.config.cxx }})
+
+        if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
+          execute_process(
+            COMMAND "${{ matrix.config.environment_script }}" && set
+            OUTPUT_FILE environment_script_output.txt
+          )
+          file(STRINGS environment_script_output.txt output_lines)
+          foreach(line IN LISTS output_lines)
+            if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+              set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+            endif()
+          endforeach()
+        endif()
+
+        execute_process(
+          COMMAND cmake
+            -S .
+            -B build
+            -D BUILD_TYPE=$ENV{BUILD_TYPE}
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+
+
