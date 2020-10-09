@@ -50,6 +50,9 @@ jobs:
       with:
         python-version: ${{ matrix.config.python_version }}
 
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
     - name: Fetch dependencies
       shell: cmake -P {0}
       run: |
@@ -166,7 +169,6 @@ jobs:
         endif()
 
     - name: Build
-      uses: microsoft/setup-msbuild@v1.0.2
       shell: cmake -P {0}
       run: |
         # Build library script
