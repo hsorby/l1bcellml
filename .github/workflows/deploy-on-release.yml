@@ -18,13 +18,13 @@ jobs:
         config:
         - {
             name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
-            os: windows-latest, libxml2_dir: "-D LibXml2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"",
+            os: windows-latest, libxml2_dir: "-D libxml2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"",
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
             name: "Windows Latest MSVC Py37", artifact: "Windows-MSVC-2.tar.xz",
-            os: windows-latest, libxml2_dir: "-D LibXml2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"",
+            os: windows-latest, libxml2_dir: "-D libxml2_DIR=\"C:\\Program Files (x86)\\LibXml2\\LibXml2\\CMake\"",
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
           }
         - {
@@ -251,9 +251,9 @@ jobs:
             -S .
             -B build
             -D BUILD_TYPE=$ENV{BUILD_TYPE}
+            -D Python_EXECUTABLE=/Users/runner/hostedtoolcache/Python/3.7.9/x64/bin/python3.7
             ${{ matrix.config.libxml2_dir }}
             ${{ matrix.config.swig_executable }}
-            -D Python_EXECUTABLE=python${{ matrix.config.python_version }}
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
