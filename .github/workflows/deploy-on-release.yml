@@ -179,18 +179,18 @@ jobs:
           execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
           execute_process(COMMAND echo "========= All done ==========")
         else()
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{HOME}/swig-4.0.2.tar.gz")
-          execute_process(COMMAND ./configure WORKING_DIRECTORY "$ENV{HOME}/swig-4.0.2" COMMAND_ECHO STDOUT OUTPUT_VARIABLE OUTPUT_CONTENTS ERROR_VARIABLE ERROR_CONTENTS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swig-4.0.2.tar.gz")
+          execute_process(COMMAND ./configure WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2" COMMAND_ECHO STDOUT OUTPUT_VARIABLE OUTPUT_CONTENTS ERROR_VARIABLE ERROR_CONTENTS)
           message(STATUS "=================")
           message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
           message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
           message(STATUS "=================")
-          execute_process(COMMAND make WORKING_DIRECTORY "$ENV{HOME}/swig-4.0.2" COMMAND_ECHO STDOUT OUTPUT_VARIABLE OUTPUT_CONTENTS ERROR_VARIABLE ERROR_CONTENTS)
+          execute_process(COMMAND make WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2" COMMAND_ECHO STDOUT OUTPUT_VARIABLE OUTPUT_CONTENTS ERROR_VARIABLE ERROR_CONTENTS)
           message(STATUS "=================")
           message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
           message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
           message(STATUS "=================")
-          execute_process(COMMAND make install WORKING_DIRECTORY "$ENV{HOME}/swig-4.0.2" COMMAND_ECHO STDOUT OUTPUT_VARIABLE OUTPUT_CONTENTS ERROR_VARIABLE ERROR_CONTENTS)
+          execute_process(COMMAND make install WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2" COMMAND_ECHO STDOUT OUTPUT_VARIABLE OUTPUT_CONTENTS ERROR_VARIABLE ERROR_CONTENTS)
           message(STATUS "=================")
           message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
           message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
@@ -228,7 +228,8 @@ jobs:
           #    set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
           #  endif()
           #endforeach()
-          set(LIBXML2_CONFIGURE_STR "-D LIBXML2_DIR=C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
+          set(LIBXML2_CONFIGURE_STR "-D LIBXML2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\")
+          set(LIBXML2_CONFIGURE_STR_2 "-D LibXml2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\")
           execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
           execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}/swigwin-4.0.2/")
           message(STATUS "-------- 03")
@@ -248,6 +249,7 @@ jobs:
             -B build
             -D BUILD_TYPE=$ENV{BUILD_TYPE}
             ${LIBXML2_CONFIGURE_STR}
+            ${LIBXML2_CONFIGURE_STR_2}
             -D PREFERRED_PYTHON_VERSION=${{ matrix.config.python_version }}
           RESULT_VARIABLE result
         )
