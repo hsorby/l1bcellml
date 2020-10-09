@@ -51,6 +51,8 @@ jobs:
         python-version: ${{ matrix.config.python_version }}
 
     - name: Prepare environment
+      with:
+        python-version: ${{ matrix.config.python_version }}
       shell: cmake -P {0}
       run: |
         message(STATUS "Using CMake version: ${CMAKE_VERSION}")
@@ -60,22 +62,28 @@ jobs:
 
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
-          file(DOWNLOAD "${libxml2_url}" ./libxml2-2.9.6-3.zip SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./libxml2-2.9.6-3.zip)
+          file(DOWNLOAD "${libxml2_url}" "$ENV{HOME}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./libxml2-2.9.6-3.zip WORKING_DIRECTORY "$ENV{HOME}")
+          execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory build-libxml2 WORKING_DIRECTORY "$ENV{HOME}")
+          exectue_process(COMMAND ${CMAKE_COMMAND} -S "$ENV{HOME}/libxml2-2.9.6-3" -B "$ENV{HOME}/build-libxml2")
+          exectue_process(COMMAND ${CMAKE_COMMAND} --build "$ENV{HOME}/build-libxml2" --target all --config Release)
+          exectue_process(COMMAND ${CMAKE_COMMAND} --install "$ENV{HOME}/build-libxml2" --config Release)
 
           set(swig_url "http://prdownloads.sourceforge.net/swig/swigwin-4.0.2.zip")
-          file(DOWNLOAD "${swig_url}" ./swigwin-4.0.2.zip SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./swigwin-4.0.2.zip)
+          file(DOWNLOAD "${swig_url}" "$ENV{HOME}/swigwin-4.0.2.zip" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./swigwin-4.0.2.zip WORKING_DIRECTORY "$ENV{HOME}")
         else()
           set(swig_url "http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz")
-          file(DOWNLOAD "${swig_url}" ./swig-4.0.2.tar.gz SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./swig-4.0.2.tar.gz)
+          file(DOWNLOAD "${swig_url}" "$ENV{HOME}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{HOME}/swig-4.0.2.tar.gz")
 
-          execute_process(COMMAND ./configure COMMAND make COMMAND make install WORKING_DIRECTORY swig-4.0.2)
+          execute_process(COMMAND pwd COMMAND ./configure COMMAND make COMMAND make install WORKING_DIRECTORY "$ENV{HOME}/swig-4.0.2")
         endif()
 
 
     - name: Configure
+      with:
+        python-version: ${{ matrix.config.python_version }}
       shell: cmake -P {0}
       run: |
         set(ENV{CC} ${{ matrix.config.cc }})
@@ -92,10 +100,15 @@ jobs:
               set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
             endif()
           endforeach()
+          file(APPEND "$ENV{PATH}" "$ENV{HOME}/swigwin-4.0.2")
+        else()
+          file(APPEND "$ENV{PATH}" "$ENV{HOME}/swig-4.0.2")
         endif()
 
+        message(STATUS "PATH: $ENV{PATH}")
+
         execute_process(
-          COMMAND cmake
+          COMMAND ${CMAKE_COMMAND}
             -S .
             -B build
             -D BUILD_TYPE=$ENV{BUILD_TYPE}
