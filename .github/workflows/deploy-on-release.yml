@@ -93,25 +93,17 @@ jobs:
       run: |
         # Prepare environment script.
 
-        message(STATUS "Using CMake version: ${CMAKE_VERSION}")
-        message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
-        message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
-        message(STATUS "PWD ENV: $ENV{PWD}")
-        message(STATUS "ENV HOME: $ENV{HOME}")
-        message(STATUS "ENV GITHUB_HOME: $ENV{GITHUB_HOME}")
-        message(STATUS "ENV GITHUB_WORKSPACE: $ENV{GITHUB_WORKSPACE}")
-
         if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-          execute_process(
-            COMMAND "${{ matrix.config.environment_script }}" && set
-            OUTPUT_FILE environment_script_output.txt
-          )
-          file(STRINGS environment_script_output.txt output_lines)
-          foreach(line IN LISTS output_lines)
-            if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-              set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-            endif()
-          endforeach()
+          #execute_process(
+          #  COMMAND "${{ matrix.config.environment_script }}" && set
+          #  OUTPUT_FILE environment_script_output.txt
+          #)
+          #file(STRINGS environment_script_output.txt output_lines)
+          #foreach(line IN LISTS output_lines)
+          #  if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+          #    set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+          #  endif()
+          #endforeach()
           #file(APPEND "$ENV{PATH}" "$ENV{HOME}/swigwin-4.0.2")
         else()
           #file(APPEND "$ENV{PATH}" "$ENV{HOME}/swig-4.0.2")
@@ -119,67 +111,18 @@ jobs:
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         if ("${{ runner.os }}" STREQUAL "Windows")
-          execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}")
-          execute_process(COMMAND "${ACTION_DIR}/swigwin-4.0.2/bin/swig" --version)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib")
-          execute_process(COMMAND echo "${CMAKE_COMMAND} -S ${ACTION_DIR}/zlib-develop -B ${ACTION_DIR}/build-zlib")
-          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib-develop" -B "${ACTION_DIR}/build-zlib"
-            OUTPUT_VARIABLE OUTPUT_CONTENTS
-            ERROR_VARIABLE ERROR_CONTENTS)
-          message(STATUS "=================")
-          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
-          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
-          message(STATUS "=================")
+          #execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib")
+          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib-develop" -B "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --config Release
-            WORKING_DIRECTORY "${ACTION_DIR}/build-zlib"
-            COMMAND_ECHO STDOUT
-            OUTPUT_VARIABLE OUTPUT_CONTENTS
-            ERROR_VARIABLE ERROR_CONTENTS)
-          message(STATUS "=================")
-          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
-          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
-          message(STATUS "=================")
+            WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
-            WORKING_DIRECTORY "${ACTION_DIR}/build-zlib"
-            COMMAND_ECHO STDOUT
-            OUTPUT_VARIABLE OUTPUT_CONTENTS
-            ERROR_VARIABLE ERROR_CONTENTS)
-          message(STATUS "=================")
-          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
-          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
-          message(STATUS "=================")
+            WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2-2.9.6-3" -B "${ACTION_DIR}/build-libxml2"
-            WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2"
-            COMMAND_ECHO STDOUT
-            OUTPUT_VARIABLE OUTPUT_CONTENTS
-            ERROR_VARIABLE ERROR_CONTENTS)
-          message(STATUS "=================")
-          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
-          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
-          message(STATUS "=================")
+            WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
           execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --config Release
-            WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2"
-            COMMAND_ECHO STDOUT
-            OUTPUT_VARIABLE OUTPUT_CONTENTS
-            ERROR_VARIABLE ERROR_CONTENTS)
-          message(STATUS "=================")
-          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
-          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
-          message(STATUS "=================")
+            WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
           execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-libxml2" --config Release
-            WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2"
-            COMMAND_ECHO STDOUT
-            OUTPUT_VARIABLE OUTPUT_CONTENTS
-            ERROR_VARIABLE ERROR_CONTENTS)
-          message(STATUS "=================")
-          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
-          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
-          message(STATUS "=================")
-          execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}")
-          execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}/swigwin-4.0.2")
-          execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}/swigwin-4.0.2/bin")
-          execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
-          execute_process(COMMAND echo "========= All done ==========")
+            WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
         else()
           execute_process(COMMAND ./configure WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2")
           execute_process(COMMAND make WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2")
@@ -201,7 +144,6 @@ jobs:
           set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
           execute_process(COMMAND where python OUTPUT_VARIABLE PYTHON_EXES OUTPUT_STRIP_TRAILING_WHITESPACE)
           if (PYTHON_EXES)
-            message(STATUS "Where said we should try this Python executable: ${PYTHON_EXES}")
             string(REPLACE "\n" ";" PYTHON_EXES ${PYTHON_EXES})
             list(GET PYTHON_EXES 0 PYTHON_EXE)
             file(TO_CMAKE_PATH "${PYTHON_EXE}" PYTHON_EXE)
@@ -212,27 +154,49 @@ jobs:
           if (PYTHON_EXE)
             set(PYTHON_CFG -D Python_EXECUTABLE=${PYTHON_EXE})
           endif()
+          list(APPEND OPTIONAL_ARGUMENTS -D BUILD_TYPE=$ENV{BUILD_TYPE})
         endif()
 
         list(APPEND OPTIONAL_ARGUMENTS ${PYTHON_CFG})
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.libxml2_dir }})
 
-        execute_process(COMMAND echo "========33===========")
-        execute_process(COMMAND python${{ matrix.config.python_version }} --version)
-        message(STATUS "OPTIONAL_ARGUMENTS: ${OPTIONAL_ARGUMENTS}")
-        message(STATUS "-D BUILD_TYPE=$ENV{BUILD_TYPE}")
-        execute_process(COMMAND echo "========66===========")
-
         execute_process(
           COMMAND ${CMAKE_COMMAND}
             -S .
             -B build
-            -D BUILD_TYPE=$ENV{BUILD_TYPE}
             ${OPTIONAL_ARGUMENTS}
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Bad exit status")
+          message(FATAL_ERROR "Configure failed.")
         endif()
 
+    - name: Build
+      shell: cmake -P {0}
+      run: |
+        # Build library script
+
+        execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build" --config Release
+            WORKING_DIRECTORY "${ACTION_DIR}/build"
+            RESULT_VARIABLE result)
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Build failed.")
+        endif()
+
+    - name: Test
+      shell: cmake -P {0}
+      run: |
+        # Test library script
+
+        include(ProcessorCount)
+        ProcessorCount(N)
+
+        execute_process(
+          COMMAND ${CMAKE_CTEST_COMMAND}
+            -j ${N}
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Tests failed.")
+        endif()
