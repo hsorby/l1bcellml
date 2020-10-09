@@ -137,6 +137,15 @@ jobs:
           message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
           message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
           message(STATUS "=================")
+          execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
+            WORKING_DIRECTORY "${ACTION_DIR}/build-zlib"
+            COMMAND_ECHO STDOUT
+            OUTPUT_VARIABLE OUTPUT_CONTENTS
+            ERROR_VARIABLE ERROR_CONTENTS)
+          message(STATUS "=================")
+          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
+          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
+          message(STATUS "=================")
           execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2-2.9.6-3" -B "${ACTION_DIR}/build-libxml2"
             COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --target all --config Release
             COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-libxml2" --config Release)
@@ -178,8 +187,10 @@ jobs:
               set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
             endif()
           endforeach()
+          message(STATUS "-------- 03")
           set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2/bin;$ENV{PATH}")
         else()
+          message(STATUS "-------- 04")
           set(ENV{PATH} "$ENV{HOME}/swig-4.0.2:$ENV{PATH}")
         endif()
 
