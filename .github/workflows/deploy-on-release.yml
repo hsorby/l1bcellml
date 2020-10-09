@@ -85,6 +85,7 @@ jobs:
         else()
           set(swig_url "http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz")
           file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swig-4.0.2.tar.gz")
         endif()
 
     - name: Prepare environment
@@ -180,22 +181,9 @@ jobs:
           execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
           execute_process(COMMAND echo "========= All done ==========")
         else()
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swig-4.0.2.tar.gz")
-          execute_process(COMMAND ./configure WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2" COMMAND_ECHO STDOUT OUTPUT_VARIABLE OUTPUT_CONTENTS ERROR_VARIABLE ERROR_CONTENTS)
-          message(STATUS "=================")
-          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
-          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
-          message(STATUS "=================")
-          execute_process(COMMAND make WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2" COMMAND_ECHO STDOUT OUTPUT_VARIABLE OUTPUT_CONTENTS ERROR_VARIABLE ERROR_CONTENTS)
-          message(STATUS "=================")
-          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
-          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
-          message(STATUS "=================")
-          execute_process(COMMAND sudo make install WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2" COMMAND_ECHO STDOUT OUTPUT_VARIABLE OUTPUT_CONTENTS ERROR_VARIABLE ERROR_CONTENTS)
-          message(STATUS "=================")
-          message(STATUS OUTPUT_CONTENTS: ${OUTPUT_CONTENTS})
-          message(STATUS ERROR_CONTENTS: ${ERROR_CONTENTS})
-          message(STATUS "=================")
+          execute_process(COMMAND ./configure WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2")
+          execute_process(COMMAND make WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2")
+          execute_process(COMMAND sudo make install WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2")
         endif()
 
 
@@ -203,55 +191,23 @@ jobs:
       shell: cmake -P {0}
       run: |
         # Configure library script
-
-        message(STATUS "${{ runner.os }}")
-        message(STATUS "Using CMake version: ${CMAKE_VERSION}")
-        message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
-        message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
         set(OPTIONAL_ARGUMENTS)
 
         set(ENV{CC} ${{ matrix.config.cc }})
         set(ENV{CXX} ${{ matrix.config.cxx }})
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        if (NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-          message(STATUS "we are on windows with environement script.")
-        else()
-          message(STATUS "no windows here.")
-        endif()
-        if ("${{ runner.os }}" STREQUAL "Windows")# AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-          #execute_process(
-          #  COMMAND "${{ matrix.config.environment_script }}" && set
-          #  OUTPUT_FILE environment_script_output.txt
-          #)
-          #file(STRINGS environment_script_output.txt output_lines)
-          #foreach(line IN LISTS output_lines)
-          #  if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-          #    set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-          #  endif()
-          #endforeach()
-          set(LIBXML2_CONFIGURE_STR "-D LIBXML2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"")
-          set(LIBXML2_CONFIGURE_STR_2 "-D LibXml2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"")
-          execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
-          execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}/swigwin-4.0.2/")
-          execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
-          message(STATUS "-------- 03")
+        if ("${{ runner.os }}" STREQUAL "Windows")
           set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
-          execute_process(COMMAND which python OUTPUT_VARIABLE OUTPUT_CONTENTS OUTPUT_STRIP_TRAILING_WHITESPACE)
+          execute_process(COMMAND where python OUTPUT_VARIABLE OUTPUT_CONTENTS OUTPUT_STRIP_TRAILING_WHITESPACE)
           if (OUTPUT_CONTENTS)
             message(STATUS "Where said we should try this Python executable: ${OUTPUT_CONTENTS}")
-            set(PYTHON_CFG -D Python_EXECUTABLE="${OUTPUT_CONTENTS}")
-          endif()
-          #list(APPEND OPTIONAL_ARGUMENTS -D LibXml2_DIR="C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
-          if (NOT "x${{ matrix.config.libxml2_loc }}" STREQUAL "x")
-            list(APPEND OPTIONAL_ARGUMENTS -D LibXml2_DIR="${{ matrix.config.libxml2_loc }}")
+            set(PYTHON_CFG -D Python_EXECUTABLE=${OUTPUT_CONTENTS})
           endif()
         else()
-          message(STATUS "-------- 04")
           execute_process(COMMAND which python${{ matrix.config.python_version }} OUTPUT_VARIABLE PYTHON_EXE OUTPUT_STRIP_TRAILING_WHITESPACE)
           if (PYTHON_EXE)
-            message(STATUS "Should try this Python executable: ${PYTHON_EXE}")
-            set(PYTHON_CFG -D Python_EXECUTABLE="${PYTHON_EXE}")
+            set(PYTHON_CFG -D Python_EXECUTABLE=${PYTHON_EXE})
           endif()
         endif()
 
@@ -259,8 +215,6 @@ jobs:
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.libxml2_dir }})
 
-        message(STATUS "PATH: $ENV{PATH}")
-        execute_process(COMMAND dir "${ACTION_DIR}/swigwin-4.0.2/")
         execute_process(COMMAND echo "========33===========")
         execute_process(COMMAND python${{ matrix.config.python_version }} --version)
         message(STATUS "OPTIONAL_ARGUMENTS: ${OPTIONAL_ARGUMENTS}")
@@ -278,5 +232,4 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
-
 
