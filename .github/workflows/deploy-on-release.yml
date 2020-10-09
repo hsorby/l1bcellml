@@ -44,18 +44,36 @@ jobs:
           }
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.config.python_version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.config.python_version }}
 
     - name: Prepare environment
       shell: cmake -P {0}
       run: |
         message(STATUS "Using CMake version: ${CMAKE_VERSION}")
+        message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+        message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
+        message(STATUS "PWD ENV: $ENV{PWD}")
 
         if ("${{ runner.os }}" STREQUAL "Windows")
-          set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/releases/download/v2.9.6-3/LibXml2-2.9.6-win64.exe")
-          file(DOWNLOAD "${libxml2_url}" ./LibXml2-2.9.6-win64.exe SHOW_PROGRESS)
-          execute_process(COMMAND ./LibXml2-2.9.6-win64.exe)
+          set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
+          file(DOWNLOAD "${libxml2_url}" ./libxml2-2.9.6-3.zip SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./libxml2-2.9.6-3.zip)
+
+          set(swig_url "http://prdownloads.sourceforge.net/swig/swigwin-4.0.2.zip")
+          file(DOWNLOAD "${swig_url}" ./swigwin-4.0.2.zip SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./swigwin-4.0.2.zip)
+        else()
+          set(swig_url "http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz")
+          file(DOWNLOAD "${swig_url}" ./swig-4.0.2.tar.gz SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./swig-4.0.2.tar.gz)
+
+          execute_process(COMMAND ./configure COMMAND make COMMAND make install WORKING_DIRECTORY swig-4.0.2)
         endif()
+
 
     - name: Configure
       shell: cmake -P {0}
