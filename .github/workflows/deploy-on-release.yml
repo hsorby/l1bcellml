@@ -63,27 +63,25 @@ jobs:
         message(STATUS "ENV GITHUB_HOME: $ENV{GITHUB_HOME}")
         message(STATUS "ENV GITHUB_WORKSPACE: $ENV{GITHUB_WORKSPACE}")
 
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR}/..)
+        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR}/../..)
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
-          file(DOWNLOAD "${libxml2_url}" "$ENV{HOME}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{ACTION_DIR}/libxml2-2.9.6-3.zip"
-            COMMAND ${CMAKE_COMMAND} -E make_directory build-libxml2
-            COMMAND ${CMAKE_COMMAND} -S "$ENV{ACTION_DIR}/libxml2-2.9.6-3" -B "$ENV{ACTION_DIR}/build-libxml2"
-            COMMAND ${CMAKE_COMMAND} --build "$ENV{ACTION_DIR}/build-libxml2" --target all --config Release
-            COMMAND ${CMAKE_COMMAND} --install "$ENV{ACTION_DIR}/build-libxml2" --config Release
-            WORKING_DIRECTORY "$ENV{ACTION_DIR}")
+          file(DOWNLOAD "${libxml2_url}" "${ACTION_DIR}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/libxml2-2.9.6-3.zip"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-libxml2"
+            COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2-2.9.6-3" -B "${ACTION_DIR}/build-libxml2"
+            COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --target all --config Release
+            COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-libxml2" --config Release)
 
           set(swig_url "http://prdownloads.sourceforge.net/swig/swigwin-4.0.2.zip")
-          file(DOWNLOAD "${swig_url}" "$ENV{ACTION_DIR}/swigwin-4.0.2.zip" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{ACTION_DIR}/swigwin-4.0.2.zip"
-            COMMAND "$ENV{ACTION_DIR}/swigwin-4.0.2/bin/swig" --version
-            WORKING_DIRECTORY "$ENV{ACTION_DIR}")
+          file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swigwin-4.0.2.zip" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swigwin-4.0.2.zip"
+            COMMAND "${ACTION_DIR}/swigwin-4.0.2/bin/swig" --version)
         else()
           set(swig_url "http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz")
-          file(DOWNLOAD "${swig_url}" "$ENV{ACTION_DIR}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{ACTION_DIR}/swig-4.0.2.tar.gz"
-            COMMAND ./configure COMMAND make COMMAND make install WORKING_DIRECTORY "$ENV{ACTION_DIR}/swig-4.0.2")
+          file(DOWNLOAD "${swig_url}" "$ENV{HOME}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{HOME}/swig-4.0.2.tar.gz"
+            COMMAND cd "$ENV{HOME}/swig-4.0.2" COMMAND ./configure COMMAND make COMMAND make install)
         endif()
 
 
