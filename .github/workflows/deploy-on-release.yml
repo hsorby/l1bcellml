@@ -147,10 +147,20 @@ jobs:
       run: |
         # Configure library script
 
+        message(STATUS "${{ runner.os }}")
+        message(STATUS "Using CMake version: ${CMAKE_VERSION}")
+        message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+        message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
+
         set(ENV{CC} ${{ matrix.config.cc }})
         set(ENV{CXX} ${{ matrix.config.cxx }})
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR}/../..)
+        if ("x${{ matrix.config.environment_script }}" STREQUAL "x")
+          message(STATUS "we are on windows with environement script.")
+        else()
+          message(STATUS "no windows here.")
+        endif()
         if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
           execute_process(
             COMMAND "${{ matrix.config.environment_script }}" && set
