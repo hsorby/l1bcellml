@@ -215,17 +215,17 @@ jobs:
           #  endif()
           #endforeach()
           set(LIBXML2_CONFIGURE_STR "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
-                    execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
-          execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}/swigwin-4.0.2/bin")
+          execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
+          execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}/swigwin-4.0.2/")
           message(STATUS "-------- 03")
-          set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2/bin;$ENV{PATH}")
+          set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
         else()
           message(STATUS "-------- 04")
           set(ENV{PATH} "$ENV{HOME}/swig-4.0.2:$ENV{PATH}")
         endif()
 
         message(STATUS "PATH: $ENV{PATH}")
-        execute_process(COMMAND dir "${ACTION_DIR}/swigwin-4.0.2/bin")
+        execute_process(COMMAND dir "${ACTION_DIR}/swigwin-4.0.2/")
         execute_process(COMMAND echo "========33===========")
 
         execute_process(
