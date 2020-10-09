@@ -52,7 +52,7 @@ jobs:
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
-      if: runner.os == Windows
+      if: runner.os == "Windows"
 
     - name: Fetch dependencies
       shell: cmake -P {0}
@@ -179,7 +179,7 @@ jobs:
         math(EXPR JOBS "${N} + 1")
 
         if ("${{ runner.os }}" STREQUAL "Windows")
-          set(BUILD_COMMMAND msbuild libCellML.sln /t:Build /p:Configuration=$ENV{BUILD_TYPE} /m:${N})
+          set(BUILD_COMMMAND msbuild l1bCellML.sln /t:Build /p:Configuration=$ENV{BUILD_TYPE} /m:${N})
         else()
           set(BUILD_COMMMAND make -j ${JOBS})
         endif()
