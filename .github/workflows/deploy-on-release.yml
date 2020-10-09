@@ -67,11 +67,15 @@ jobs:
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(zlib_url "https://github.com/OpenCMISS-Dependencies/zlib/archive/develop.zip")
           file(DOWNLOAD "${zlib_url}" "${ACTION_DIR}/zlib-1.2.3.zip" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/zlib-1.2.3.zip" WORKING_DIRECTORY "${ACTION_DIR}")
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/zlib-1.2.3.zip"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib"
+            WORKING_DIRECTORY "${ACTION_DIR}")
 
           set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
           file(DOWNLOAD "${libxml2_url}" "${ACTION_DIR}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/libxml2-2.9.6-3.zip" WORKING_DIRECTORY "${ACTION_DIR}")
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/libxml2-2.9.6-3.zip"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-libxml2"
+            WORKING_DIRECTORY "${ACTION_DIR}")
 
           set(swig_url "http://prdownloads.sourceforge.net/swig/swigwin-4.0.2.zip")
           file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swigwin-4.0.2.zip" SHOW_PROGRESS)
@@ -116,13 +120,8 @@ jobs:
           execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}")
           execute_process(COMMAND "${ACTION_DIR}/swigwin-4.0.2/bin/swig" --version)
           execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib")
-          execute_process(
-            COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib-develop" -B "${ACTION_DIR}/build-zlib"
-            COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --target all --config Release
-            COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
-            WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
-          execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-libxml2"
-            COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2-2.9.6-3" -B "${ACTION_DIR}/build-libxml2"
+          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib-develop" -B "${ACTION_DIR}/build-zlib")
+          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2-2.9.6-3" -B "${ACTION_DIR}/build-libxml2"
             COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --target all --config Release
             COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-libxml2" --config Release)
           execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}"
