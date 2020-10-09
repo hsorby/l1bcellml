@@ -18,13 +18,13 @@ jobs:
         config:
         - {
             name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
-            os: windows-latest,
+            os: windows-latest, libxml2_dir: "-D LIBXML2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"",
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
             name: "Windows Latest MSVC Py37", artifact: "Windows-MSVC-2.tar.xz",
-            os: windows-latest,
+            os: windows-latest, libxml2_dir: "-D LIBXML2_DIR=\"C:/Program Files (x86)/LibXml2/LibXml2/CMake/\"",
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
           }
         - {
@@ -242,15 +242,14 @@ jobs:
         message(STATUS "PATH: $ENV{PATH}")
         execute_process(COMMAND dir "${ACTION_DIR}/swigwin-4.0.2/")
         execute_process(COMMAND echo "========33===========")
+        execute_process(COMMAND python${{ matrix.config.python_version }} --version)
 
         execute_process(
           COMMAND ${CMAKE_COMMAND}
             -S .
             -B build
             -D BUILD_TYPE=$ENV{BUILD_TYPE}
-            -D LibXml2_DIR="C:/Program Files (x86)/LibXml2/LibXml2/CMake/"
-            ${LIBXML2_CONFIGURE_STR}
-            ${LIBXML2_CONFIGURE_STR_2}
+            ${{ matrix.config.libxml2_dir }}
             -D PREFERRED_PYTHON_VERSION=${{ matrix.config.python_version }}
           RESULT_VARIABLE result
         )
