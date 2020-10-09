@@ -67,12 +67,16 @@ jobs:
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(zlib_url "https://github.com/OpenCMISS-Dependencies/zlib/archive/develop.zip")
           file(DOWNLOAD "${zlib_url}" "${ACTION_DIR}/zlib-1.2.3.zip" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/zlib-1.2.3.zip" WORKING_DIRECTORY "${ACTION_DIR}")
 
           set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
           file(DOWNLOAD "${libxml2_url}" "${ACTION_DIR}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/libxml2-2.9.6-3.zip" WORKING_DIRECTORY "${ACTION_DIR}")
 
           set(swig_url "http://prdownloads.sourceforge.net/swig/swigwin-4.0.2.zip")
           file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swigwin-4.0.2.zip" SHOW_PROGRESS)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swigwin-4.0.2.zip" WORKING_DIRECTORY "${ACTION_DIR}")
+
         else()
           set(swig_url "http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz")
           file(DOWNLOAD "${swig_url}" "$ENV{HOME}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
@@ -91,17 +95,32 @@ jobs:
         message(STATUS "ENV GITHUB_HOME: $ENV{GITHUB_HOME}")
         message(STATUS "ENV GITHUB_WORKSPACE: $ENV{GITHUB_WORKSPACE}")
 
+        if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
+          execute_process(
+            COMMAND "${{ matrix.config.environment_script }}" && set
+            OUTPUT_FILE environment_script_output.txt
+          )
+          file(STRINGS environment_script_output.txt output_lines)
+          foreach(line IN LISTS output_lines)
+            if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+              set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+            endif()
+          endforeach()
+          file(APPEND "$ENV{PATH}" "$ENV{HOME}/swigwin-4.0.2")
+        else()
+          file(APPEND "$ENV{PATH}" "$ENV{HOME}/swig-4.0.2")
+        endif()
+
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR}/../..)
         if ("${{ runner.os }}" STREQUAL "Windows")
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/zlib-1.2.3.zip" WORKING_DIRECTORY "${ACTION_DIR}")
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/libxml2-2.9.6-3.zip" WORKING_DIRECTORY "${ACTION_DIR}")
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swigwin-4.0.2.zip" WORKING_DIRECTORY "${ACTION_DIR}")
           execute_process(COMMAND dir WORKING_DIRECTORY "${ACTION_DIR}")
           execute_process(COMMAND "${ACTION_DIR}/swigwin-4.0.2/bin/swig" --version)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib"
+          execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib")
+          execute_process(
             COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib-develop" -B "${ACTION_DIR}/build-zlib"
             COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --target all --config Release
-            COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release)
+            COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
+            WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-libxml2"
             COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2-2.9.6-3" -B "${ACTION_DIR}/build-libxml2"
             COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --target all --config Release
