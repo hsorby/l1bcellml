@@ -18,7 +18,7 @@ jobs:
         config:
         - {
             name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
-            os: windows-latest, libxml2_off: "C:/Program Files (x86)/LibXml2/LibXml2/CMake/",
+            os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
@@ -237,9 +237,10 @@ jobs:
           execute_process(COMMAND dir WORKING_DIRECTORY "C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
           message(STATUS "-------- 03")
           set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
-          execute_process(COMMAND which python37 OUTPUT_VARIABLE OUTPUT_CONTENTS)
+          execute_process(COMMAND which python OUTPUT_VARIABLE OUTPUT_CONTENTS OUTPUT_STRIP_TRAILING_WHITESPACE)
           if (OUTPUT_CONTENTS)
             message(STATUS "Where said we should try this Python executable: ${OUTPUT_CONTENTS}")
+            set(PYTHON_CFG -D Python_EXECUTABLE="${OUTPUT_CONTENTS}")
           endif()
           #list(APPEND OPTIONAL_ARGUMENTS -D LibXml2_DIR="C:/Program Files (x86)/LibXml2/LibXml2/CMake/")
           if (NOT "x${{ matrix.config.libxml2_loc }}" STREQUAL "x")
@@ -263,6 +264,7 @@ jobs:
         execute_process(COMMAND echo "========33===========")
         execute_process(COMMAND python${{ matrix.config.python_version }} --version)
         message(STATUS "OPTIONAL_ARGUMENTS: ${OPTIONAL_ARGUMENTS}")
+        message(STATUS "-D BUILD_TYPE=$ENV{BUILD_TYPE}")
         execute_process(COMMAND echo "========66===========")
 
         execute_process(
