@@ -183,7 +183,7 @@ jobs:
           set(WIN_PATH)
           message(STATUS "======== original ==========")
           message(STATUS "$ENV{PATH}")
-          foreach(_PATH IN $ENV{PATH})
+          foreach(_PATH $ENV{PATH})
           message(STATUS "======== ==========")
           message(STATUS "======== modified ==========")
             if (NOT "Strawberry" IN _PATH)
