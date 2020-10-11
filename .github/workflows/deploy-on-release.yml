@@ -186,7 +186,7 @@ jobs:
           foreach(_PATH $ENV{PATH})
           message(STATUS "======== ==========")
           message(STATUS "======== modified ==========")
-            if (NOT "Strawberry" IN _PATH)
+            if (NOT "${_PATH}" MATCHES ".*Strawberry")
               list(APPEND WIN_PATH "${_PATH}")
             endif()
           endforeach()
