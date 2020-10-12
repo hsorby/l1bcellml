@@ -56,7 +56,7 @@ jobs:
         path: zlib
         ref: develop
 
-    - name: Checkout libXml2
+    - name: Checkout LibXml2
       uses: actions/checkout@v2
       with:
         repository: OpenCMISS-Dependencies/libxml2
@@ -79,18 +79,6 @@ jobs:
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         if ("${{ runner.os }}" STREQUAL "Windows")
-          #set(zlib_url "https://github.com/OpenCMISS-Dependencies/zlib/archive/develop.zip")
-          #file(DOWNLOAD "${zlib_url}" "${ACTION_DIR}/zlib-1.2.3.zip" SHOW_PROGRESS)
-          #execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/zlib-1.2.3.zip"
-          #  COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib"
-          #  WORKING_DIRECTORY "${ACTION_DIR}")
-
-          #set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
-          #file(DOWNLOAD "${libxml2_url}" "${ACTION_DIR}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
-          #execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/libxml2-2.9.6-3.zip"
-          #  COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-libxml2"
-          #  WORKING_DIRECTORY "${ACTION_DIR}")
-
           set(swig_url "http://prdownloads.sourceforge.net/swig/swigwin-4.0.2.zip")
           file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swigwin-4.0.2.zip" SHOW_PROGRESS)
           execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swigwin-4.0.2.zip" WORKING_DIRECTORY "${ACTION_DIR}")
@@ -221,6 +209,7 @@ jobs:
         endif()
 
     - name: Package
+      id: package
       shell: cmake -P {0}
       run: |
         # Package library script
@@ -231,9 +220,18 @@ jobs:
           WORKING_DIRECTORY "${ACTION_DIR}/build"
           RESULT_VARIABLE result
         )
+
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Tests failed.")
         endif()
+
+        file(GLOB _DIST_FILES ${ACTION_DIR}/build/dist/*)
+        set(_INDEX 1)
+        foreach(_DIST_FILE ${_DIST_FILES})
+          message(STATUS "file_${_INDEX}::${_DIST_FILE}")
+          math(EXPR _INDEX "${_INDEX} + 1")
+          #echo "::set-output name=action_fruit::strawberry"
+        endforeach()
 
     - name: Deploy
       shell: cmake -P {0}
