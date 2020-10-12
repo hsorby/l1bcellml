@@ -44,7 +44,22 @@ jobs:
           }
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Checkout zlib
+      uses: actions/checkout@v2
+      with:
+        repository: OpenCMISS-Dependencies/zlib
+        path: zlib
+        ref: develop
+
+    - name: Checkout libXml2
+      uses: actions/checkout@v2
+      with:
+        repository: OpenCMISS-Dependencies/libxml2
+        path: libxml2
+
     - name: Set up Python ${{ matrix.config.python_version }}
       uses: actions/setup-python@v2
       with:
@@ -54,33 +69,24 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
       if: runner.os == 'Windows'
 
-    - name: Fetch dependencies
+    - name: Fetch swig
       shell: cmake -P {0}
       run: |
-        # Fetch dependencies script.
-
-        message(STATUS "Using CMake version: ${CMAKE_VERSION}")
-        message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
-        message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
-        message(STATUS "PWD ENV: $ENV{PWD}")
-        message(STATUS "ENV HOME: $ENV{HOME}")
-        message(STATUS "ENV GITHUB_HOME: $ENV{GITHUB_HOME}")
-        message(STATUS "ENV GITHUB_WORKSPACE: $ENV{GITHUB_WORKSPACE}")
-        message(STATUS "MONSTER change...")
+        # Fetch swig script.
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         if ("${{ runner.os }}" STREQUAL "Windows")
-          set(zlib_url "https://github.com/OpenCMISS-Dependencies/zlib/archive/develop.zip")
-          file(DOWNLOAD "${zlib_url}" "${ACTION_DIR}/zlib-1.2.3.zip" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/zlib-1.2.3.zip"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib"
-            WORKING_DIRECTORY "${ACTION_DIR}")
+          #set(zlib_url "https://github.com/OpenCMISS-Dependencies/zlib/archive/develop.zip")
+          #file(DOWNLOAD "${zlib_url}" "${ACTION_DIR}/zlib-1.2.3.zip" SHOW_PROGRESS)
+          #execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/zlib-1.2.3.zip"
+          #  COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib"
+          #  WORKING_DIRECTORY "${ACTION_DIR}")
 
-          set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
-          file(DOWNLOAD "${libxml2_url}" "${ACTION_DIR}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/libxml2-2.9.6-3.zip"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-libxml2"
-            WORKING_DIRECTORY "${ACTION_DIR}")
+          #set(libxml2_url "https://github.com/OpenCMISS-Dependencies/libxml2/archive/v2.9.6-3.zip")
+          #file(DOWNLOAD "${libxml2_url}" "${ACTION_DIR}/libxml2-2.9.6-3.zip" SHOW_PROGRESS)
+          #execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/libxml2-2.9.6-3.zip"
+          #  COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-libxml2"
+          #  WORKING_DIRECTORY "${ACTION_DIR}")
 
           set(swig_url "http://prdownloads.sourceforge.net/swig/swigwin-4.0.2.zip")
           file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swigwin-4.0.2.zip" SHOW_PROGRESS)
@@ -97,28 +103,9 @@ jobs:
       run: |
         # Prepare environment script.
 
-        if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-          #execute_process(
-          #  COMMAND "${{ matrix.config.environment_script }}" && set
-          #  OUTPUT_FILE environment_script_output.txt
-          #)
-          #file(STRINGS environment_script_output.txt output_lines)
-          #foreach(line IN LISTS output_lines)
-          #  if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-          #    set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-          #  endif()
-          #endforeach()
-          #file(APPEND "$ENV{PATH}" "$ENV{HOME}/swigwin-4.0.2")
-        else()
-          #file(APPEND "$ENV{PATH}" "$ENV{HOME}/swig-4.0.2")
-        endif()
-
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(WIN_PATH)
-          #message(STATUS "======== original ==========")
-          #message(STATUS "$ENV{PATH}")
-          #message(STATUS "======== ==========")
           file(TO_CMAKE_PATH "$ENV{PATH}" ENV_PATH)
           set(PATH_LIST "")
           foreach(_PATH ${ENV_PATH})
@@ -128,16 +115,13 @@ jobs:
           endforeach()
           file(TO_NATIVE_PATH "${WIN_PATH}" WIN_PATH)
           set(ENV{PATH} "${WIN_PATH}")
-          #message(STATUS "======== modified ==========")
-          #message(STATUS "$ENV{PATH}")
-          #message(STATUS "======== ==========")
           #execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib")
-          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib-develop" -B "${ACTION_DIR}/build-zlib")
+          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib" -B "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
-          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2-2.9.6-3" -B "${ACTION_DIR}/build-libxml2"
+          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2"
             WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
           execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
@@ -189,6 +173,7 @@ jobs:
       shell: cmake -P {0}
       run: |
         # Build library script
+
         include(ProcessorCount)
         ProcessorCount(N)
 
@@ -231,3 +216,27 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Tests failed.")
         endif()
+
+    - name: Package
+      shell: cmake -P {0}
+      run: |
+        # Package library script
+
+        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
+        execute_process(
+          COMMAND ${CMAKE_CPACK_COMMAND} -C $ENV{BUILD_TYPE}
+          WORKING_DIRECTORY "${ACTION_DIR}/build"
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Tests failed.")
+        endif()
+
+    - name: Deploy
+      shell: cmake -P {0}
+      run: |
+        # Deploy library script.
+
+        # ${{ github.event.release }}
+        # ${{ github.event.release.upload_url }}
+
