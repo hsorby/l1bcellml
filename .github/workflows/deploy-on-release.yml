@@ -61,7 +61,7 @@ jobs:
       with:
         repository: OpenCMISS-Dependencies/libxml2
         path: libxml2
-        ref: develop
+        ref: v2.9.6
 
     - name: Set up Python ${{ matrix.config.python_version }}
       uses: actions/setup-python@v2
