@@ -22,4 +22,5 @@ CMakeLists.txt.user
 # Release script
 release-script.sh
 update-version.sh
+upload.cmake
 
