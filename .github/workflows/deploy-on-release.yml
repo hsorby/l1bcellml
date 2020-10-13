@@ -238,15 +238,38 @@ jobs:
           COMMAND echo "::set-output name=count::${_INDEX}")
 
     - name: Deploy
-      shell: cmake -P {0}
-      run: |
-        # Deploy library script.
+      id: deploy
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          // Deploy library script.
 
-        # ${{ github.event.release }}
-        # ${{ github.event.release.upload_url }}
-        # ${{ steps.package.outputs.count }}
-        # ${{ steps.package.outputs.file_1 }}
-        # ${{ steps.package.outputs.file_2 }}
-        # ${{ steps.package.outputs.file_3 }}
-        # ${{ steps.package.outputs.file_4 }}
+          // ${{ github.event.release }}
+          // ${{ github.event.release.upload_url }}
+          // ${{ steps.package.outputs.count }}
+          // ${{ steps.package.outputs.file_1 }}
+          // ${{ steps.package.outputs.file_2 }}
+          // ${{ steps.package.outputs.file_3 }}
+          // ${{ steps.package.outputs.file_4 }}
+          const upload_url = context.payload.release.upload_url
+          const count = ${{ steps.package.outputs.count }}
+          console.log(upload_url)
 
+          const fs = require('fs');
+
+          for (let i = 0; i < ${{ steps.package.outputs.count }}; i++) {
+            const f = 'file_' + i.toString()
+            const assetPath = steps.package.outputs[f]
+            console.log("============")
+            console.log(assetPath)
+            const assetName = assetPath.split(['/','\\']).pop();
+            const contentLength = filePath => fs.statSync(filePath).size;
+            const headers = { 'content-type': 'application/octet-stream', 'content-length': contentLength(assetPath) };
+            const uploadAssetResponse = await github.repos.uploadReleaseAsset({
+              url: uploadUrl,
+              headers,
+              name: assetName,
+              file: fs.readFileSync(assetPath)
+            });
+          }
