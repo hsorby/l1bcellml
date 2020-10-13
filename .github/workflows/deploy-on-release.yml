@@ -17,30 +17,30 @@ jobs:
       matrix:
         config:
         - {
-            name: "Windows Latest MSVC Py38", artifact: "Windows-MSVC.tar.xz",
+            name: "Windows Latest MSVC Py38", deploy_libs: true,
             os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
-            name: "Windows Latest MSVC Py37", artifact: "Windows-MSVC-2.tar.xz",
+            name: "Windows Latest MSVC Py37", deploy_libs: false,
             os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
           }
         - {
-            name: "Ubuntu Latest GCC Py36", artifact: "Linux.tar.xz",
+            name: "Ubuntu Latest GCC Py36", deploy_libs: true,
             os: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.6
           }
         - {
-            name: "macOS Latest Clang Py38", artifact: "macOS.tar.xz",
+            name: "macOS Latest Clang Py38", deploy_libs: true,
             os: macos-latest,
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
           }
         - {
-            name: "macOS Latest Clang Py37", artifact: "macOS.tar-2.xz",
+            name: "macOS Latest Clang Py37", deploy_libs: false,
             os: macos-latest,
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.7
           }
@@ -229,9 +229,10 @@ jobs:
         execute_process(
           COMMAND echo "::set-output name=files::${_DIST_FILES}")
 
-    - name: Deploy
+    - name: Deploy Libraries
       id: deploy
       uses: actions/github-script@v3
+      if: ${{ matrix.config.deploy_libs }}
       env:
         DATA: ${{ steps.package.outputs.files }}
       with:
@@ -239,30 +240,39 @@ jobs:
         script: |
           // Deploy library script.
 
-          // ${{ github.event.release }}
-          // ${{ github.event.release.upload_url }}
-          // ${{ steps.package.outputs.files }}
           let upload_url = context.payload.release.upload_url
           upload_url = upload_url.split('{').shift()
           const count = ${{ steps.package.outputs.count }}
-          console.log(upload_url)
 
           const fs = require('fs');
 
-          console.log(process.env.DATA)
           const files = process.env.DATA.split(';')
-          console.log(files)
 
           for (let index in files) {
             const assetPath = files[index]
-            console.log(assetPath)
             const assetName = assetPath.split('/').pop();
             const contentLength = filePath => fs.statSync(filePath).size;
             const headers = { 'content-type': 'application/octet-stream', 'content-length': contentLength(assetPath) };
-            upload_url = upload_url + '?name=' + assetName
+            const upload_url_with_name = upload_url + '?name=' + assetName
             const uploadAssetResponse = await github.repos.uploadReleaseAsset({
-              url: upload_url,
+              url: upload_url_with_name,
               headers,
               file: fs.readFileSync(assetPath)
             });
           }
+
+    - name: Deploy Python
+      id: deploy_python
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        # Deploy Python
+
+        python --version
+        python -m pip install --upgrade pip
+        pip install setuptools twine wheel
+        cd build/src/bindings/python
+        python setup.py sdist bdist_wheel
+        ls dist/*
+        twine upload dist/*
