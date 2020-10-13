@@ -226,28 +226,30 @@ jobs:
         endif()
 
         file(GLOB _DIST_FILES ${ACTION_DIR}/build/dist/*)
-        set(_INDEX 0)
-        foreach(_DIST_FILE ${_DIST_FILES})
-          math(EXPR _INDEX "${_INDEX} + 1")
-          message(STATUS "file_${_INDEX}::${_DIST_FILE}")
+        $set(_OUTPUT_DIST_FILES)
+        $foreach(_DIST_FILE ${_DIST_FILES})
+        $  message(STATUS "file_${_INDEX}::${_DIST_FILE}")
+        $  list(APPEND(
           #echo "::set-output name=action_fruit::strawberry"
-          execute_process(
-            COMMAND echo "::set-output name=file_${_INDEX}::${_DIST_FILE}")
-        endforeach()
+        $  execute_process(
+        $    COMMAND echo "::set-output name=file_${_INDEX}::${_DIST_FILE}")
+        $endforeach()
         execute_process(
-          COMMAND echo "::set-output name=count::${_INDEX}")
+          COMMAND echo "::set-output name=files::${_DIST_FILES}")
 
     - name: Deploy
       id: deploy
       uses: actions/github-script@v3
+      env:
+        DATA: ${{ steps.package.outputs.files }}
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
+        github-token: ${{secrets.ABI_GIT_USER_WRITE_TOKEN}}
         script: |
           // Deploy library script.
 
           // ${{ github.event.release }}
           // ${{ github.event.release.upload_url }}
-          // ${{ steps.package.outputs.count }}
+          // ${{ steps.package.outputs.files }}
           // ${{ steps.package.outputs.file_1 }}
           // ${{ steps.package.outputs.file_2 }}
           // ${{ steps.package.outputs.file_3 }}
@@ -259,9 +261,12 @@ jobs:
 
           const fs = require('fs');
 
-          for (let i = 1; i <= ${{ steps.package.outputs.count }}; i++) {
-            const f = 'file_' + i.toString()
-            const assetPath = core.getInput(f, { required: true }); //steps.package.outputs[f]
+          console.log(process.env.DATA)
+          const files = process.env.DATA.split(';')
+
+          for (assetPath in files) {
+            //const f = 'file_' + i.toString()
+            //const assetPath = core.getInput(f, { required: true }); //steps.package.outputs[f]
             console.log("============")
             console.log(assetPath)
             const assetName = assetPath.split(['/','\\']).pop();
