@@ -259,7 +259,7 @@ jobs:
 
           const fs = require('fs');
 
-          for (let i = 0; i < ${{ steps.package.outputs.count }}; i++) {
+          for (let i = 1; i <= ${{ steps.package.outputs.count }}; i++) {
             const f = 'file_' + i.toString()
             const assetPath = core.getInput(f, { required: true }); //steps.package.outputs[f]
             console.log("============")
