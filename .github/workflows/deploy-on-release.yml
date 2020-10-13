@@ -226,12 +226,16 @@ jobs:
         endif()
 
         file(GLOB _DIST_FILES ${ACTION_DIR}/build/dist/*)
-        set(_INDEX 1)
+        set(_INDEX 0)
         foreach(_DIST_FILE ${_DIST_FILES})
-          message(STATUS "file_${_INDEX}::${_DIST_FILE}")
           math(EXPR _INDEX "${_INDEX} + 1")
+          message(STATUS "file_${_INDEX}::${_DIST_FILE}")
           #echo "::set-output name=action_fruit::strawberry"
+          execute_process(
+            COMMAND echo "::set-output name=file_${_INDEX}::${_DIST_FILE}")
         endforeach()
+        execute_process(
+          COMMAND echo "::set-output name=count::${_INDEX}")
 
     - name: Deploy
       shell: cmake -P {0}
@@ -240,4 +244,9 @@ jobs:
 
         # ${{ github.event.release }}
         # ${{ github.event.release.upload_url }}
+        # ${{ steps.package.outputs.count }}
+        # ${{ steps.package.outputs.file_1 }}
+        # ${{ steps.package.outputs.file_2 }}
+        # ${{ steps.package.outputs.file_3 }}
+        # ${{ steps.package.outputs.file_4 }}
 
