@@ -263,11 +263,13 @@ jobs:
 
           console.log(process.env.DATA)
           const files = process.env.DATA.split(';')
+          console.log(files)
 
-          for (assetPath in files) {
+          for (let index in files) {
             //const f = 'file_' + i.toString()
             //const assetPath = core.getInput(f, { required: true }); //steps.package.outputs[f]
             console.log("============")
+            const assetPath = files[index]
             console.log(assetPath)
             const assetName = assetPath.split(['/','\\']).pop();
             const contentLength = filePath => fs.statSync(filePath).size;
