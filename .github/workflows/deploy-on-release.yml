@@ -259,10 +259,10 @@ jobs:
             const assetName = assetPath.split('/').pop();
             const contentLength = filePath => fs.statSync(filePath).size;
             const headers = { 'content-type': 'application/octet-stream', 'content-length': contentLength(assetPath) };
+            upload_url = upload_url + '?name=' + assetName
             const uploadAssetResponse = await github.repos.uploadReleaseAsset({
               url: upload_url,
               headers,
-              name: assetName,
               file: fs.readFileSync(assetPath)
             });
           }
