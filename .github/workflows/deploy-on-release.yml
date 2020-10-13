@@ -226,14 +226,14 @@ jobs:
         endif()
 
         file(GLOB _DIST_FILES ${ACTION_DIR}/build/dist/*)
-        $set(_OUTPUT_DIST_FILES)
-        $foreach(_DIST_FILE ${_DIST_FILES})
-        $  message(STATUS "file_${_INDEX}::${_DIST_FILE}")
-        $  list(APPEND(
+        #set(_OUTPUT_DIST_FILES)
+        #foreach(_DIST_FILE ${_DIST_FILES})
+        #  message(STATUS "file_${_INDEX}::${_DIST_FILE}")
+        #  list(APPEND(
           #echo "::set-output name=action_fruit::strawberry"
-        $  execute_process(
-        $    COMMAND echo "::set-output name=file_${_INDEX}::${_DIST_FILE}")
-        $endforeach()
+        #  execute_process(
+        #    COMMAND echo "::set-output name=file_${_INDEX}::${_DIST_FILE}")
+        #endforeach()
         execute_process(
           COMMAND echo "::set-output name=files::${_DIST_FILES}")
 
