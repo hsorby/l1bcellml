@@ -40,7 +40,7 @@ setup(
     url='http://cellml.org',
     license='Apache Software License',
     description=doclines[0],
-    classifiers=filter(None, classifiers.split("\n")),
+    classifiers=classifiers.split("\n"),
     long_description=open('README.rst').read(),
     long_description_content_type='text/x-rst',
     distclass=BinaryDistribution,
