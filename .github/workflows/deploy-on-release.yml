@@ -260,12 +260,8 @@ jobs:
             });
           }
 
-    - name: Deploy Python
+    - name: Create Python Packages
       shell: bash
-      id: deploy_python
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         # Deploy Python
 
@@ -277,6 +273,43 @@ jobs:
         else
           cd build/src/bindings/python
         fi
-        python setup.py sdist bdist_wheel
-        ls dist/*
-        twine upload dist/*
+        python setup.py bdist_wheel
+
+    - name: Test Python Packages
+      shell: bash
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        # Deploy Python
+
+        pip install virtualenv
+        virtualenv venv_test
+        if [ ${{ runner.os }} = Windows ]; then
+          whl=`ls build/src/bindings/python/Release/dist/*.whl`
+          ls venv_test
+          ./venv_test/Scripts/activate
+        else
+          whl=`ls build/src/bindings/python/dist/*.whl`
+          source venv_test/bin/activate
+        fi
+
+        echo "== $whl"
+        pip install $whl
+        python -c "import libcellml"
+
+    - name: Upload Python Packages
+      shell: bash
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        # Upload Python packages
+
+        if [ ${{ runner.os }} = Windows ]; then
+          cd build/src/bindings/python/Release
+        else
+          cd build/src/bindings/python
+        fi
+
+        twine upload --skip-existing dist/*
