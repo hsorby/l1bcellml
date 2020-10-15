@@ -7,6 +7,7 @@ on:
 
 env:
   BUILD_TYPE: Release
+  MACOSX_DEPLOYMENT_TARGET: 10.14
 
 jobs:
   build:
@@ -216,7 +217,7 @@ jobs:
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         execute_process(
-          COMMAND ${CMAKE_CPACK_COMMAND} -C $ENV{BUILD_TYPE}
+          COMMAND ${CMAKE_CPACK_COMMAND} -D PACKAGE_ANY_LINUX=TRUE -C $ENV{BUILD_TYPE}
           WORKING_DIRECTORY "${ACTION_DIR}/build"
           RESULT_VARIABLE result
         )
@@ -260,7 +261,7 @@ jobs:
             });
           }
 
-    - name: Create Python Packages
+    - name: Create Python Package
       shell: bash
       run: |
         # Deploy Python
@@ -275,11 +276,8 @@ jobs:
         fi
         python setup.py bdist_wheel
 
-    - name: Test Python Packages
+    - name: Test Python Package
       shell: bash
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         # Deploy Python
 
@@ -287,8 +285,7 @@ jobs:
         virtualenv venv_test
         if [ ${{ runner.os }} = Windows ]; then
           whl=`ls build/src/bindings/python/Release/dist/*.whl`
-          ls venv_test
-          ./venv_test/Scripts/activate
+          source venv_test/Scripts/activate
         else
           whl=`ls build/src/bindings/python/dist/*.whl`
           source venv_test/bin/activate
@@ -298,7 +295,7 @@ jobs:
         pip install $whl
         python -c "import libcellml"
 
-    - name: Upload Python Packages
+    - name: Upload Python Package
       shell: bash
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
