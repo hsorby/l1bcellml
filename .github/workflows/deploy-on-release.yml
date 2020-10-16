@@ -37,12 +37,12 @@ jobs:
           }
         - {
             name: "macOS Latest Clang Py38", deploy_libs: true,
-            os: macos-latest,
+            os: macos-latest, rpaths: "@loaderpath/../../;/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
           }
         - {
             name: "macOS Latest Clang Py37", deploy_libs: false,
-            os: macos-latest,
+            os: macos-latest, rpaths: "@loaderpath/../../;/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.7
           }
 
@@ -185,6 +185,22 @@ jobs:
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Build failed.")
+        endif()
+
+        if ("${{ runner.os }}" STREQUAL "macOS")
+          # Have to manipulate the rpath for the Python macOS binaries in the libcellml Python package.
+          set(DESIRED_RPATHS "${{ matrix.config.rpaths }}")
+          file(GLOB _TARGET_BINARIES ${ACTION_DIR}/build/src/bindings/python/libcellml/_*.so)
+          foreach(_TARGET_BINARY ${_TARGET_BINARIES})
+            foreach(DESIRED_RPATH ${DESIRED_RPATHS})
+              execute_process(
+                COMMAND install_name_tool -add_rpath ${DESIRED_RPATH} ${_TARGET_BINARY}
+              )
+            endforeach()
+            execute_process(
+              COMMAND install_name_tool -change $ENV{pythonLocation} @rpath/Python ${_TARGET_BINARY}
+            )
+          endforeach()
         endif()
 
     - name: Test
