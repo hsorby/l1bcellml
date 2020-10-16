@@ -37,12 +37,12 @@ jobs:
           }
         - {
             name: "macOS Latest Clang Py38", deploy_libs: true,
-            os: macos-latest, rpaths: "@loaderpath/../../;/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
+            os: macos-latest, rpaths: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
           }
         - {
             name: "macOS Latest Clang Py37", deploy_libs: false,
-            os: macos-latest, rpaths: "@loaderpath/../../;/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/",
+            os: macos-latest, rpaths: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.7
           }
 
@@ -197,9 +197,12 @@ jobs:
                 COMMAND install_name_tool -add_rpath ${DESIRED_RPATH} ${_TARGET_BINARY}
               )
             endforeach()
-            execute_process(
-              COMMAND install_name_tool -change $ENV{pythonLocation} @rpath/Python ${_TARGET_BINARY}
-            )
+            file(GLOB _TARGET_PYTHON_LIBS $ENV{pythonLocation}/lib/libpython*.dylib)
+            foreach(_TARGET_PYTHON_LIB ${_TARGET_PYTHON_LIBS})
+              execute_process(
+                COMMAND install_name_tool -change ${_TARGET_PYTHON_LIB} @rpath/Python ${_TARGET_BINARY}
+              )
+            endforeach()
           endforeach()
         endif()
 
