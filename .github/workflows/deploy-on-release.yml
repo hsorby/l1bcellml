@@ -21,29 +21,29 @@ jobs:
             name: "Windows Latest MSVC Py38", deploy_libs: true,
             os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
-            build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8.5,
+            build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
             name: "Windows Latest MSVC Py37", deploy_libs: false,
             os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
-            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7.9
+            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
           }
         - {
             name: "Ubuntu Latest GCC Py36", deploy_libs: true,
             os: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
-            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.6.12
+            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.6
           }
         - {
             name: "macOS Latest Clang Py38", deploy_libs: true,
-            os: macos-latest, rpaths: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
-            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8.6
+            os: macos-latest, python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
+            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
           }
         - {
             name: "macOS Latest Clang Py37", deploy_libs: false,
-            os: macos-latest, rpaths: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/",
-            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.7.9
+            os: macos-latest, python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/",
+            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.7
           }
 
     steps:
@@ -107,7 +107,6 @@ jobs:
           endforeach()
           file(TO_NATIVE_PATH "${WIN_PATH}" WIN_PATH)
           set(ENV{PATH} "${WIN_PATH}")
-          #execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib" -B "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
@@ -123,6 +122,13 @@ jobs:
           execute_process(COMMAND ./configure WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2")
           execute_process(COMMAND make WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2")
           execute_process(COMMAND sudo make install WORKING_DIRECTORY "${ACTION_DIR}/swig-4.0.2")
+        endif()
+
+        if ("${{ runner.os }}" STREQUAL "macOS")
+          execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }})
+          execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}/Python)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink $ENV{pythonLocation}/python ${{ matrix.config.python_rpath }}/Python)
+          set(PYTHON_EXE ${Python_EXECUTABLE})
         endif()
 
 
@@ -142,12 +148,6 @@ jobs:
           set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
           file(TO_CMAKE_PATH "${PYTHON_LOCATION}/python.exe" PYTHON_EXE)
         else()
-          find_package(Python)
-          if (Python_VERSION EQUAL ${{ matrix.config.python_version }})
-            set(PYTHON_EXE ${Python_EXECUTABLE})
-          else()
-            set(PYTHON_EXE ${PYTHON_LOCATION}/python)
-          endif()
           list(APPEND OPTIONAL_ARGUMENTS -D BUILD_TYPE=$ENV{BUILD_TYPE})
         endif()
 
@@ -194,7 +194,7 @@ jobs:
 
         if ("${{ runner.os }}" STREQUAL "macOS")
           # Have to manipulate the rpath for the Python macOS binaries in the libcellml Python package.
-          set(DESIRED_RPATHS "${{ matrix.config.rpaths }}")
+          set(DESIRED_RPATHS "${{ matrix.config.python_rpath }}")
           file(GLOB _TARGET_BINARIES ${ACTION_DIR}/build/src/bindings/python/libcellml/_*.so)
           foreach(_TARGET_BINARY ${_TARGET_BINARIES})
             foreach(DESIRED_RPATH ${DESIRED_RPATHS})
