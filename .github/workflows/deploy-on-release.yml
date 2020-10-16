@@ -47,7 +47,7 @@ jobs:
           }
 
     steps:
-    - name: Checkout
+    - name: Checkout libCellML
       uses: actions/checkout@v2
 
     - name: Checkout zlib
@@ -199,8 +199,10 @@ jobs:
             endforeach()
             file(GLOB _TARGET_PYTHON_LIBS $ENV{pythonLocation}/lib/libpython*.dylib)
             file(GLOB _STUFF ${ACTION_DIR}/build/src/bindings/python/libcellml/*)
+            file(GLOB _OTHER ${DESIRED_RPATHS}/*)
             message(STATUS "==================")
-            message(STATUS "files in libcellml: ${_STUFF}")
+            #message(STATUS "files in libcellml: ${_STUFF}")
+            message(STATUS "_OTHER: ${_OTHER}")
             message(STATUS "DESIRED_RPATHS: ${DESIRED_RPATHS}")
             message(STATUS "_TARGET_PYTHON_LIBS: ${_TARGET_PYTHON_LIBS}")
             foreach(_TARGET_PYTHON_LIB ${_TARGET_PYTHON_LIBS})
