@@ -127,7 +127,9 @@ jobs:
         if ("${{ runner.os }}" STREQUAL "macOS")
           execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }})
           execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}/Python)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink $ENV{pythonLocation}/python ${{ matrix.config.python_rpath }}/Python)
+          file(GLOB _FILES $ENV{pythonLocation}/lib/*)
+          message(STATUS "_FILES: ${_FILES}")
+          execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink $ENV{pythonLocation}/lib/libpython.dylib ${{ matrix.config.python_rpath }}/Python)
           set(PYTHON_EXE ${Python_EXECUTABLE})
         endif()
 
