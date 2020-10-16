@@ -124,10 +124,17 @@ foreach(SWIG_INTERFACE_SRC ${SWIG_INTERFACE_SRCS})
       COMPILE_OPTIONS "-Wno-deprecated-declarations"
     )
   endif()
+  if(APPLE)
+    set(RPATH_ORIGIN "@loader_path/.")
+  elseif(LINUX)
+    set(RPATH_ORIGIN "\$ORIGIN/.")
+  else()
+    set(RPATH_ORIGIN "no_rpath")
+  endif()
   set_target_properties(${MODULE_TARGET} PROPERTIES
     CXX_VISIBILITY_PRESET hidden
     BUILD_WITH_INSTALL_RPATH TRUE
-    INSTALL_RPATH "@loader_path/."
+    INSTALL_RPATH "${RPATH_ORIGIN}"
     FOLDER bindings/python
     RUNTIME_OUTPUT_DIRECTORY ${LIBCELLML_PYTHON_PACKAGE_DIR}
     LIBRARY_OUTPUT_DIRECTORY ${LIBCELLML_PYTHON_PACKAGE_DIR}
