@@ -128,10 +128,7 @@ jobs:
           execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }})
           execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}Python)
           file(GLOB _DYNAMIC_LIBRARY $ENV{pythonLocation}/lib/libpython*.dylib)
-          message(STATUS "_FILES: ${_FILES}")
-          message(STATUS "${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}Python")
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}Python)
-          set(PYTHON_EXE ${Python_EXECUTABLE})
         endif()
 
 
@@ -152,6 +149,7 @@ jobs:
           file(TO_CMAKE_PATH "${PYTHON_LOCATION}/python.exe" PYTHON_EXE)
         else()
           list(APPEND OPTIONAL_ARGUMENTS -D BUILD_TYPE=$ENV{BUILD_TYPE})
+          set(PYTHON_EXE ${PYTHON_LOCATION}/python)
         endif()
 
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
