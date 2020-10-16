@@ -21,7 +21,7 @@ jobs:
             name: "Windows Latest MSVC Py38", deploy_libs: true,
             os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
-            build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8.6,
+            build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8.5,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
