@@ -150,7 +150,6 @@ jobs:
         else()
           list(APPEND OPTIONAL_ARGUMENTS -D BUILD_TYPE=$ENV{BUILD_TYPE})
           list(APPEND OPTIONAL_ARGUMENTS -D COVERAGE=OFF)
-          if (APPLE)
           set(PYTHON_EXE ${PYTHON_LOCATION}/python)
         endif()
 
