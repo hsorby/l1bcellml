@@ -2,7 +2,7 @@ name: libcellml-deploy-on-release
 
 on:
   release:
-    types: # This configuration does not affect the page_build event above
+    types:
       - created
 
 env:
@@ -156,6 +156,9 @@ jobs:
         if ("${{ matrix.config.cc }}" STREQUAL "clang")
           list(APPEND OPTIONAL_ARGUMENTS -D LLVM_COVERAGE=OFF)
         endif()
+        if ("${{ matrix.config.os }}" STREQUAL "ubuntu-latest")
+          list(APPEND OPTIONAL_ARGUMENTS -D PACKAGE_ANY_LINUX=TRUE)
+        endif()
 
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.libxml2_dir }})
@@ -247,7 +250,7 @@ jobs:
 
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         execute_process(
-          COMMAND ${CMAKE_CPACK_COMMAND} -D PACKAGE_ANY_LINUX=TRUE -C $ENV{BUILD_TYPE}
+          COMMAND ${CMAKE_CPACK_COMMAND} -C $ENV{BUILD_TYPE}
           WORKING_DIRECTORY "${ACTION_DIR}/build"
           RESULT_VARIABLE result
         )
