@@ -37,7 +37,7 @@ setup(
     author_email='libcellml@googlegroups.com',
     packages=['libcellml'],
     package_data={'libcellml': [@SETUP_PY_PACKAGE_FILES_STR@]},
-    url='http://libcellml.org',
+    url='@PYPI_PACKAGE_URL@',
     license='Apache Software License',
     description=doclines[0],
     classifiers=classifiers.split("\n"),
