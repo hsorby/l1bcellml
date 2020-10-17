@@ -18,30 +18,30 @@ jobs:
       matrix:
         config:
         - {
-            name: "Windows Latest MSVC Py38", deploy_libs: true,
+            name: "Windows Latest MSVC Py38", deploy_libs: true, deploy_python: true,
             os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
-            name: "Windows Latest MSVC Py37", deploy_libs: false,
+            name: "Windows Latest MSVC Py37", deploy_libs: false, deploy_python: true,
             os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
           }
         - {
-            name: "Ubuntu Latest GCC Py36", deploy_libs: true,
+            name: "Ubuntu Latest GCC Py36", deploy_libs: true, deploy_python: false,
             os: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.6
           }
         - {
-            name: "macOS Latest Clang Py38", deploy_libs: true,
+            name: "macOS Latest Clang Py38", deploy_libs: true, deploy_python: true,
             os: macos-latest, python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
           }
         - {
-            name: "macOS Latest Clang Py37", deploy_libs: false,
+            name: "macOS Latest Clang Py37", deploy_libs: false, deploy_python: true,
             os: macos-latest, python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.7
           }
@@ -149,7 +149,13 @@ jobs:
           file(TO_CMAKE_PATH "${PYTHON_LOCATION}/python.exe" PYTHON_EXE)
         else()
           list(APPEND OPTIONAL_ARGUMENTS -D BUILD_TYPE=$ENV{BUILD_TYPE})
+          list(APPEND OPTIONAL_ARGUMENTS -D COVERAGE=OFF)
+          if (APPLE)
           set(PYTHON_EXE ${PYTHON_LOCATION}/python)
+        endif()
+
+        if ("${{ matrix.config.cc }}" STREQUAL "clang")
+          list(APPEND OPTIONAL_ARGUMENTS -D LLVM_COVERAGE=OFF)
         endif()
 
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
@@ -204,13 +210,6 @@ jobs:
               )
             endforeach()
             file(GLOB _TARGET_PYTHON_LIBS $ENV{pythonLocation}/lib/libpython*.dylib)
-            file(GLOB _STUFF ${ACTION_DIR}/build/src/bindings/python/libcellml/*)
-            file(GLOB _OTHER ${DESIRED_RPATHS}/*)
-            message(STATUS "==================")
-            #message(STATUS "files in libcellml: ${_STUFF}")
-            message(STATUS "_OTHER: ${_OTHER}")
-            message(STATUS "DESIRED_RPATHS: ${DESIRED_RPATHS}")
-            message(STATUS "_TARGET_PYTHON_LIBS: ${_TARGET_PYTHON_LIBS}")
             foreach(_TARGET_PYTHON_LIB ${_TARGET_PYTHON_LIBS})
               execute_process(
                 COMMAND install_name_tool -change ${_TARGET_PYTHON_LIB} @rpath/Python ${_TARGET_BINARY}
@@ -295,6 +294,7 @@ jobs:
 
     - name: Create Python Package
       shell: bash
+      if: ${{ matrix.config.deploy_python }}
       run: |
         # Deploy Python
 
@@ -310,6 +310,7 @@ jobs:
 
     - name: Test Python Package
       shell: bash
+      if: ${{ matrix.config.deploy_python }}
       run: |
         # Test Python Package
 
@@ -328,6 +329,7 @@ jobs:
 
     - name: Upload Python Package
       shell: bash
+      if: ${{ matrix.config.deploy_python }}
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
