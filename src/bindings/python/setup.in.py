@@ -16,6 +16,7 @@ Operating System :: MacOS :: MacOS X
 Topic :: Software Development :: Libraries :: Python Modules
 """
 
+import os
 from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools.command.install import install
@@ -34,7 +35,8 @@ class BinaryDistribution(Distribution):
 class InstallCommand(install):
     def initialize_options(self):
         super().initialize_options()
-        self.install_lib = ""
+        if os.name != 'nt':
+            self.install_lib = ""
 
 
 setup(

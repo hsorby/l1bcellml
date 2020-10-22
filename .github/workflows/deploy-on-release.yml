@@ -18,9 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - {
-            name: "Many Linux 2014 Py37", cc: "cl", cxx: "cl", python_version: 3.7,
-          }
     steps:
     - name: Checkout libCellML
       uses: actions/checkout@v2
@@ -47,36 +44,46 @@ jobs:
   vm:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
+    container: ${{ matrix.config.container }}
     strategy:
       fail-fast: false
       matrix:
         config:
         - {
             name: "Windows Latest MSVC Py38", deploy_libs: true, deploy_python: true,
-            os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
+            os: windows-latest, container: windows-latest,
+            libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
             name: "Windows Latest MSVC Py37", deploy_libs: false, deploy_python: true,
-            os: windows-latest, libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
+            os: windows-latest, container: windows-latest,
+            libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
           }
         - {
             name: "Ubuntu Latest GCC Py36", deploy_libs: true, deploy_python: false,
-            os: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
+            os: ubuntu-latest, container: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.6
           }
         - {
+            name: "Many Linux 2014 Py37", cc: "cl", cxx: "cl", python_version: 3.7,
+            os: ubuntu-latest, container: quay.io/pypa/manylinux2014_x86_64,
+            deploy_libs: false, deploy_python: true,
+          }
+        - {
             name: "macOS Latest Clang Py38", deploy_libs: true, deploy_python: true,
-            os: macos-latest, python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
+            os: macos-latest, container: macos-latest,
+            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
           }
         - {
             name: "macOS Latest Clang Py37", deploy_libs: false, deploy_python: true,
-            os: macos-latest, python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/",
+            os: macos-latest, container: macos-latest,
+            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.7
           }
 
