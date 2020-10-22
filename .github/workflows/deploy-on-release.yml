@@ -78,8 +78,8 @@ jobs:
 
         cd $src_dir/Python-3.7.9/
         ./configure --enable-shared  --enable-optimizations
-        make -j3
-        make install
+        make -j3 build_all
+        make altinstall
 
         mkdir $work_dir/build-swig
         cd $work_dir/build-swig
