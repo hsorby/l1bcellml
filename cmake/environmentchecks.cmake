@@ -84,7 +84,7 @@ mark_as_advanced(
 
 # Find libxml2
 set(HAVE_LIBXML2_CONFIG FALSE)
-if(MSVC)
+#if(MSVC)
   # If we want to use config packages on Windows with Visual Studio,
   # we need to have two find_package calls and explicitly state that
   # we wish to use Config mode in the first call.  Finding LibXml2 in config mode
@@ -113,9 +113,9 @@ if(MSVC)
       unset(LibXml2_DIR CACHE)
     endif()
   endif()
-else()
-  find_package(LibXml2 REQUIRED)
-endif()
+#else()
+#  find_package(LibXml2 REQUIRED)
+#endif()
 
 if(WIN32)
   if(CLCACHE_EXE)
