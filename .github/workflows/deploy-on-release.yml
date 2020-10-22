@@ -45,9 +45,15 @@ jobs:
         echo $work_dir
         echo $src_dir
 
+        # fetch libraries
         git clone https://github.com/hsorby/l1bcellml -b develop --depth 1 $src_dir/libcellml
         git clone https://github.com/OpenCMISS-Dependencies/zlib -b v1.2.3 --depth 1 $src_dir/zlib
         git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.6 --depth 1 $src_dir/libxml2
+
+        curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $downloads_dir/swig-4.0.2.tar.gz
+
+        cd $src_dir
+        tar -xzf $downloads_dir/swig-4.0.2.tar.gz
 
         ls $src_dir
 
