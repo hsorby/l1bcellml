@@ -20,23 +20,26 @@ jobs:
         config:
         - {
             name: "Many Linux 2014 Py37", cc: "cl", cxx: "cl", python_version: 3.7,
+            src_path: "/home/src"
           }
     steps:
     - name: Checkout libCellML
       uses: actions/checkout@v2
+      with:
+        path: ${{ matrix.config.src_path }}/libcellml
 
     - name: Checkout zlib
       uses: actions/checkout@v2
       with:
         repository: OpenCMISS-Dependencies/zlib
-        path: zlib
+        path: ${{ matrix.config.src_path }}/zlib
         ref: v1.2.3
 
     - name: Checkout LibXml2
       uses: actions/checkout@v2
       with:
         repository: OpenCMISS-Dependencies/libxml2
-        path: libxml2
+        path: ${{ matrix.config.src_path }}/libxml2
         ref: v2.9.6
 
     - name: Set up Python ${{ matrix.config.python_version }}
@@ -49,7 +52,7 @@ jobs:
       run: |
         echo $pwd
         ls
-        .github/scripts/python-wheel.sh
+        ${{ matrix.config.src_path }}/libcellml/.github/scripts/python-wheel.sh ${{ matrix.config.src_path }}
 
   vm:
     name: ${{ matrix.config.name }}
