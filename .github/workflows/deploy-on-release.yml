@@ -10,7 +10,41 @@ env:
   MACOSX_DEPLOYMENT_TARGET: 10.14
 
 jobs:
-  build:
+  container:
+    name: ${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux2014_x86_64
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Many Linux 2014 Py37", cc: "cl", cxx: "cl", python_version: 3.7,
+          }
+    steps:
+    - name: Checkout libCellML
+      uses: actions/checkout@v2
+
+    - name: Checkout zlib
+      uses: actions/checkout@v2
+      with:
+        repository: OpenCMISS-Dependencies/zlib
+        path: zlib
+        ref: v1.2.3
+
+    - name: Checkout LibXml2
+      uses: actions/checkout@v2
+      with:
+        repository: OpenCMISS-Dependencies/libxml2
+        path: libxml2
+        ref: v2.9.6
+
+    - name: Set up Python ${{ matrix.config.python_version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.config.python_version }}
+
+  vm:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
@@ -55,7 +89,7 @@ jobs:
       with:
         repository: OpenCMISS-Dependencies/zlib
         path: zlib
-        ref: develop
+        ref: v1.2.3
 
     - name: Checkout LibXml2
       uses: actions/checkout@v2

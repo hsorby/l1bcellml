@@ -18,6 +18,7 @@ Topic :: Software Development :: Libraries :: Python Modules
 
 from setuptools import setup
 from setuptools.dist import Distribution
+from setuptools.command.install import install
 
 doclines = __doc__.split("\n")
 
@@ -28,6 +29,12 @@ class BinaryDistribution(Distribution):
 
     def has_ext_modules(self):
         return True
+
+
+class InstallCommand(install):
+    def initialize_options(self):
+        super().initialize_options()
+        self.install_lib = ""
 
 
 setup(
@@ -44,6 +51,9 @@ setup(
     long_description=open('README.rst').read(),
     long_description_content_type='text/x-rst',
     distclass=BinaryDistribution,
+    cmdclass={
+        'install': InstallCommand,
+    },
     include_package_data=True,
     zip_safe=False,
 )
