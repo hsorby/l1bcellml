@@ -33,6 +33,7 @@ jobs:
       run: |
         echo $pwd
         ls
+        which python
         downloads_dir=/home/downloads
         work_dir=/home/work
         src_dir=${{ matrix.config.src_path }}
@@ -51,6 +52,8 @@ jobs:
         git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.6 --depth 1 $src_dir/libxml2
 
         curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $downloads_dir/swig-4.0.2.tar.gz
+        curl -L https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz > $downloads_dir/Python-3.7.9.tar.gz
+        curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $downloads_dir/openssl-1.1.1h.tar.gz
 
         cd $src_dir
         tar -xzf $downloads_dir/swig-4.0.2.tar.gz
