@@ -14,7 +14,7 @@ echo $work_dir
 echo $src_dir
 
 # fetch libraries
-git clone https://github.com/hsorby/l1bcellml -b develop --depth 1 $src_dir/libcellml
+git clone https://github.com/hsorby/l1bcellml -b master --depth 1 $src_dir/libcellml
 git clone https://github.com/OpenCMISS-Dependencies/zlib -b v1.2.3 --depth 1 $src_dir/zlib
 git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.6 --depth 1 $src_dir/libxml2
 
