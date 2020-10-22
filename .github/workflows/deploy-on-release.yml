@@ -51,6 +51,29 @@ jobs:
 
         ls $src_dir
 
+        # build libraries
+
+        mkdir $work_dir/build-swig
+        cd $work_dir/build-swig
+        $src_dir/swig-4.0.2/configure
+        make -j3
+        make install
+
+        cmake -S $src_dir/zlib -B $work_dir/build-zlib -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF
+        cd $work_dir/build-zlib
+        make -j3
+        make install
+
+        cmake -S $src_dir/libxml2 -B $work_dir/build-libxml2 -D CMAKE_BUILD_TYPE=Release -D BUILD_SHARED_LIBS=OFF -D BUILD_TESTS=OFF
+        cd $work_dir/build-libxml2
+        make -j3
+        make install
+
+        cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
+        cd $work_dir/build-libcellml
+        make -j3
+        make install
+
         #/libcellml/.github/scripts/python-wheel.sh ${{ matrix.config.src_path }}
 
   vm:
