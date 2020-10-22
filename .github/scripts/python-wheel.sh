@@ -3,15 +3,24 @@
 
 downloads_dir=/home/downloads
 work_dir=/home/work
+src_dir=$1
 
 mkdir $downloads_dir
 mkdir $work_dir
+
+echo $downloads_dir
+echo $work_dir
+echo $src_dir
+
+ls $src_dir
 
 curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $downloads_dir/openssl-1.1.1h.tar.gz
 
 cd $work_dir
 tar -xzf $downloads_dir/openssl-1.1.1h.tar.gz
 cd openssl-1.1.1h
+echo $pwd
+echo ls
 ./Config
 make -j3
 make install
