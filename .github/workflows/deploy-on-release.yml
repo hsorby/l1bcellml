@@ -110,6 +110,11 @@ jobs:
         downloads_dir=/home/downloads
         work_dir=/home/work
         src_dir=${{ matrix.config.src_path }}
+        ls /usr/local/bin
+        echo "+++++++++++++++"
+        which python3
+        which pip
+        which pip3
 
         cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $work_dir/build-libcellml
@@ -131,10 +136,10 @@ jobs:
         # Deploy Python
 
         work_dir=/home/work
+        ls /usr/local/bin
 
-        /usr/local/bin/python --version
-        /usr/local/bin/python -m pip install --upgrade pip
-        /usr/local/bin/pip install setuptools twine wheel auditwheel
+        # /usr/local/bin/python3.7 -m pip install --upgrade pip
+        /usr/local/bin/pip3 install setuptools twine wheel auditwheel
         cd $work_dir/build/src/bindings/python
         python setup.py bdist_wheel
 
@@ -145,13 +150,13 @@ jobs:
 
         work_dir=/home/work
 
-        /usr/local/bin/python3 -m venv venv_test
+        /usr/local/bin/python3.7 -m venv venv_test
         source venv_test/bin/activate
 
         auditwheel repair dist/l1bcellml-0.3.0rc119-cp38-cp38-linux_x86_64.whl
         whl=`ls $work_dir/build/src/bindings/python/wheelhouse/*.whl`
-        pip install $whl
-        python -c "import libcellml"
+        pip3 install $whl
+        python3.7 -c "import libcellml"
 
     - name: Upload Python Package
       shell: bash
