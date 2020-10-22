@@ -23,25 +23,6 @@ jobs:
             src_path: "/home/src"
           }
     steps:
-    - name: Checkout libCellML
-      uses: actions/checkout@v2
-      with:
-        path: ${{ matrix.config.src_path }}/libcellml
-
-    - name: Checkout zlib
-      uses: actions/checkout@v2
-      with:
-        repository: OpenCMISS-Dependencies/zlib
-        path: ${{ matrix.config.src_path }}/zlib
-        ref: v1.2.3
-
-    - name: Checkout LibXml2
-      uses: actions/checkout@v2
-      with:
-        repository: OpenCMISS-Dependencies/libxml2
-        path: ${{ matrix.config.src_path }}/libxml2
-        ref: v2.9.6
-
     - name: Set up Python ${{ matrix.config.python_version }}
       uses: actions/setup-python@v2
       with:
@@ -52,7 +33,25 @@ jobs:
       run: |
         echo $pwd
         ls
-        ${{ matrix.config.src_path }}/libcellml/.github/scripts/python-wheel.sh ${{ matrix.config.src_path }}
+        downloads_dir=/home/downloads
+        work_dir=/home/work
+        src_dir=${{ matrix.config.src_path }}
+
+        mkdir $downloads_dir
+        mkdir $work_dir
+        mkdir $src_dir
+
+        echo $downloads_dir
+        echo $work_dir
+        echo $src_dir
+
+        git clone https://github.com/hsorby/l1bcellml -b develop --depth 1 $src_dir/libcellml
+        git clone https://github.com/OpenCMISS-Dependencies/zlib -b v1.2.3 --depth 1 $src_dir/zlib
+        git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.6 --depth 1 $src_dir/libxml2
+
+        ls $src_dir
+
+        #/libcellml/.github/scripts/python-wheel.sh ${{ matrix.config.src_path }}
 
   vm:
     name: ${{ matrix.config.name }}

@@ -7,23 +7,28 @@ src_dir=$1
 
 mkdir $downloads_dir
 mkdir $work_dir
+mkdir $src_dir
 
 echo $downloads_dir
 echo $work_dir
 echo $src_dir
 
+git clone https://github.com/hsorby/l1bcellml -b develop --depth 1 $src_dir/libcellml
+git clone https://github.com/OpenCMISS-Dependencies/zlib -b v1.2.3 --depth 1 $src_dir/zlib
+git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.6 --depth 1 $src_dir/libxml2
+
 ls $src_dir
 
-curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $downloads_dir/openssl-1.1.1h.tar.gz
+#curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $downloads_dir/openssl-1.1.1h.tar.gz
 
-cd $work_dir
-tar -xzf $downloads_dir/openssl-1.1.1h.tar.gz
-cd openssl-1.1.1h
-echo $pwd
-echo ls
-./Config
-make -j3
-make install
+#cd $work_dir
+#tar -xzf $downloads_dir/openssl-1.1.1h.tar.gz
+#cd openssl-1.1.1h
+#echo $pwd
+#echo ls
+#./Config
+#make -j3
+#make install
 
 #1  ls
 #    2  pwd
