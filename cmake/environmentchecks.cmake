@@ -32,6 +32,8 @@ find_program(LLVM_COV_EXE NAMES ${PREFERRED_LLVM_COV_NAMES} llvm-cov HINTS ${LLV
 find_program(LLVM_PROFDATA_EXE NAMES ${PREFERRED_LLVM_PROFDATA_NAMES} llvm-profdata HINTS ${LLVM_BIN_DIR} /Library/Developer/CommandLineTools/usr/bin/)
 find_program(VALGRIND_EXE NAMES ${PREFERRED_VALGRIND_NAMES} valgrind)
 
+message(STATUS "================")
+message(STATUS "Python_EXECUTABLE: ${Python_EXECUTABLE}")
 if(Python_Interpreter_FOUND)
   if(NOT DEFINED TEST_COVERAGE_RESULT)
     set(TEST_COVERAGE_RESULT -1 CACHE INTERNAL "Result of testing for Python coverage.")
