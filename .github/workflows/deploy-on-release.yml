@@ -134,7 +134,7 @@ jobs:
 
         /usr/local/bin/python --version
         /usr/local/bin/python -m pip install --upgrade pip
-        /usr/local/bin/pip install setuptools twine wheel
+        /usr/local/bin/pip install setuptools twine wheel auditwheel
         cd $work_dir/build/src/bindings/python
         python setup.py bdist_wheel
 
@@ -143,11 +143,13 @@ jobs:
       run: |
         # Test Python Package
 
-        /usr/local/bin/pip install virtualenv
-        virtualenv venv_test
-        whl=`ls $work_dir/build/src/bindings/python/dist/*.whl`
+        work_dir=/home/work
+
+        /usr/local/bin/python3 -m venv venv_test
         source venv_test/bin/activate
 
+        auditwheel repair dist/l1bcellml-0.3.0rc119-cp38-cp38-linux_x86_64.whl
+        whl=`ls $work_dir/build/src/bindings/python/wheelhouse/*.whl`
         pip install $whl
         python -c "import libcellml"
 
@@ -159,9 +161,11 @@ jobs:
       run: |
         # Upload Python packages
 
+        work_dir=/home/work
+
         cd $work_dir/build/src/bindings/python
 
-        twine upload --skip-existing dist/*
+        twine upload --skip-existing wheelhouse/*
 
 
   vm:
