@@ -90,7 +90,7 @@ jobs:
         make -j3
         make install
 
-        cd $src_dir/Python/
+        cd $src_dir/Python*
         ./configure --enable-shared  --enable-optimizations
         make -j3 build_all
         make altinstall
