@@ -20,7 +20,11 @@ jobs:
         config:
         - {
             name: "Many Linux 2014 Py37", cc: "cl", cxx: "cl", python_version: 3.7,
-            src_path: "/home/src"
+            python_tarball: "https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz"
+          }
+        - {
+            name: "Many Linux 2014 Py38", cc: "cl", cxx: "cl", python_version: 3.8,
+            python_tarball: "https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz"
           }
     steps:
     - name: Download source code
@@ -28,7 +32,7 @@ jobs:
       run: |
         downloads_dir=/home/downloads
         work_dir=/home/work
-        src_dir=${{ matrix.config.src_path }}
+        src_dir=/home/src
 
         mkdir $downloads_dir
         mkdir $work_dir
@@ -40,7 +44,7 @@ jobs:
         git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.6 --depth 1 $src_dir/libxml2
 
         curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $downloads_dir/swig-4.0.2.tar.gz
-        curl -L https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz > $downloads_dir/Python-3.7.9.tar.gz
+        curl -L ${{ matrix.config.python_tarball }} > $downloads_dir/Python.tar.gz
         curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $downloads_dir/openssl-1.1.1h.tar.gz
 
     - name: Extract source code
@@ -48,19 +52,19 @@ jobs:
       run: |
         downloads_dir=/home/downloads
         work_dir=/home/work
-        src_dir=${{ matrix.config.src_path }}
+        src_dir=/home/src
 
         cd $src_dir
         tar -xzf $downloads_dir/swig-4.0.2.tar.gz
         tar -xzf $downloads_dir/openssl-1.1.1h.tar.gz
-        tar -xzf $downloads_dir/Python-3.7.9.tar.gz
+        tar -xzf $downloads_dir/Python.tar.gz
 
     - name: Build and instal zlib and libXml2
       shell: bash
       run: |
         downloads_dir=/home/downloads
         work_dir=/home/work
-        src_dir=${{ matrix.config.src_path }}
+        src_dir=/home/src
 
         # build libraries
         cmake -S $src_dir/zlib -B $work_dir/build-zlib -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF
@@ -78,7 +82,7 @@ jobs:
       run: |
         downloads_dir=/home/downloads
         work_dir=/home/work
-        src_dir=${{ matrix.config.src_path }}
+        src_dir=/home/src
 
         mkdir $work_dir/build-openssl
         cd $work_dir/build-openssl
@@ -86,7 +90,7 @@ jobs:
         make -j3
         make install
 
-        cd $src_dir/Python-3.7.9/
+        cd $src_dir/Python/
         ./configure --enable-shared  --enable-optimizations
         make -j3 build_all
         make altinstall
@@ -96,7 +100,7 @@ jobs:
       run: |
         downloads_dir=/home/downloads
         work_dir=/home/work
-        src_dir=${{ matrix.config.src_path }}
+        src_dir=/home/src
 
         mkdir $work_dir/build-swig
         cd $work_dir/build-swig
@@ -109,7 +113,7 @@ jobs:
       run: |
         downloads_dir=/home/downloads
         work_dir=/home/work
-        src_dir=${{ matrix.config.src_path }}
+        src_dir=/home/src
         ls /usr/local/bin
 
         cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
@@ -121,7 +125,7 @@ jobs:
       run: |
         downloads_dir=/home/downloads
         work_dir=/home/work
-        src_dir=${{ matrix.config.src_path }}
+        src_dir=/home/src
 
         cd $work_dir/build-libcellml
         make test
@@ -133,10 +137,10 @@ jobs:
 
         work_dir=/home/work
 
-        python3.7 -m pip install --upgrade pip
-        pip3.7 install setuptools twine wheel auditwheel
+        python${{ matrix.config.name }} -m pip install --upgrade pip
+        pip${{ matrix.config.name }} install setuptools twine wheel auditwheel
         cd $work_dir/build-libcellml/src/bindings/python
-        python3.7 setup.py bdist_wheel
+        python${{ matrix.config.name }} setup.py bdist_wheel
 
     - name: Test Python Package
       shell: bash
@@ -147,14 +151,14 @@ jobs:
 
         cd $work_dir/build-libcellml/src/bindings/python
 
-        python3.7 -m venv $work_dir/venv_test
+        python${{ matrix.config.name }} -m venv $work_dir/venv_test
         source $work_dir/venv_test/bin/activate
 
         whl=`ls $work_dir/build-libcellml/src/bindings/python/dist/*.whl`
         auditwheel repair $whl
         whl=`ls $work_dir/build-libcellml/src/bindings/python/wheelhouse/*.whl`
-        pip3.7 install $whl
-        python3.7 -c "import libcellml"
+        pip${{ matrix.config.name }} install $whl
+        python${{ matrix.config.name }} -c "import libcellml"
 
     - name: Upload Python Package
       shell: bash
