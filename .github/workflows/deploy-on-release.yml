@@ -87,7 +87,7 @@ jobs:
         make -j3
         make install
 
-        cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release -D Python_EXECUTABLE=$python_exe
+        cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $work_dir/build-libcellml
         make -j3
         make install
