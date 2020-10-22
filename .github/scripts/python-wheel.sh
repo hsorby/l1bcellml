@@ -13,11 +13,39 @@ echo $downloads_dir
 echo $work_dir
 echo $src_dir
 
+# fetch libraries
 git clone https://github.com/hsorby/l1bcellml -b develop --depth 1 $src_dir/libcellml
 git clone https://github.com/OpenCMISS-Dependencies/zlib -b v1.2.3 --depth 1 $src_dir/zlib
 git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.6 --depth 1 $src_dir/libxml2
 
+curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $downloads_dir/swig-4.0.2.tar.gz
+
+cd $src_dir
+tar -xzf $downloads_dir/swig-4.0.2.tar.gz
+
 ls $src_dir
+
+# build libraries
+mkdir $work_dir/build-swig
+cd $work_dir/build-swig
+$src_dir/swig-4.0.2/configure
+make -j3
+make install
+
+cmake -S $src_dir/zlib -B $work_dir/build-zlib -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF
+cd $work_dir/build-zlib
+make -j3
+make install
+
+cmake -S $src_dir/libxml2 -B $work_dir/build-libxml2 -D CMAKE_BUILD_TYPE=Release -D BUILD_SHARED_LIBS=OFF -D BUILD_TESTS=OFF
+cd $work_dir/build-libxml2
+make -j3
+make install
+
+cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
+cd $work_dir/build-libcellml
+make -j3
+make install
 
 #curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $downloads_dir/openssl-1.1.1h.tar.gz
 
