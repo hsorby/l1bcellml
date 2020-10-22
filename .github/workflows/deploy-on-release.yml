@@ -125,22 +125,6 @@ jobs:
         cd $work_dir/build-libcellml
         make test
 
-    - name: Package
-      shell: bash
-      run: |
-        downloads_dir=/home/downloads
-        work_dir=/home/work
-        src_dir=${{ matrix.config.src_path }}
-
-        cd $work_dir/build-libcellml
-        cpack
-
-    - name: Deploy libraries
-      shell: bash
-      if: ${{ matrix.config.deploy_libs }}
-      run: |
-        echo "Deploy libraries."
-
     - name: Create Python Package
       shell: bash
       run: |
