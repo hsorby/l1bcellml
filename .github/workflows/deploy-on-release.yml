@@ -46,7 +46,10 @@ jobs:
 
     - name: Run script
       shell: cmake -P {0}
-      run: .github/scripts/python-wheel.sh
+      run: |
+        echo $pwd
+        ls
+        .github/scripts/python-wheel.sh
 
   vm:
     name: ${{ matrix.config.name }}
