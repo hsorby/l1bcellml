@@ -60,6 +60,16 @@ jobs:
         ls $src_dir
 
         # build libraries
+        cmake -S $src_dir/zlib -B $work_dir/build-zlib -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF
+        cd $work_dir/build-zlib
+        make -j3
+        make install
+
+        cmake -S $src_dir/libxml2 -B $work_dir/build-libxml2 -D CMAKE_BUILD_TYPE=Release -D BUILD_SHARED_LIBS=OFF -D BUILD_TESTS=OFF
+        cd $work_dir/build-libxml2
+        make -j3
+        make install
+
         mkdir $work_dir/build-openssl
         cd $work_dir/build-openssl
         $src_dir/openssl-1.1.1h/config
@@ -74,16 +84,6 @@ jobs:
         mkdir $work_dir/build-swig
         cd $work_dir/build-swig
         $src_dir/swig-4.0.2/configure
-        make -j3
-        make install
-
-        cmake -S $src_dir/zlib -B $work_dir/build-zlib -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF
-        cd $work_dir/build-zlib
-        make -j3
-        make install
-
-        cmake -S $src_dir/libxml2 -B $work_dir/build-libxml2 -D CMAKE_BUILD_TYPE=Release -D BUILD_SHARED_LIBS=OFF -D BUILD_TESTS=OFF
-        cd $work_dir/build-libxml2
         make -j3
         make install
 
