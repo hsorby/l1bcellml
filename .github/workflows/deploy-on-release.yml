@@ -111,10 +111,6 @@ jobs:
         work_dir=/home/work
         src_dir=${{ matrix.config.src_path }}
         ls /usr/local/bin
-        echo "+++++++++++++++"
-        which python3
-        which pip
-        which pip3
 
         cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $work_dir/build-libcellml
@@ -136,11 +132,10 @@ jobs:
         # Deploy Python
 
         work_dir=/home/work
-        ls /usr/local/bin
 
         # /usr/local/bin/python3.7 -m pip install --upgrade pip
-        /usr/local/bin/pip3 install setuptools twine wheel auditwheel
-        cd $work_dir/build/src/bindings/python
+        pip3.7 install setuptools twine wheel auditwheel
+        cd $work_dir/build-libcellml/src/bindings/python
         python setup.py bdist_wheel
 
     - name: Test Python Package
@@ -150,11 +145,12 @@ jobs:
 
         work_dir=/home/work
 
-        /usr/local/bin/python3.7 -m venv venv_test
-        source venv_test/bin/activate
+        python3.7 -m venv $work_dir/venv_test
+        source $work_dir/venv_test/bin/activate
 
-        auditwheel repair dist/l1bcellml-0.3.0rc119-cp38-cp38-linux_x86_64.whl
-        whl=`ls $work_dir/build/src/bindings/python/wheelhouse/*.whl`
+        whl=`ls $work_dir/build-libcellml/src/bindings/python/dist/*.whl`
+        auditwheel repair $whl
+        whl=`ls $work_dir/build-libcellml/src/bindings/python/wheelhouse/*.whl`
         pip3 install $whl
         python3.7 -c "import libcellml"
 
@@ -168,7 +164,7 @@ jobs:
 
         work_dir=/home/work
 
-        cd $work_dir/build/src/bindings/python
+        cd $work_dir/build-libcellml/src/bindings/python
 
         twine upload --skip-existing wheelhouse/*
 
