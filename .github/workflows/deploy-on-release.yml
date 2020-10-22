@@ -34,6 +34,8 @@ jobs:
         echo $pwd
         ls
         which python
+
+        python_exe=`which python`
         downloads_dir=/home/downloads
         work_dir=/home/work
         src_dir=${{ matrix.config.src_path }}
@@ -52,27 +54,27 @@ jobs:
         git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.6 --depth 1 $src_dir/libxml2
 
         curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $downloads_dir/swig-4.0.2.tar.gz
-        curl -L https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz > $downloads_dir/Python-3.7.9.tar.gz
-        curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $downloads_dir/openssl-1.1.1h.tar.gz
+        #curl -L https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz > $downloads_dir/Python-3.7.9.tar.gz
+        #curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $downloads_dir/openssl-1.1.1h.tar.gz
 
         cd $src_dir
         tar -xzf $downloads_dir/swig-4.0.2.tar.gz
-        tar -xzf $downloads_dir/openssl-1.1.1h.tar.gz
-        tar -xzf $downloads_dir/Python-3.7.9.tar.gz
+        #tar -xzf $downloads_dir/openssl-1.1.1h.tar.gz
+        #tar -xzf $downloads_dir/Python-3.7.9.tar.gz
 
         ls $src_dir
 
         # build libraries
-        mkdir $work_dir/build-openssl
-        cd $work_dir/build-openssl
-        $work_dir/openssl-1.1.1h/config
-        make -j3
-        make install
+        #mkdir $work_dir/build-openssl
+        #cd $work_dir/build-openssl
+        #$work_dir/openssl-1.1.1h/config
+        #make -j3
+        #make install
 
-        cd $src_dir/Python-3.7.9/
-        ./configure --enable-shared  --enable-optimizations
-        make -j3
-        make install
+        #cd $src_dir/Python-3.7.9/
+        #./configure --enable-shared  --enable-optimizations
+        #make -j3
+        #make install
 
         mkdir $work_dir/build-swig
         cd $work_dir/build-swig
@@ -90,7 +92,7 @@ jobs:
         make -j3
         make install
 
-        cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
+        cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release -D Python_EXECUTABLE=$python_exe
         cd $work_dir/build-libcellml
         make -j3
         make install
