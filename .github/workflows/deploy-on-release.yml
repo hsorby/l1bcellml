@@ -129,14 +129,14 @@ jobs:
     - name: Create Python Package
       shell: bash
       run: |
-        # Deploy Python
+        # Create Python Package
 
         work_dir=/home/work
 
-        # /usr/local/bin/python3.7 -m pip install --upgrade pip
+        python3.7 -m pip install --upgrade pip
         pip3.7 install setuptools twine wheel auditwheel
         cd $work_dir/build-libcellml/src/bindings/python
-        python setup.py bdist_wheel
+        python3.7 setup.py bdist_wheel
 
     - name: Test Python Package
       shell: bash
