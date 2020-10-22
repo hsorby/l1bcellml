@@ -145,13 +145,15 @@ jobs:
 
         work_dir=/home/work
 
+        cd $work_dir/build-libcellml/src/bindings/python
+
         python3.7 -m venv $work_dir/venv_test
         source $work_dir/venv_test/bin/activate
 
         whl=`ls $work_dir/build-libcellml/src/bindings/python/dist/*.whl`
         auditwheel repair $whl
         whl=`ls $work_dir/build-libcellml/src/bindings/python/wheelhouse/*.whl`
-        pip3 install $whl
+        pip3.7 install $whl
         python3.7 -c "import libcellml"
 
     - name: Upload Python Package
