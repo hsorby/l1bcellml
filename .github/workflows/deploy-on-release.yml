@@ -151,14 +151,14 @@ jobs:
 
         cd $work_dir/build-libcellml/src/bindings/python
 
-        python${{ matrix.config.name }} -m venv $work_dir/venv_test
+        python -m venv $work_dir/venv_test
         source $work_dir/venv_test/bin/activate
 
         whl=`ls $work_dir/build-libcellml/src/bindings/python/dist/*.whl`
         auditwheel repair $whl
         whl=`ls $work_dir/build-libcellml/src/bindings/python/wheelhouse/*.whl`
-        pip${{ matrix.config.name }} install $whl
-        python${{ matrix.config.name }} -c "import libcellml"
+        pip install $whl
+        python -c "import libcellml"
 
     - name: Upload Python Package
       shell: bash
