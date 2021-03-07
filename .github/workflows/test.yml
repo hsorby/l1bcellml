@@ -37,7 +37,7 @@ jobs:
           mkdir build-zlib-release
           cd build-zlib-release
           emcmake cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../usr/local ../zlib/
-          make install
+          make -j3 install
           
       - name: Build and instal libXml2
         shell: bash
@@ -45,17 +45,20 @@ jobs:
           mkdir build-libxml2-release
           cd build-libxml2-release
           emcmake cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../usr/local -DZLIB_DIR=../usr/local/share/cmake/ZLIB/ -DCMAKE_PREFIX_PATH=../usr/local -DBUILD_SHARED_LIBS=OFF ../libxml2/
-          make install
+          make -j3 install
           
-      - name: Build and instal libCellML
+      - name: Build libcllml.js
         shell: bash
         run: |
           mkdir build-libcellml-release
           cd build-libcellml-release
           emcmake cmake -DLibXml2_DIR=../usr/local/share/cmake/LibXml2/ -DBUILD_TYPE=Release ../libcellml/
-          make
+          make -j3
           
-      - name: Environment
+      - name: Pack libcellml.js
         shell: bash
         run: |
+          cd build-libcellml-release/src/bindings/javascript
+          npm pack
           ls
+          ls dist/
