@@ -20,12 +20,12 @@ jobs:
         config:
         - {
             name: "Many Linux 2014 Py37", cc: "cl", cxx: "cl",
-            python_version: 3.7, python_full_version: 3.7.9, python_patch_file: "Modules.Setup.dist",
+            python_version: 3.7, python_full_version: 3.7.9, python_patch_file: "Modules/Setup.dist",
             python_tarball: "https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz"
           }
         - {
             name: "Many Linux 2014 Py38", cc: "cl", cxx: "cl",
-            python_version: 3.8, python_full_version: 3.8.6, python_patch_file: "Modules.Setup",
+            python_version: 3.8, python_full_version: 3.8.6, python_patch_file: "Modules/Setup",
             python_tarball: "https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz"
           }
     steps:
