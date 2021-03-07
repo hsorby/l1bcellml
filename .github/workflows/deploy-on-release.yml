@@ -114,6 +114,10 @@ jobs:
         make -j3
         make install
 
+        cd /usr/local/lib
+        ln -s /usr/local/lib64/libffi.so
+        ln -s /usr/local/lib64/libffi.la
+
     - name: Build and instal Python
       shell: bash
       run: |
