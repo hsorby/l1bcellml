@@ -19,11 +19,13 @@ jobs:
       matrix:
         config:
         - {
-            name: "Many Linux 2014 Py37", cc: "cl", cxx: "cl", python_version: 3.7,
+            name: "Many Linux 2014 Py37", cc: "cl", cxx: "cl",
+            python_version: 3.7, python_full_version: 3.7.9, python_patch_file: "Modules.Setup.dist",
             python_tarball: "https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz"
           }
         - {
-            name: "Many Linux 2014 Py38", cc: "cl", cxx: "cl", python_version: 3.8,
+            name: "Many Linux 2014 Py38", cc: "cl", cxx: "cl",
+            python_version: 3.8, python_full_version: 3.8.6, python_patch_file: "Modules.Setup",
             python_tarball: "https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz"
           }
     steps:
@@ -61,7 +63,7 @@ jobs:
         tar -xzf $downloads_dir/libffi-3.2.1.tar.gz
         tar -xzf $downloads_dir/Python.tar.gz
 
-    - name: Build and instal zlib and libXml2
+    - name: Build and instal zlib
       shell: bash
       run: |
         downloads_dir=/home/downloads
@@ -74,12 +76,19 @@ jobs:
         make -j3
         make install
 
+    - name: Build and instal libXml2
+      shell: bash
+      run: |
+        downloads_dir=/home/downloads
+        work_dir=/home/work
+        src_dir=/home/src
+
         cmake -S $src_dir/libxml2 -B $work_dir/build-libxml2 -D CMAKE_BUILD_TYPE=Release -D BUILD_SHARED_LIBS=OFF -D BUILD_TESTS=OFF
         cd $work_dir/build-libxml2
         make -j3
         make install
 
-    - name: Build and instal openssl, libffi, and Python
+    - name: Build and instal openssl
       shell: bash
       run: |
         downloads_dir=/home/downloads
@@ -92,16 +101,29 @@ jobs:
         make -j3
         make install_sw
 
+    - name: Build and instal libffi
+      shell: bash
+      run: |
+        downloads_dir=/home/downloads
+        work_dir=/home/work
+        src_dir=/home/src
+
         mkdir $work_dir/build-libffi-3.2.1
         cd $work_dir/build-libffi-3.2.1
         $src_dir/libffi-3.2.1/configure --without-docs  --libdir=/usr/local/lib
         make -j3
         make install
-        cd /usr/local/lib
-        ln -s /usr/local/lib64/libffi.la
-        ln -s /usr/local/lib64/libffi.so
+
+    - name: Build and instal Python
+      shell: bash
+      run: |
+        downloads_dir=/home/downloads
+        work_dir=/home/work
+        src_dir=/home/src
 
         cd $src_dir/Python*
+        curl -L https://gist.githubusercontent.com/hsorby/6481eed3abb20cf3cfe6bdc7a9c852d9/raw/ccd32fe61325bb8cdae1776a0535f06084761b0c/python-${{ matrix.config.python_full_version }}.patch
+        patch -i patch.txt ${{ matrix.config.python_patch_file }}
         ./configure --enable-shared --enable-optimizations --with-openssl=/usr/local/ --with-system-ffi
         make -j3 build_all
         make altinstall
