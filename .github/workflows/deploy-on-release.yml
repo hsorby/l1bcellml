@@ -148,10 +148,10 @@ jobs:
 
         work_dir=/home/work
 
-        python${{ python_version }} -m pip install --upgrade pip
-        pip${{ python_version }} install setuptools twine wheel auditwheel
+        python${{ matrix.config.python_version }} -m pip install --upgrade pip
+        pip${{ matrix.config.python_version }} install setuptools twine wheel auditwheel
         cd $work_dir/build-libcellml/src/bindings/python
-        python${{ python_version }} setup.py bdist_wheel
+        python${{ matrix.config.python_version }} setup.py bdist_wheel
 
     - name: Test Python Package
       shell: bash
@@ -162,7 +162,7 @@ jobs:
 
         cd $work_dir/build-libcellml/src/bindings/python
 
-        python${{ python_version }} -m venv $work_dir/venv_test
+        python${{ matrix.config.python_version }} -m venv $work_dir/venv_test
         source $work_dir/venv_test/bin/activate
 
         whl=`ls $work_dir/build-libcellml/src/bindings/python/dist/*.whl`
