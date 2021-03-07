@@ -26,3 +26,13 @@ jobs:
           path: libxml2
           ref: v2.9.6
 
+      - name: Instal emscripten
+        shell: bash
+        run: |
+          brew install emscripten
+
+      -name: Environment
+        shell: bash
+        run: |
+          cmake --version
+          
