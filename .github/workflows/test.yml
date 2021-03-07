@@ -31,8 +31,31 @@ jobs:
         run: |
           brew install emscripten
 
+      - name: Build and instal zlib
+        shell: bash
+        run: |
+          mkdir build-zlib-release
+          cd build-zlib-release
+          emcmake cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../usr/local ../zlib/
+          make install
+          
+      - name: Build and instal libXml2
+        shell: bash
+        run: |
+          mkdir build-libxml2-release
+          cd build-libxml2-release
+          emcmake cmake -DCMAKE_BUILD_TYPE=Release -DZLIB_DIR=../usr/local/share/cmake/ZLIB/ -DCMAKE_PREFIX_PATH=../usr/local -DBUILD_SHARED_LIBS=OFF ../libxml2/
+          make install
+          
+      - name: Build and instal libCellML
+        shell: bash
+        run: |
+          mkdir build-libcellml-release
+          cd build-libcellml-release
+          emcmake cmake -DLibXml2_DIR=../usr/local/share/cmake/LibXml2/ -DBUILD_TYPE=Release ../libcellml/
+          make
+          
       - name: Environment
         shell: bash
         run: |
-          cmake --version
-          
+          ls
