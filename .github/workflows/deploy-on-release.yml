@@ -121,6 +121,10 @@ jobs:
         work_dir=/home/work
         src_dir=/home/src
 
+
+        echo "====================="
+        echo ${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
         cd $src_dir/Python*
         curl -L https://gist.githubusercontent.com/hsorby/6481eed3abb20cf3cfe6bdc7a9c852d9/raw/ccd32fe61325bb8cdae1776a0535f06084761b0c/python-${{ matrix.config.python_full_version }}.patch > patch.txt
         patch -i patch.txt ${{ matrix.config.python_patch_file }}
