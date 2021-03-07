@@ -17,7 +17,7 @@ jobs:
         with:
           repository: OpenCMISS-Dependencies/zlib
           path: zlib
-          ref: v1.2.3
+          ref: develop
 
       - name: Checkout LibXml2
         uses: actions/checkout@v2
