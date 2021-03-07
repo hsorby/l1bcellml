@@ -10,7 +10,7 @@ env:
   MACOSX_DEPLOYMENT_TARGET: 10.14
 
 jobs:
-  container:
+  many-linux-wheels:
     name: ${{ matrix.config.name }}
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux2014_x86_64
@@ -46,6 +46,7 @@ jobs:
         curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $downloads_dir/swig-4.0.2.tar.gz
         curl -L ${{ matrix.config.python_tarball }} > $downloads_dir/Python.tar.gz
         curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $downloads_dir/openssl-1.1.1h.tar.gz
+        curl -L ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz > $downloads_dir/libffi-3.2.1.tar.gz
 
     - name: Extract source code
       shell: bash
@@ -57,6 +58,7 @@ jobs:
         cd $src_dir
         tar -xzf $downloads_dir/swig-4.0.2.tar.gz
         tar -xzf $downloads_dir/openssl-1.1.1h.tar.gz
+        tar -xzf $downloads_dir/libffi-3.2.1.tar.gz
         tar -xzf $downloads_dir/Python.tar.gz
 
     - name: Build and instal zlib and libXml2
@@ -77,7 +79,7 @@ jobs:
         make -j3
         make install
 
-    - name: Build and instal openssl and Python
+    - name: Build and instal openssl, libffi, and Python
       shell: bash
       run: |
         downloads_dir=/home/downloads
@@ -86,12 +88,21 @@ jobs:
 
         mkdir $work_dir/build-openssl
         cd $work_dir/build-openssl
-        $src_dir/openssl-1.1.1h/config
+        $src_dir/openssl-1.1.1h/config --libdir=/usr/local/lib
+        make -j3
+        make install_sw
+
+        mkdir $work_dir/build-libffi-3.2.1
+        cd $work_dir/build-libffi-3.2.1
+        $src_dir/libffi-3.2.1/configure --without-docs  --libdir=/usr/local/lib
         make -j3
         make install
+        cd /usr/local/lib
+        ln -s /usr/local/lib64/libffi.la
+        ln -s /usr/local/lib64/libffi.so
 
         cd $src_dir/Python*
-        ./configure --enable-shared  --enable-optimizations
+        ./configure --enable-shared --enable-optimizations --with-openssl=/usr/local/ --with-system-ffi
         make -j3 build_all
         make altinstall
 
@@ -137,10 +148,10 @@ jobs:
 
         work_dir=/home/work
 
-        python -m pip install --upgrade pip
-        pip install setuptools twine wheel auditwheel
+        python${{ python_version }} -m pip install --upgrade pip
+        pip${{ python_version }} install setuptools twine wheel auditwheel
         cd $work_dir/build-libcellml/src/bindings/python
-        python setup.py bdist_wheel
+        python${{ python_version }} setup.py bdist_wheel
 
     - name: Test Python Package
       shell: bash
@@ -151,7 +162,7 @@ jobs:
 
         cd $work_dir/build-libcellml/src/bindings/python
 
-        python -m venv $work_dir/venv_test
+        python${{ python_version }} -m venv $work_dir/venv_test
         source $work_dir/venv_test/bin/activate
 
         whl=`ls $work_dir/build-libcellml/src/bindings/python/dist/*.whl`
@@ -175,7 +186,7 @@ jobs:
         twine upload --skip-existing wheelhouse/*
 
 
-  vm:
+  os-binaries:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
