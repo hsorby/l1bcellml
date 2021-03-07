@@ -127,6 +127,8 @@ jobs:
         src_dir=/home/src
         ls /usr/local/bin
 
+        export LD_LIBRARY_PATH=/usr/local/lib
+
         cmake -S $src_dir/libcellml -B $work_dir/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $work_dir/build-libcellml
         make -j3
@@ -138,6 +140,8 @@ jobs:
         work_dir=/home/work
         src_dir=/home/src
 
+        export LD_LIBRARY_PATH=/usr/local/lib
+
         cd $work_dir/build-libcellml
         make test
 
@@ -147,6 +151,8 @@ jobs:
         # Create Python Package
 
         work_dir=/home/work
+
+        export LD_LIBRARY_PATH=/usr/local/lib
 
         python${{ matrix.config.python_version }} -m pip install --upgrade pip
         pip${{ matrix.config.python_version }} install setuptools twine wheel auditwheel
@@ -161,6 +167,8 @@ jobs:
         work_dir=/home/work
 
         cd $work_dir/build-libcellml/src/bindings/python
+
+        export LD_LIBRARY_PATH=/usr/local/lib
 
         python${{ matrix.config.python_version }} -m venv $work_dir/venv_test
         source $work_dir/venv_test/bin/activate
@@ -180,6 +188,8 @@ jobs:
         # Upload Python packages
 
         work_dir=/home/work
+
+        export LD_LIBRARY_PATH=/usr/local/lib
 
         cd $work_dir/build-libcellml/src/bindings/python
 
