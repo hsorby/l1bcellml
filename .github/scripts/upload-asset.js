@@ -18,6 +18,7 @@ module.exports = ({github, context}) => {
   for (let index in files) {
     const assetPath = files[index]
     const contentType = mime.getType(assetPath);
+    console.log('mime type:', contentType) 
     const assetName = assetPath.split('/').pop();
     const contentLength = filePath => fs.statSync(filePath).size;
     const headers = { 'content-type': contentType, 'content-length': contentLength(assetPath) };
