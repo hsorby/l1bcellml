@@ -607,6 +607,7 @@ jobs:
           make -j3
 
       - name: Pack libcellml.js
+        id: package-javascript
         shell: bash
         run: |
           cd build-libcellml-release/src/bindings/javascript
@@ -624,7 +625,7 @@ jobs:
       - name: Upload libcellml.js
         uses: actions/github-script@v3
         env:
-          DATA: ${{ steps.package.outputs.files }}
+          DATA: ${{ steps.package-javascript.outputs.files }}
         with:
           github-token: ${{secrets.ABI_GIT_USER_WRITE_TOKEN}}
           script: |
