@@ -29,7 +29,7 @@ jobs:
           cat /Users/runner/work/l1bcellml/l1bcellml/libcellml/.github/scripts/upload-asset.js
           cd $GITHUB_WORKSPACE/libcellml/.github/scripts/
           npm install mime
-          ls -A libcellml/.github/scripts
+          ls -A 
       
       - name: Run script requiring mime package
         uses: actions/github-script@v3
