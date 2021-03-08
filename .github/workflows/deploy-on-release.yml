@@ -616,8 +616,8 @@ jobs:
         with:
           github-token: ${{secrets.ABI_GIT_USER_WRITE_TOKEN}}
           script: |
-            console.log(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
-            const script = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
+            console.log(`/Users/runner/work/libcellml/.github/scripts/upload-asset.js`)
+            const script = require(`/Users/runner/work/libcellml/.github/scripts/upload-asset.js`)
             script({github, context})
 
 
