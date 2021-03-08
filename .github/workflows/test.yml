@@ -25,7 +25,6 @@ jobs:
           pwd
           ls -A
           ls -A libcellml
-          ls -A libcellml/.github
           ls -A libcellml/.github/scripts
           cat /Users/runner/work/l1bcellml/l1bcellml/libcellml/.github/scripts/upload-asset.js
       
