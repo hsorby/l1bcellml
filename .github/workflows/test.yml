@@ -24,6 +24,9 @@ jobs:
         run: |
           pwd
           ls -A
+          ls -A libcellml
+          ls -A libcellml/.github
+          ls -A libcellml/.github/scripts
       
       - name: Run script requiring mime package
         uses: actions/github-script@v3
