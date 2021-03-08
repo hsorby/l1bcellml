@@ -6,10 +6,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Install mime npm package
-        uses: actions/github-script@v3
-        with:
-          script: |
-            npm install --global mime
+        shell: bash
+        run: |
+          npm install --global mime
       
       - name: Checkout libCellML
         uses: actions/checkout@v2
