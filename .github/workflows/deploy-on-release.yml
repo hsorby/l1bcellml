@@ -232,36 +232,36 @@ jobs:
       matrix:
         config:
         - {
-            name: "Windows Latest MSVC Py38", deploy_libs: true, deploy_python: true,
-            os: windows-latest, container: windows-latest,
+            name: "Windows Server 2019 MSVC Py38", deploy_libs: true, deploy_python: true,
+            os: windows-2019,
             libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
-            name: "Windows Latest MSVC Py37", deploy_libs: false, deploy_python: true,
-            os: windows-latest, container: windows-latest,
+            name: "Windows Server 2019 MSVC Py39", deploy_libs: false, deploy_python: true,
+            os: windows-2019,
             libxml2_dir: '-D "LibXml2_DIR=C:\\\\Program Files (x86)\\\\LibXml2\\\\LibXml2\\\\CMake\\\\"',
             zlib_dir: '-D "ZLIB_DIR=C:\\\\Program Files (x86)\\\\ZLIB\\\\lib\\\\cmake\\\\"',
-            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.7
+            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.9
           }
         - {
-            name: "Ubuntu Latest GCC Py36", deploy_libs: true, deploy_python: false,
-            os: ubuntu-latest, container: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
-            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.6
+            name: "Ubuntu 20.04 GCC Py38", deploy_libs: true, deploy_python: false,
+            os: ubuntu-20.04, container: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
+            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.8
           }
         - {
-            name: "macOS Latest Clang Py38", deploy_libs: true, deploy_python: true,
-            os: macos-latest, container: macos-latest,
+            name: "macOS 10.15 Clang Py38", deploy_libs: true, deploy_python: true,
+            os: macos-10.15,
             python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
           }
         - {
-            name: "macOS Latest Clang Py37", deploy_libs: false, deploy_python: true,
-            os: macos-latest, container: macos-latest,
-            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/",
-            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.7
+            name: "macOS 10.15 Clang Py39", deploy_libs: false, deploy_python: true,
+            os: macos-10.15,
+            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.9/",
+            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.9
           }
 
     steps:
@@ -553,7 +553,7 @@ jobs:
 
   emscripten:
     name: libcellml.js
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
       - name: Checkout libCellML
         uses: actions/checkout@v2
