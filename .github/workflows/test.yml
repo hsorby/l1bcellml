@@ -1,17 +1,10 @@
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   emscripten:
     name: libcellml.js
     runs-on: macos-latest
     steps:
-      - name: Install mime npm package
-        shell: bash
-        run: |
-          npm install --global mime
-          pwd
-          ls
-      
       - name: Checkout libCellML
         uses: actions/checkout@v2
         with:

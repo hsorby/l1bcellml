@@ -481,6 +481,12 @@ jobs:
         execute_process(
           COMMAND echo "::set-output name=files::${_DIST_FILES}")
 
+    - name: Prepare environment for uploading assets
+      shell: bash
+      run: |
+        cd $GITHUB_WORKSPACE/.github/scripts/
+        npm install mime
+
     - name: Upload Libraries
       id: deploy
       uses: actions/github-script@v3
@@ -608,6 +614,12 @@ jobs:
           package=`ls libcellml.js-*.tgz`
           echo "::set-output name=files::$package"
           ls
+
+      - name: Prepare environment for uploading assets
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE/libcellml/.github/scripts/
+          npm install mime
 
       - name: Upload libcellml.js
         uses: actions/github-script@v3
