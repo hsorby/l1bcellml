@@ -19,10 +19,17 @@ jobs:
           path: libcellml
           ref: emscripten
 
+      - name: Debug statements
+        shell: bash
+        run: |
+          pwd
+          ls -A
+      
       - name: Run script requiring mime package
         uses: actions/github-script@v3
         with:
           script: |
+            console.log(process.env.PWD)
             console.log('===== This will need to change when the javascript bindings are properly added the cellml/libcellml repo. =====')
             console.log(`${process.env.GITHUB_WORKSPACE}/libcellml/.github/scripts/upload-asset.js`)
             const script = require(`${process.env.GITHUB_WORKSPACE}/libcellml/.github/scripts/upload-asset.js`)
