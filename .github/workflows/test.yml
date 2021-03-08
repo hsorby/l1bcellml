@@ -19,12 +19,10 @@ jobs:
           path: libcellml
           ref: emscripten
 
-      - name: Debug statements
+      - name: Prepare environment for uploading assets
         shell: bash
         run: |
           pwd
-          ls -A
-          ls -A libcellml
           ls -A libcellml/.github/scripts
           cat /Users/runner/work/l1bcellml/l1bcellml/libcellml/.github/scripts/upload-asset.js
           cd $GITHUB_WORKSPACE/libcellml/.github/scripts/
