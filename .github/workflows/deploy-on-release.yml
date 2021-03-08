@@ -612,7 +612,7 @@ jobs:
         run: |
           cd build-libcellml-release/src/bindings/javascript
           npm pack
-          package=`ls libcellml.js-*.tgz`
+          package=`ls $PWD/libcellml.js-*.tgz`
           echo "::set-output name=files::$package"
           ls
 
