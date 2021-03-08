@@ -492,7 +492,7 @@ jobs:
         script: |
           console.log(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
           const script = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
-          script({github,, context})
+          script({github, context})
 
     - name: Create Python Package
       shell: bash
@@ -618,7 +618,7 @@ jobs:
           script: |
             console.log(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
             const script = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
-            script({github,, context})
+            script({github, context})
 
 
 
