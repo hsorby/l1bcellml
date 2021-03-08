@@ -496,7 +496,6 @@ jobs:
       with:
         github-token: ${{secrets.ABI_GIT_USER_WRITE_TOKEN}}
         script: |
-          console.log(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
           const script = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
           script({github, context})
 
@@ -614,7 +613,6 @@ jobs:
           npm pack
           package=`ls $PWD/libcellml.js-*.tgz`
           echo "::set-output name=files::$package"
-          ls
 
       - name: Prepare environment for uploading assets
         shell: bash
@@ -630,16 +628,6 @@ jobs:
           github-token: ${{secrets.ABI_GIT_USER_WRITE_TOKEN}}
           script: |
             console.log('===== This will need to change when the javascript bindings are properly added the cellml/libcellml repo. =====')
-            console.log(`${process.env.GITHUB_WORKSPACE}/libcellml/.github/scripts/upload-asset.js`)
             const script = require(`${process.env.GITHUB_WORKSPACE}/libcellml/.github/scripts/upload-asset.js`)
             script({github, context})
-
-
-
-
-
-
-
-
-
 
