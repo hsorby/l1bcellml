@@ -20,7 +20,7 @@ module.exports = ({github, context}) => {
     const contentLength = filePath => fs.statSync(filePath).size;
     const headers = { 'content-type': 'application/octet-stream', 'content-length': contentLength(assetPath) };
     const upload_url_with_name = upload_url + '?name=' + assetName
-    const uploadAssetResponse = await github.repos.uploadReleaseAsset({
+    github.repos.uploadReleaseAsset({
       url: upload_url_with_name,
       headers,
       file: fs.readFileSync(assetPath)
