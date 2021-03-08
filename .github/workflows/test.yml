@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   emscripten:
@@ -61,4 +61,3 @@ jobs:
           cd build-libcellml-release/src/bindings/javascript
           npm pack
           ls
-          ls dist/

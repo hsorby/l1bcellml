@@ -125,10 +125,8 @@ jobs:
         work_dir=/home/work
         src_dir=/home/src
 
-
-        echo "====================="
-        echo ${LD_LIBRARY_PATH}
         export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+
         cd $src_dir/Python*
         curl -L https://gist.githubusercontent.com/hsorby/6481eed3abb20cf3cfe6bdc7a9c852d9/raw/ccd32fe61325bb8cdae1776a0535f06084761b0c/python-${{ matrix.config.python_full_version }}.patch > patch.txt
         patch -i patch.txt ${{ matrix.config.python_patch_file }}
@@ -492,27 +490,9 @@ jobs:
       with:
         github-token: ${{secrets.ABI_GIT_USER_WRITE_TOKEN}}
         script: |
-          // Deploy library script.
-
-          const fs = require('fs');
-
-          let upload_url = context.payload.release.upload_url
-          upload_url = upload_url.split('{').shift()
-
-          const files = process.env.DATA.split(';')
-
-          for (let index in files) {
-            const assetPath = files[index]
-            const assetName = assetPath.split('/').pop();
-            const contentLength = filePath => fs.statSync(filePath).size;
-            const headers = { 'content-type': 'application/octet-stream', 'content-length': contentLength(assetPath) };
-            const upload_url_with_name = upload_url + '?name=' + assetName
-            const uploadAssetResponse = await github.repos.uploadReleaseAsset({
-              url: upload_url_with_name,
-              headers,
-              file: fs.readFileSync(assetPath)
-            });
-          }
+          console.log(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
+          const script = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
+          script({github,, context})
 
     - name: Create Python Package
       shell: bash
@@ -565,3 +545,87 @@ jobs:
         fi
 
         twine upload --skip-existing dist/*
+
+  emscripten:
+    name: libcellml.js
+    runs-on: macos-latest
+    steps:
+      - name: Checkout libCellML
+        uses: actions/checkout@v2
+        with:
+          repository: hsorby/libcellml
+          path: libcellml
+          ref: emscripten
+
+      - name: Checkout zlib
+        uses: actions/checkout@v2
+        with:
+          repository: OpenCMISS-Dependencies/zlib
+          path: zlib
+          ref: develop
+
+      - name: Checkout LibXml2
+        uses: actions/checkout@v2
+        with:
+          repository: OpenCMISS-Dependencies/libxml2
+          path: libxml2
+          ref: v2.9.6
+
+      - name: Instal emscripten
+        shell: bash
+        run: |
+          brew install emscripten
+
+      - name: Build and instal zlib
+        shell: bash
+        run: |
+          mkdir build-zlib-release
+          cd build-zlib-release
+          emcmake cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../usr/local ../zlib/
+          make -j3 install
+
+      - name: Build and instal libXml2
+        shell: bash
+        run: |
+          mkdir build-libxml2-release
+          cd build-libxml2-release
+          emcmake cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../usr/local -DZLIB_DIR=../usr/local/share/cmake/ZLIB/ -DCMAKE_PREFIX_PATH=../usr/local -DBUILD_SHARED_LIBS=OFF ../libxml2/
+          make -j3 install
+
+      - name: Build libcllml.js
+        shell: bash
+        run: |
+          mkdir build-libcellml-release
+          cd build-libcellml-release
+          emcmake cmake -DLibXml2_DIR=../usr/local/share/cmake/LibXml2/ -DBUILD_TYPE=Release ../libcellml/
+          make -j3
+
+      - name: Pack libcellml.js
+        shell: bash
+        run: |
+          cd build-libcellml-release/src/bindings/javascript
+          npm pack
+          package=`ls libcellml.js-*.tgz`
+          echo "::set-output name=files::$package"
+          ls
+
+      - name: Upload libcellml.js
+        uses: actions/github-script@v3
+        env:
+          DATA: ${{ steps.package.outputs.files }}
+        with:
+          github-token: ${{secrets.ABI_GIT_USER_WRITE_TOKEN}}
+          script: |
+            console.log(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
+            const script = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
+            script({github,, context})
+
+
+
+
+
+
+
+
+
+
