@@ -1,10 +1,16 @@
-on: [pull_request]
+on: [push, pull_request]
 
 jobs:
   emscripten:
     name: libcellml.js
     runs-on: macos-latest
     steps:
+      - name: Install mime npm package
+        uses: actions/github-script@v3
+        with:
+          script: |
+            npm install --global mime
+      
       - name: Checkout libCellML
         uses: actions/checkout@v2
         with:
@@ -12,6 +18,15 @@ jobs:
           path: libcellml
           ref: emscripten
 
+      - name: Run script requiring mime package
+        uses: actions/github-script@v3
+        with:
+          script: |
+            console.log('===== This will need to change when the javascript bindings are properly added the cellml/libcellml repo. =====')
+            console.log(`${process.env.GITHUB_WORKSPACE}/libcellml/.github/scripts/upload-asset.js`)
+            const script = require(`${process.env.GITHUB_WORKSPACE}/libcellml/.github/scripts/upload-asset.js`)
+            script({github, context})
+      
       - name: Checkout zlib
         uses: actions/checkout@v2
         with:
