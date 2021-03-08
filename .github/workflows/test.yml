@@ -9,6 +9,8 @@ jobs:
         shell: bash
         run: |
           npm install --global mime
+          pwd
+          ls
       
       - name: Checkout libCellML
         uses: actions/checkout@v2
