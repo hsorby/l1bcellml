@@ -22,6 +22,7 @@ set(SWIG_INTERFACE_SRCS
     ../interface/analyser.i
     ../interface/analyserequation.i
     ../interface/analyserequationast.i
+    ../interface/analyserexternalvariable.i
     ../interface/analysermodel.i
     ../interface/analyservariable.i
     ../interface/annotator.i
@@ -38,6 +39,7 @@ set(SWIG_INTERFACE_SRCS
     ../interface/logger.i
     ../interface/model.i
     ../interface/namedentity.i
+    ../interface/parentedentity.i
     ../interface/parser.i
     ../interface/printer.i
     ../interface/reset.i
@@ -86,8 +88,6 @@ elseif(WIN32 AND HAVE_LIBXML2_CONFIG)
   set(_GENERATOR_EXPRESSION_LIBXML2_FILE $<TARGET_FILE:xml2>)
 endif ()
 
-#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(SWIG_PYTHON_BINDINGS_TARGETS)
 # Create bindings for each interface file
 foreach(SWIG_INTERFACE_SRC ${SWIG_INTERFACE_SRCS})
@@ -139,7 +139,6 @@ foreach(SWIG_INTERFACE_SRC ${SWIG_INTERFACE_SRCS})
     RUNTIME_OUTPUT_DIRECTORY ${LIBCELLML_PYTHON_PACKAGE_DIR}
     LIBRARY_OUTPUT_DIRECTORY ${LIBCELLML_PYTHON_PACKAGE_DIR}
   )
-  #install(TARGETS ${MODULE_TARGET} RUNTIME DESTINATION libcellml LIBRARY DESTINATION libcellml)
   list(APPEND SWIG_PYTHON_BINDINGS_TARGETS ${MODULE_TARGET})
   list(APPEND SETUP_PY_PACKAGE_FILES "'\${TARGET_FILE_NAME_${MODULE_TARGET}}'")
   list(APPEND FINALISE_PYTHON_BINDINGS_ARGUMENTS -DTARGET_FILE_NAME_${MODULE_TARGET}=$<TARGET_FILE_NAME:${MODULE_TARGET}>)
@@ -150,8 +149,10 @@ add_custom_target(python_bindings ALL DEPENDS ${SWIG_PYTHON_BINDINGS_TARGETS})
 string(TOLOWER ${PROJECT_NAME} PYPI_PACKAGE_NAME)
 set(PYPI_PACKAGE_VERSION ${PROJECT_VERSION})
 set(PYPI_PACKAGE_URL ${PROJECT_URL})
-if (PROJECT_DEVELOPER_VERSION)
-  string(REPLACE "-rc." "rc" PYPI_PACKAGE_DEVELOPER_VERSION ${PROJECT_DEVELOPER_VERSION})
+if (PROJECT_DEVELOPER_VERSION MATCHES "-rc\.")
+  string(REPLACE "-rc." ".rc" PYPI_PACKAGE_DEVELOPER_VERSION ${PROJECT_DEVELOPER_VERSION})
+elseif (PROJECT_DEVELOPER_VERSION MATCHES "-dev\.")
+    string(REPLACE "-dev." ".dev" PYPI_PACKAGE_DEVELOPER_VERSION ${PROJECT_DEVELOPER_VERSION})
 endif()
 set(SETUP_PY_PACKAGE_FILES_STR "${SETUP_PY_PACKAGE_FILES}")
 string(REPLACE ";" ", " SETUP_PY_PACKAGE_FILES_STR "${SETUP_PY_PACKAGE_FILES_STR}")

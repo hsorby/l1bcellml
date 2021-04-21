@@ -19,8 +19,3 @@ CMakeLists.txt.user
 # VS Code system files
 .vscode/
 
-# Release script
-release-script.sh
-update-version.sh
-upload.cmake
-

@@ -2224,7 +2224,7 @@ public:
      * @brief Set the @c std::string for a comment.
      *
      * Set the @c std::string for a comment. To be useful, the string should
-     * contain the <CODE> tag, which will be replaced with a (proper) comment.
+     * contain the [CODE] tag, which will be replaced with a (proper) comment.
      *
      * @param commentString The @c std::string to use for a comment.
      */
@@ -2243,7 +2243,7 @@ public:
      * @brief Set the @c std::string for an origin comment.
      *
      * Set the @c std::string for an origin comment. To be useful, the string
-     * should contain the <PROFILE_INFORMATION> and <LIBCELLML_VERSION> tags,
+     * should contain the [PROFILE_INFORMATION] and [LIBCELLML_VERSION] tags,
      * which will be replaced with some profile information and the version of
      * libCellML used.
      *
@@ -2256,6 +2256,8 @@ public:
      * @brief Get the @c std::string for the interface file name.
      *
      * Return the @c std::string for the interface file name.
+     *
+     * @sa setImplementationHeaderString
      *
      * @return The @c std::string for the interface file name.
      */
@@ -2302,7 +2304,11 @@ public:
     /**
      * @brief Set the @c std::string for an implementation header.
      *
-     * Set the @c std::string for an implementation header.
+     * Set the @c std::string for an implementation header. To be useful, the
+     * string should contain the [INTERFACE_FILE_NAME] tag, which will be
+     * replaced with the interface file name.
+     *
+     * @sa interfaceFileNameString
      *
      * @param implementationHeaderString The @c std::string to use for an
      * implementation header.
@@ -2391,7 +2397,7 @@ public:
      * version constant.
      *
      * Set the @c std::string for the implementation of the libCellML version
-     * constant. To be useful, the string should contain the <LIBCELLML_VERSION>
+     * constant. To be useful, the string should contain the [LIBCELLML_VERSION]
      * tag, which will be replaced with the version of libCellML used.
      *
      * @param implementationLibcellmlVersionString The @c std::string to use for
@@ -2437,7 +2443,7 @@ public:
      * constant.
      *
      * Set the @c std::string for the implementation of the state count
-     * constant. To be useful, the string should contain the <STATE_COUNT> tag,
+     * constant. To be useful, the string should contain the [STATE_COUNT] tag,
      * which will be replaced with the number of states in the model.
      *
      * @param implementationStateCountString The @c std::string to use for the
@@ -2485,7 +2491,7 @@ public:
      * count constant.
      *
      * Set the @c std::string for the implementation of the variable count
-     * constant. To be useful, the string should contain the <VARIABLE_COUNT>
+     * constant. To be useful, the string should contain the [VARIABLE_COUNT]
      * tag, which will be replaced with the number of states in the model.
      *
      * @param implementationVariableCountString The @c std::string to use for
@@ -2509,13 +2515,43 @@ public:
      * @brief Set the @c std::string for the data structure for the variable
      * type object.
      *
-     * Set the @c std::string for the data structure for the variable type
-     * object.
+     * Set the @c std::string for the data structure for the variable
+     * type object. To be useful, the string should contain the [OPTIONAL_TYPE]
+     * tag, which will be replaced with a type for the external variable type,
+     * if needed.
+     *
+     * @sa variableTypeObjectExternalTypeString
      *
      * @param variableTypeObjectString The @c std::string to use for the data
      * structure for the variable type object.
      */
     void setVariableTypeObjectString(const std::string &variableTypeObjectString);
+
+    /**
+     * @brief Get the @c std::string for the external type for the data
+     * structure for the variable type object.
+     *
+     * Return the @c std::string for the external type for the data structure
+     * for the variable type object.
+     *
+     * @sa setVariableTypeObjectString
+     *
+     * @return The @c std::string for the external type for the data structure
+     * for the variable type object.
+     */
+    std::string variableTypeObjectExternalTypeString() const;
+
+    /**
+     * @brief Set the @c std::string for the external type for the data
+     * structure for the variable type object.
+     *
+     * Set this @c std::string for the external type for the data structure for
+     * the variable type object.
+     *
+     * @param variableTypeObjectExternalTypeString The @c std::string to use for
+     * the external type for the data structure for the variable type object.
+     */
+    void setVariableTypeObjectExternalTypeString(const std::string &variableTypeObjectExternalTypeString);
 
     /**
      * @brief Get the @c std::string for the name of the constant variable type.
@@ -2531,7 +2567,7 @@ public:
      *
      * Set the @c std::string for the name of the constant variable type.
      *
-     * @param statesArrayString The @c std::string to use for the name of the
+     * @param constantVariableTypeString The @c std::string to use for the name of the
      * constant variable type.
      */
     void setConstantVariableTypeString(const std::string &constantVariableTypeString);
@@ -2555,7 +2591,7 @@ public:
      * Set the @c std::string for the name of the computed constant variable
      * type.
      *
-     * @param statesArrayString The @c std::string to use for the name of the
+     * @param computedConstantVariableTypeString The @c std::string to use for the name of the
      * computed constant variable type.
      */
     void setComputedConstantVariableTypeString(const std::string &computedConstantVariableTypeString);
@@ -2576,10 +2612,29 @@ public:
      *
      * Set the @c std::string for the name of the algebraic variable type.
      *
-     * @param statesArrayString The @c std::string to use for the name of the
+     * @param algebraicVariableTypeString The @c std::string to use for the name of the
      * algebraic variable type.
      */
     void setAlgebraicVariableTypeString(const std::string &algebraicVariableTypeString);
+
+    /**
+     * @brief Get the @c std::string for the name of the external variable type.
+     *
+     * Return the @c std::string for the name of the external variable type.
+     *
+     * @return The @c std::string for the name of the external variable type.
+     */
+    std::string externalVariableTypeString() const;
+
+    /**
+     * @brief Set the @c std::string for the name of the external variable type.
+     *
+     * Set this @c std::string for the name of the external variable type.
+     *
+     * @param externalVariableTypeString The @c std::string to use for the name of the
+     * external variable type.
+     */
+    void setExternalVariableTypeString(const std::string &externalVariableTypeString);
 
     /**
      * @brief Get the @c std::string for the data structure for the variable
@@ -2599,7 +2654,7 @@ public:
      *
      * Set the @c std::string for the data structure for the variable
      * information object. To be useful, the string should contain the
-     * <NAME_SIZE>, <UNITS_SIZE> and <COMPONENT_SIZE> tags, which will be
+     * [NAME_SIZE], [UNITS_SIZE] and [COMPONENT_SIZE] tags, which will be
      * replaced with the maximum size of a string for holding the name of a
      * component, variable and units, respectively.
      *
@@ -2626,7 +2681,7 @@ public:
      *
      * Set the @c std::string for the data structure for the variable
      * information (incl. its type) object. To be useful, the string should
-     * contain the <NAME_SIZE>, <UNITS_SIZE> and <COMPONENT_SIZE> tags, which
+     * contain the [NAME_SIZE], [UNITS_SIZE] and [COMPONENT_SIZE] tags, which
      * will be replaced with the maximum size of a string for holding the name
      * of a component, variable and units, respectively.
      *
@@ -2677,7 +2732,7 @@ public:
      *
      * Set the @c std::string for the implementation of some information about
      * the variable of integration. To be useful, the string should contain the
-     * <CODE> tag, which will be replaced with some information about the
+     * [CODE] tag, which will be replaced with some information about the
      * variable of integration.
      *
      * @param implementationVoiInfoString The @c std::string to use for the
@@ -2726,7 +2781,7 @@ public:
      * about the different states.
      *
      * Set the @c std::string for the implementation of some information about
-     * the different states. To be useful, the string should contain the <CODE>
+     * the different states. To be useful, the string should contain the [CODE]
      * tag, which will be replaced with some information about the different
      * states.
      *
@@ -2777,7 +2832,7 @@ public:
      *
      * Set the @c std::string for the implementation of some information about
      * the different variables. To be useful, the string should contain the
-     * <CODE> tag, which will be replaced with some information about the
+     * [CODE] tag, which will be replaced with some information about the
      * different variables.
      *
      * @param implementationVariableInfoString The @c std::string to use for the
@@ -2803,7 +2858,7 @@ public:
      *
      * Set the @c std::string for an entry in an array for some information
      * about a variable. To be useful, the string should contain the
-     * <COMPONENT>, <NAME> and <UNITS> tags, which will be replaced with the
+     * [COMPONENT], [NAME] and [UNITS] tags, which will be replaced with the
      * name of the component, name and units of a variable.
      *
      * @param variableInfoEntryString The @c std::string to use for an entry in
@@ -2829,7 +2884,7 @@ public:
      *
      * Set the @c std::string for an entry in an array for some information
      * about a variable (incl. its type). To be useful, the string should
-     * contain the <COMPONENT>, <NAME> and <UNITS> tags, which will be replaced
+     * contain the [COMPONENT], [NAME] and [UNITS] tags, which will be replaced
      * with the name of the component, name and units of a variable.
      *
      * @param variableInfoWithTypeEntryString The @c std::string to use for an
@@ -2914,6 +2969,77 @@ public:
      * variables array.
      */
     void setVariablesArrayString(const std::string &variablesArrayString);
+
+    /**
+     * @brief Get the @c std::string for the type definition of an external
+     * variable method.
+     *
+     * Return the @c std::string for the type definition of an external variable
+     * method.
+     *
+     * @return The @c std::string for the type definition of an external
+     * variable method.
+     */
+    std::string externalVariableMethodTypeDefinitionString() const;
+
+    /**
+     * @brief Set the @c std::string for the type definition of an external
+     * variable method.
+     *
+     * Set this @c std::string for the type definition of an external variable
+     * method.
+     *
+     * @param externalVariableMethodTypeDefinitionString The @c std::string to
+     * use for the type definition of an external variable method.
+     */
+    void setExternalVariableMethodTypeDefinitionString(const std::string &externalVariableMethodTypeDefinitionString);
+
+    /**
+     * @brief Get the @c std::string for the external variable method parameter.
+     *
+     * Return the @c std::string for the external variable method parameter.
+     *
+     * @sa setInterfaceComputeRatesMethodString,
+     * setImplementationComputeRatesMethodString,
+     * setInterfaceComputeVariablesMethodString,
+     * setImplementationComputeVariablesMethodString
+     *
+     * @return The @c std::string for the external variable method parameter.
+     */
+    std::string externalVariableMethodParameterString() const;
+
+    /**
+     * @brief Set the @c std::string for the external variable method parameter.
+     *
+     * Set this @c std::string for the external variable method parameter.
+     *
+     * @param externalVariableMethodParameterString The @c std::string to use
+     * for the external variable method parameter.
+     */
+    void setExternalVariableMethodParameterString(const std::string &externalVariableMethodParameterString);
+
+    /**
+     * @brief Get the @c std::string for the call to the external variable
+     * method.
+     *
+     * Return the @c std::string for the call to the external variable method.
+     *
+     * @return The @c std::string for the call to the external variable method.
+     */
+    std::string externalVariableMethodCallString() const;
+
+    /**
+     * @brief Set the @c std::string for the call to the external variable
+     * method.
+     *
+     * Set this @c std::string for the call to the external variable method. To
+     * be useful, the string should contain the [INDEX] tag, which will be
+     * replaced with the index of the external variable.
+     *
+     * @param externalVariableMethodCallString The @c std::string to use for the
+     * call to the external variable method.
+     */
+    void setExternalVariableMethodCallString(const std::string &externalVariableMethodCallString);
 
     /**
      * @brief Get the @c std::string for the interface to create the states
@@ -3084,7 +3210,7 @@ public:
      * and constants.
      *
      * Set the @c std::string for the implementation to initialise states and
-     * constants. To be useful, the string should contain the <CODE> tag, which
+     * constants. To be useful, the string should contain the [CODE] tag, which
      * will be replaced with some code to initialise states and constants.
      *
      * @param implementationInitialiseStatesAndConstantsMethodString The
@@ -3133,7 +3259,7 @@ public:
      * constants.
      *
      * Set the @c std::string for the implementation to compute computed
-     * constants. To be useful, the string should contain the <CODE> tag, which
+     * constants. To be useful, the string should contain the [CODE] tag, which
      * will be replaced with some code to compute computed constants.
      *
      * @param implementationComputeComputedConstantsMethodString The
@@ -3154,7 +3280,12 @@ public:
     /**
      * @brief Set the @c std::string for the interface to compute rates.
      *
-     * Set the @c std::string for the interface to compute rates.
+     * Set the @c std::string for the interface to compute rates. To be
+     * useful, the string should contain the [OPTIONAL_PARAMETER] tag, which
+     * will be replaced with a parameter for the compute external variables
+     * method, if needed.
+     *
+     * @sa externalVariableMethodParameterString
      *
      * @param interfaceComputeRatesMethodString The @c std::string to use for
      * the interface to compute rates.
@@ -3174,8 +3305,12 @@ public:
      * @brief Set the @c std::string for the implementation to compute rates.
      *
      * Set the @c std::string for the implementation to compute rates. To be
-     * useful, the string should contain the <CODE> tag, which will be replaced
-     * with a parameter for some code to compute rates.
+     * useful, the string should contain both the [OPTIONAL_PARAMETER] and
+     * [CODE] tags, which will be replaced with a parameter for the compute
+     * external variables method, if needed, and with some code to compute
+     * rates, respectively.
+     *
+     * @sa externalVariableMethodParameterString
      *
      * @param implementationComputeRatesMethodString The @c std::string to use
      * for the implementation to compute rates.
@@ -3194,7 +3329,12 @@ public:
     /**
      * @brief Set the @c std::string for the interface to compute variables.
      *
-     * Set the @c std::string for the interface to compute variables.
+     * Set the @c std::string for the interface to compute variables. To be
+     * useful, the string should contain the [OPTIONAL_PARAMETER] tag, which
+     * will be replaced with a parameter for the compute external variables
+     * method, if needed.
+     *
+     * @sa externalVariableMethodParameterString
      *
      * @param interfaceComputeVariablesMethodString The @c std::string to use
      * for the interface to compute variables.
@@ -3215,9 +3355,13 @@ public:
      * @brief Set the @c std::string for the implementation to compute
      * variables.
      *
-     * Set the @c std::string for the implementation to compute variables. To be
-     * useful, the string should contain the <CODE> tag, which will be replaced
-     * with a parameter for some code to compute rates.
+     * Set the @c std::string for the implementation to compute variables. To
+     * be useful, the string should contain both the [OPTIONAL_PARAMETER] and
+     * [CODE] tags, which will be replaced with a parameter for the compute
+     * external variables method, if needed, and with some code to compute
+     * rates, respectively.
+     *
+     * @sa externalVariableMethodParameterString
      *
      * @param implementationComputeVariablesMethodString The @c std::string to
      * use for the implementation to compute variables.
@@ -3392,10 +3536,10 @@ public:
     void setCommandSeparatorString(const std::string &commandSeparatorString);
 
 private:
-    explicit GeneratorProfile(Profile profile = Profile::C); /**< Constructor. */
+    explicit GeneratorProfile(Profile profile = Profile::C); /**< Constructor, @private. */
 
     struct GeneratorProfileImpl;
-    GeneratorProfileImpl *mPimpl;
+    GeneratorProfileImpl *mPimpl; /**< Private member to implementation pointer, @private. */
 };
 
 } // namespace libcellml

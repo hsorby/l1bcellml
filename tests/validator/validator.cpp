@@ -25,6 +25,15 @@ limitations under the License.
  * are not picked up by the main tests testing the API of the library
  */
 
+TEST(Validator, invalidInput)
+{
+    libcellml::ValidatorPtr validator = libcellml::Validator::create();
+
+    validator->validateModel(nullptr);
+    EXPECT_EQ(size_t(1), validator->issueCount());
+    EXPECT_EQ("The model is null.", validator->issue(0)->description());
+}
+
 TEST(Validator, namedModel)
 {
     libcellml::ValidatorPtr validator = libcellml::Validator::create();
@@ -37,11 +46,9 @@ TEST(Validator, namedModel)
 TEST(Validator, unnamedModel)
 {
     const std::vector<std::string> expectedIssues = {
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Model '' does not have a valid name attribute.",
+        "Model '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
     };
     const std::vector<std::string> expectedSpecificationHeadings = {
-        "1.3.1.1",
         "2.1.1",
     };
     libcellml::ValidatorPtr validator = libcellml::Validator::create();
@@ -53,27 +60,17 @@ TEST(Validator, unnamedModel)
 TEST(Validator, invalidCellMLIdentifiersWithSpecificationHeading)
 {
     const std::vector<std::string> expectedIssues = {
-        "CellML identifiers must not begin with a European numeric character [0-9].",
-        "Model '9numbernine' does not have a valid name attribute.",
-        "CellML identifiers must not contain any characters other than [a-zA-Z0-9_].",
-        "Component 'try.this' does not have a valid name attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Component '' does not have a valid name attribute.",
-        "CellML identifiers must not contain any characters other than [a-zA-Z0-9_].",
-        "Component 'or this' does not have a valid name attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Component '' does not have a valid name attribute.",
+        "Model '9numbernine' does not have a valid name attribute. CellML identifiers must not begin with a European numeric character [0-9].",
+        "Component 'try.this' does not have a valid name attribute. CellML identifiers must not contain any characters other than [a-zA-Z0-9_].",
+        "Component '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
+        "Component 'or this' does not have a valid name attribute. CellML identifiers must not contain any characters other than [a-zA-Z0-9_].",
+        "Component '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
     };
     const std::vector<std::string> expectedSpecificationHeadings = {
-        "1.3.1.1",
         "2.1.1",
-        "1.3.1.1",
         "2.7.1",
-        "1.3.1.1",
         "2.7.1",
-        "1.3.1.1",
         "2.7.1",
-        "1.3.1.1",
         "2.7.1",
     };
 
@@ -105,8 +102,7 @@ TEST(Validator, invalidCellMLIdentifiersWithSpecificationHeading)
 TEST(Validator, namedModelWithUnnamedComponent)
 {
     const std::vector<std::string> expectedIssues = {
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Component '' does not have a valid name attribute.",
+        "Component '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
     };
     libcellml::ValidatorPtr validator = libcellml::Validator::create();
     libcellml::ModelPtr model = libcellml::Model::create();
@@ -120,12 +116,9 @@ TEST(Validator, namedModelWithUnnamedComponent)
 TEST(Validator, unnamedModelWithUnnamedComponentWithUnnamedUnits)
 {
     const std::vector<std::string> expectedIssues = {
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Model '' does not have a valid name attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Component '' does not have a valid name attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Units '' does not have a valid name attribute.",
+        "Model '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
+        "Component '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
+        "Units '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
     };
 
     libcellml::ValidatorPtr validator = libcellml::Validator::create();
@@ -171,12 +164,10 @@ TEST(Validator, unnamedAndDuplicateNamedVariablesWithAndWithoutValidUnits)
 {
     const std::vector<std::string> expectedIssues = {
         "Component 'fargo' contains multiple variables with the name 'margie'. Valid variable names must be unique to their component.",
-        "CellML identifiers must not begin with a European numeric character [0-9].",
-        "Variable '2cold' in component 'fargo' does not have a valid name attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Variable 'margie' in component 'fargo' does not have a valid units attribute. The attribute given is ''.",
+        "Variable '2cold' in component 'fargo' does not have a valid name attribute. CellML identifiers must not begin with a European numeric character [0-9].",
+        "Variable 'margie' in component 'fargo' does not have any units specified.",
         "Variable 'ransom' in component 'fargo' has a units reference 'dollars' which is neither standard nor defined in the parent model.",
-    };
+        "Variable 'mullah' in component 'fargo' does not have a valid units attribute. The attribute given is '$$'. CellML identifiers must not contain any characters other than [a-zA-Z0-9_]."};
 
     libcellml::ValidatorPtr validator = libcellml::Validator::create();
     libcellml::ModelPtr model = libcellml::Model::create();
@@ -185,11 +176,14 @@ TEST(Validator, unnamedAndDuplicateNamedVariablesWithAndWithoutValidUnits)
     libcellml::VariablePtr v2 = libcellml::Variable::create();
     libcellml::VariablePtr v3 = libcellml::Variable::create();
     libcellml::VariablePtr v4 = libcellml::Variable::create();
+    libcellml::VariablePtr v5 = libcellml::Variable::create();
+
     model->addComponent(c1);
     c1->addVariable(v1);
     c1->addVariable(v2);
     c1->addVariable(v3);
     c1->addVariable(v4);
+    c1->addVariable(v5);
 
     model->setName("minnesota");
     c1->setName("fargo");
@@ -200,6 +194,9 @@ TEST(Validator, unnamedAndDuplicateNamedVariablesWithAndWithoutValidUnits)
     v3->setName("margie");
     v4->setName("ransom");
     v4->setUnits("dollars");
+    v5->setName("mullah");
+    v5->setUnits("$$");
+
     validator->validateModel(model);
 
     EXPECT_EQ_ISSUES(expectedIssues, validator);
@@ -234,13 +231,11 @@ TEST(Validator, invalidVariableInitialValuesAndInterfaces)
 TEST(Validator, importUnits)
 {
     const std::vector<std::string> expectedIssues = {
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Imported units 'invalid_imported_units_in_this_model' does not have a valid units_ref attribute.",
+        "Imported units 'invalid_imported_units_in_this_model' does not have a valid units_ref attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
         "Import of units 'invalid_imported_units_in_this_model' does not have a valid locator xlink:href attribute.",
         "Model 'model_name' contains multiple imported units from 'some-other-model.xml' with the same units_ref attribute 'units_in_that_model'.",
         "Import of units 'cant_find_me' has an invalid URI in the xlink:href attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Imported units '' does not have a valid name attribute.",
+        "Imported units '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
     };
 
     libcellml::ValidatorPtr v = libcellml::Validator::create();
@@ -264,7 +259,7 @@ TEST(Validator, importUnits)
     importedUnits2->setSourceUnits(imp2, "");
     m->addUnits(importedUnits2);
     v->validateModel(m);
-    EXPECT_EQ(size_t(3), v->issueCount());
+    EXPECT_EQ(size_t(2), v->issueCount());
 
     // Invalid units import - duplicate refs.
     libcellml::ImportSourcePtr imp3 = libcellml::ImportSource::create();
@@ -274,7 +269,7 @@ TEST(Validator, importUnits)
     importedUnits3->setSourceUnits(imp3, "units_in_that_model");
     m->addUnits(importedUnits3);
     v->validateModel(m);
-    EXPECT_EQ(size_t(4), v->issueCount());
+    EXPECT_EQ(size_t(3), v->issueCount());
 
     // Invalid units import - unnamed units.
     libcellml::ImportSourcePtr imp4 = libcellml::ImportSource::create();
@@ -283,7 +278,7 @@ TEST(Validator, importUnits)
     importedUnits4->setSourceUnits(imp4, "units_in_that_model");
     m->addUnits(importedUnits4);
     v->validateModel(m);
-    EXPECT_EQ(size_t(6), v->issueCount());
+    EXPECT_EQ(size_t(4), v->issueCount());
 
     // Invalid units import - not a valid URL.
     libcellml::ImportSourcePtr imp5 = libcellml::ImportSource::create();
@@ -300,11 +295,9 @@ TEST(Validator, importUnits)
 TEST(Validator, importComponents)
 {
     const std::vector<std::string> expectedIssues = {
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Imported component 'invalid_imported_component_in_this_model' does not have a valid component_ref attribute.",
+        "Imported component 'invalid_imported_component_in_this_model' does not have a valid component_ref attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
         "Import of component 'invalid_imported_component_in_this_model' does not have a valid locator xlink:href attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Imported component '' does not have a valid name attribute.",
+        "Imported component '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
         "Import of component 'a_bad_imported_component' has an invalid URI in the xlink:href attribute.",
     };
 
@@ -339,7 +332,7 @@ TEST(Validator, importComponents)
     importedComponent3->setSourceComponent(imp3, "");
     m->addComponent(importedComponent3);
     v->validateModel(m);
-    EXPECT_EQ(size_t(3), v->issueCount());
+    EXPECT_EQ(size_t(2), v->issueCount());
 
     // Valid component import - two components imported from the same place is allowed
     libcellml::ImportSourcePtr imp4 = libcellml::ImportSource::create();
@@ -349,7 +342,7 @@ TEST(Validator, importComponents)
     importedComponent4->setSourceComponent(imp4, "component_in_that_model");
     m->addComponent(importedComponent4);
     v->validateModel(m);
-    EXPECT_EQ(size_t(3), v->issueCount());
+    EXPECT_EQ(size_t(2), v->issueCount());
 
     // Invalid - name missing from component
     libcellml::ImportSourcePtr imp5 = libcellml::ImportSource::create();
@@ -358,7 +351,7 @@ TEST(Validator, importComponents)
     importedComponent5->setSourceComponent(imp5, "component_in_that_model");
     m->addComponent(importedComponent5);
     v->validateModel(m);
-    EXPECT_EQ(size_t(5), v->issueCount());
+    EXPECT_EQ(size_t(3), v->issueCount());
 
     // Valid - two components from the same source is allowed
     libcellml::ImportSourcePtr imp7 = libcellml::ImportSource::create();
@@ -368,7 +361,7 @@ TEST(Validator, importComponents)
     importedComponent7->setSourceComponent(imp7, "new_shiny_component_ref");
     m->addComponent(importedComponent7);
     v->validateModel(m);
-    EXPECT_EQ(size_t(5), v->issueCount());
+    EXPECT_EQ(size_t(3), v->issueCount());
 
     // Valid - duplicate component_ref from a different source
     libcellml::ImportSourcePtr imp8 = libcellml::ImportSource::create();
@@ -378,7 +371,7 @@ TEST(Validator, importComponents)
     importedComponent8->setSourceComponent(imp8, "component_in_that_model");
     m->addComponent(importedComponent8);
     v->validateModel(m);
-    EXPECT_EQ(size_t(5), v->issueCount());
+    EXPECT_EQ(size_t(3), v->issueCount());
 
     // Invalid: component_ref URL is not valid html
     libcellml::ImportSourcePtr imp9 = libcellml::ImportSource::create();
@@ -537,7 +530,7 @@ TEST(Validator, validMathInMultipleMathMLBlocksInvalidMathTagDuplicateIDs)
         "</math>\n";
     const std::vector<std::string> expectedIssues = {
         "Math root node is of invalid type 'banana' on component 'componentName'. A valid math root node should be of type 'math'.",
-        "Duplicated id attribute 'myId' has been found in:\n"
+        "Duplicated identifier attribute 'myId' has been found in:\n"
         " - MathML cn element in math in component 'componentName'; and\n"
         " - MathML ci element 'B' in math in component 'componentName'.\n",
     };
@@ -694,8 +687,8 @@ TEST(Validator, invalidMathMLVariables)
         "Math has a 'nonsense' element that is not a supported MathML element.",
         "MathML ci element has the child text 'answer' which does not correspond with any variable names present in component 'componentName'.",
         "MathML ci element has the child text 'new_bvar' which does not correspond with any variable names present in component 'componentName'.",
-        "W3C MathML DTD error: No declaration for element nonsense.",
         "W3C MathML DTD error: Element nonsense is not declared in ci list of possible children.",
+        "W3C MathML DTD error: No declaration for element nonsense.",
     };
 
     libcellml::ValidatorPtr v = libcellml::Validator::create();
@@ -738,13 +731,11 @@ TEST(Validator, invalidSimpleMathmlCellMLUnits)
         "  </apply>\n"
         "</math>";
     const std::vector<std::string> expectedIssues = {
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Model '' does not have a valid name attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Component '' does not have a valid name attribute.",
+        "Model '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
+        "Component '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
         "MathML ci element has the child text 'B' which does not correspond with any variable names present in component ''.",
-        "W3C MathML DTD error: No declaration for attribute units of element ci.",
         "W3C MathML DTD error: Element apply content does not follow the DTD, expecting (csymbol | ci | cn | apply | reln | lambda | condition | declare | sep | semantics | annotation | annotation-xml | integers | reals | rationals | naturalnumbers | complexes | primes | exponentiale | imaginaryi | notanumber | true | false | emptyset | pi | eulergamma | infinity | interval | list | matrix | matrixrow | set | vector | piecewise | lowlimit | uplimit | bvar | degree | logbase | momentabout | domainofapplication | inverse | ident | domain | codomain | image | abs | conjugate | exp | factorial | arg | real | imaginary | floor | ceiling | not | ln | sin | cos | tan | sec | csc | cot | sinh | cosh | tanh | sech | csch | coth | arcsin | arccos | arctan | arccosh | arccot | arccoth | arccsc | arccsch | arcsec | arcsech | arcsinh | arctanh | determinant | transpose | card | quotient | divide | power | rem | implies | vectorproduct | scalarproduct | outerproduct | setdiff | fn | compose | plus | times | max | min | gcd | lcm | and | or | xor | union | intersect | cartesianproduct | mean | sdev | variance | median | mode | selector | root | minus | log | int | diff | partialdiff | divergence | grad | curl | laplacian | sum | product | limit | moment | exists | forall | neq | factorof | in | notin | notsubset | notprsubset | tendsto | eq | leq | lt | geq | gt | equivalent | approx | subset | prsubset | mi | mn | mo | mtext | ms | mspace | mrow | mfrac | msqrt | mroot | menclose | mstyle | merror | mpadded | mphantom | mfenced | msub | msup | msubsup | munder | mover | munderover | mmultiscripts | mtable | mtr | mlabeledtr | mtd | maligngroup | malignmark | maction)*, got (CDATA bvar ).",
+        "W3C MathML DTD error: No declaration for attribute units of element ci.",
     };
     libcellml::ValidatorPtr v = libcellml::Validator::create();
     libcellml::ModelPtr m = libcellml::Model::create();
@@ -762,10 +753,8 @@ TEST(Validator, invalidMathmlCellMLNsOnNode)
     const std::string math =
         "<math  xmlns:cellml=\"http://www.cellml.org/cellml/2.0#\" xmlns=\"http://www.w3.org/1998/Math/MathML\"><apply><cellml:bvar><ci cellml:units=\"dimensionless\">B</ci></cellml:bvar></apply></math>";
     const std::vector<std::string> expectedIssues = {
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Model '' does not have a valid name attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Component '' does not have a valid name attribute.",
+        "Model '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
+        "Component '' does not have a valid name attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
         "Math has a 'bvar' element that is not a supported MathML element.",
         "MathML ci element has the child text 'B' which does not correspond with any variable names present in component ''.",
         "W3C MathML DTD error: No declaration for attribute units of element ci.",
@@ -824,8 +813,7 @@ TEST(Validator, invalidMathMLCiAndCnElementsWithCellMLUnits)
         "Math has a cn element with a cellml:units attribute 'invalid' that is not a valid reference to units in the model 'modelName' or a standard unit.",
         "MathML ci element has the child text 'new_bvar' which does not correspond with any variable names present in component 'componentName'.",
         "MathML ci element has the child text 'undefined_variable' which does not correspond with any variable names present in component 'componentName'.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Math cn element with the value '2.0' does not have a valid cellml:units attribute.",
+        "Math cn element with the value '2.0' does not have a valid cellml:units attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
         "W3C MathML DTD error: No declaration for attribute units of element ci.",
         "W3C MathML DTD error: No declaration for attribute units of element ci.",
     };
@@ -925,8 +913,7 @@ TEST(Validator, parseAndValidateInvalidUnitIssues)
     const std::vector<std::string> expectedIssues = {
         "Units is named 'ampere' which is a protected standard unit name.",
         "Units reference 'ned' in units 'stark' is not a valid reference to a local units or a standard unit type.",
-        "CellML identifiers must not contain any characters other than [a-zA-Z0-9_].",
-        "Unit in units 'stark' does not have a valid units reference. The reference given is 'king in the north'.",
+        "Unit in units 'stark' does not have a valid units reference. The reference given is 'king in the north'. CellML identifiers must not contain any characters other than [a-zA-Z0-9_].",
         "Prefix 'wolf' of a unit referencing 'metre' in units 'stark' is not a valid integer or an SI prefix.",
     };
 
@@ -1576,13 +1563,11 @@ TEST(Validator, validMathCnElementsMissingCellMLNamespace)
     const std::vector<std::string> expectedIssues {
         "LibXml2 error: Namespace prefix cellml for units on cn is not defined.",
         "LibXml2 error: Namespace prefix cellml for units on cn is not defined.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Math cn element with the value '3.44' does not have a valid cellml:units attribute.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Math cn element with the value '-9.612' does not have a valid cellml:units attribute.",
+        "Math cn element with the value '3.44' does not have a valid cellml:units attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
+        "Math cn element with the value '-9.612' does not have a valid cellml:units attribute. CellML identifiers must contain one or more basic Latin alphabetic characters.",
+        "W3C MathML DTD error: Namespace prefix cellml for units on cn is not defined.",
         "W3C MathML DTD error: Namespace prefix cellml for units on cn is not defined.",
         "W3C MathML DTD error: No declaration for attribute cellml:units of element cn.",
-        "W3C MathML DTD error: Namespace prefix cellml for units on cn is not defined.",
         "W3C MathML DTD error: No declaration for attribute cellml:units of element cn.",
     };
 
@@ -2007,27 +1992,73 @@ TEST(Validator, unitUserCreatedUnitsBananasAndApples)
     EXPECT_EQ_ISSUES(expectedIssues, validator);
 }
 
-TEST(Validator, unitIllDefinedEquivalentUnits)
+TEST(Validator, unitMissingEquivalentUnits)
 {
     const std::vector<std::string> expectedIssues = {
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Variable 'v1' in component 'c1' does not have a valid units attribute. The attribute given is ''.",
-        "CellML identifiers must contain one or more basic Latin alphabetic characters.",
-        "Variable 'v2' in component 'c2' does not have a valid units attribute. The attribute given is ''.",
-        "Variable 'v1' in component 'c1' has units of '' and an equivalent variable 'v2' in component 'c2' with non-matching units of ''. The mismatch is: ",
+        "Variable 'v1' in component 'c1' does not have any units specified.",
     };
 
     libcellml::ValidatorPtr validator = libcellml::Validator::create();
     libcellml::ModelPtr m = createModelTwoComponentsWithOneVariableEach("m", "c1", "c2", "v1", "v2");
     auto c1 = m->component(0);
     auto c2 = m->component(1);
+
+    auto v1 = c1->variable(0);
+    auto v2 = c2->variable(0);
+
+    v2->setUnits("second");
+    v2->setInterfaceType("public");
+
+    libcellml::Variable::addEquivalence(v1, v2);
+    validator->validateModel(m);
+    EXPECT_EQ_ISSUES(expectedIssues, validator);
+}
+TEST(Validator, unitTwoMissingEquivalentUnits)
+{
+    const std::vector<std::string> expectedIssues = {
+        "Variable 'v1' in component 'c1' does not have any units specified.",
+        "Variable 'v2' in component 'c2' does not have any units specified.",
+    };
+
+    libcellml::ValidatorPtr validator = libcellml::Validator::create();
+    libcellml::ModelPtr m = createModelTwoComponentsWithOneVariableEach("m", "c1", "c2", "v1", "v2");
+    auto c1 = m->component(0);
+    auto c2 = m->component(1);
+
     auto v1 = c1->variable(0);
     auto v2 = c2->variable(0);
 
     libcellml::Variable::addEquivalence(v1, v2);
+    validator->validateModel(m);
+    EXPECT_EQ_ISSUES(expectedIssues, validator);
+}
+
+TEST(Validator, mismatchedBaseUnitsEquivalentVariables)
+{
+    const std::vector<std::string> expectedIssues = {
+        "Variable 'v1' in component 'c1' has units of 'metre' and an equivalent variable 'v3' in component 'c3' with non-matching units of 'second'. The mismatch is: metre^1, second^-1.",
+    };
+
+    libcellml::ValidatorPtr validator = libcellml::Validator::create();
+    libcellml::ModelPtr m = createModelTwoComponentsWithOneVariableEach("m", "c1", "c2", "v1", "v2");
+    auto c1 = m->component(0);
+    auto c2 = m->component(1);
+
+    auto v1 = c1->variable(0);
+    auto v2 = c2->variable(0);
+    v1->setUnits("metre");
+    v2->setUnits("metre");
+
+    m->addComponent(libcellml::Component::create("c3"));
+    auto v3 = libcellml::Variable::create("v3");
+    m->component("c3")->addVariable(v3);
+    v3->setUnits("second");
+    v3->setInterfaceType("public");
+
+    libcellml::Variable::addEquivalence(v1, v2);
+    libcellml::Variable::addEquivalence(v3, v1);
 
     validator->validateModel(m);
-
     EXPECT_EQ_ISSUES(expectedIssues, validator);
 }
 
@@ -2649,7 +2680,6 @@ TEST(Validator, importedUnitsFoundByValidator)
     auto component = libcellml::Component::create("component");
     auto importSource = libcellml::ImportSource::create();
     importSource->setUrl("somewhere.cellml");
-    model->addImportSource(importSource);
     model->addComponent(component);
 
     auto mV = libcellml::Units::create("mV");
@@ -2671,7 +2701,7 @@ TEST(Validator, importedUnitsFoundByValidator)
 
 TEST(Validator, duplicateIdSimple)
 {
-    std::vector<std::string> e = {"Duplicated id attribute 'id' has been found in:\n"
+    std::vector<std::string> e = {"Duplicated identifier attribute 'id' has been found in:\n"
                                   " - model 'model';\n"
                                   " - component 'c1' in model 'model';\n"
                                   " - variable 'v1' in component 'c1';\n"
@@ -2699,7 +2729,7 @@ TEST(Validator, duplicateIdAll)
     expectedIssues.emplace_back("W3C MathML DTD error: ID id4 already defined.");
     expectedIssues.emplace_back("W3C MathML DTD error: ID id1 already defined.");
     expectedIssues.emplace_back(
-        "Duplicated id attribute 'id1' has been found in:\n"
+        "Duplicated identifier attribute 'id1' has been found in:\n"
         " - model 'everything';\n"
         " - units 'units2' in model 'everything';\n"
         " - encapsulation in model 'everything';\n"
@@ -2709,7 +2739,7 @@ TEST(Validator, duplicateIdAll)
         " - MathML cn element in reset_value in reset 0 in component 'component2'; and\n"
         " - MathML ci element 'variable4' in math in component 'component3'.\n");
     expectedIssues.emplace_back(
-        "Duplicated id attribute 'id2' has been found in:\n"
+        "Duplicated identifier attribute 'id2' has been found in:\n"
         " - unit in units 'units2' in model 'everything';\n"
         " - import source for component 'component1';\n"
         " - variable equivalence between variable 'variable1' in component 'component2' and variable 'variable4' in component 'component3';\n"
@@ -2720,7 +2750,7 @@ TEST(Validator, duplicateIdAll)
         " - component 'component3' in component 'component2'; and\n"
         " - MathML eq element in math in component 'component3'.\n");
     expectedIssues.emplace_back(
-        "Duplicated id attribute 'id3' has been found in:\n"
+        "Duplicated identifier attribute 'id3' has been found in:\n"
         " - units 'units3' in model 'everything';\n"
         " - imported component 'component1' in model 'everything';\n"
         " - test_value in reset at index 0 in component 'component2';\n"
@@ -2730,7 +2760,7 @@ TEST(Validator, duplicateIdAll)
         " - MathML apply element in math in component 'component3'; and\n"
         " - encapsulation component_ref to component 'component3'.\n");
     expectedIssues.emplace_back(
-        "Duplicated id attribute 'id4' has been found in:\n"
+        "Duplicated identifier attribute 'id4' has been found in:\n"
         " - import source for units 'units1';\n"
         " - component 'component2' in model 'everything';\n"
         " - connection between components 'component2' and 'component3' because of variable equivalence between variables 'variable1' and 'variable2';\n"
@@ -2739,7 +2769,7 @@ TEST(Validator, duplicateIdAll)
         " - MathML apply element in reset_value in reset 0 in component 'component2'; and\n"
         " - MathML math element in math in component 'component3'.\n");
     expectedIssues.emplace_back(
-        "Duplicated id attribute 'id5' has been found in:\n"
+        "Duplicated identifier attribute 'id5' has been found in:\n"
         " - imported units 'units1' in model 'everything';\n"
         " - variable 'variable1' in component 'component2';\n"
         " - variable equivalence between variable 'variable1' in component 'component2' and variable 'variable2' in component 'component3';\n"

@@ -43,20 +43,19 @@ function(hide_distracting_variables)
   mark_as_advanced(CMAKE_CONFIGURATION_TYPES)
   mark_as_advanced(CMAKE_CODEBLOCKS_EXECUTABLE)
   mark_as_advanced(QT_QMAKE_EXECUTABLE)
+  if(LibXml2_FOUND AND HAVE_LIBXML2_CONFIG)
+    mark_as_advanced(LibXml2_DIR)
+  elseif(LibXml2_FOUND AND NOT HAVE_LIBXML2_CONFIG)
+    mark_as_advanced(LIBXML2_INCLUDE_DIR)
+    mark_as_advanced(LIBXML2_LIBRARY)
+    mark_as_advanced(LIBXML2_XMLLINT_EXECUTABLE)
+  endif()
   if(APPLE)
     mark_as_advanced(CMAKE_OSX_ARCHITECTURES)
     mark_as_advanced(CMAKE_OSX_DEPLOYMENT_TARGET)
     mark_as_advanced(CMAKE_OSX_SYSROOT)
   endif()
-  if(WIN32)
-    if(LibXml2_FOUND AND HAVE_LIBXML2_CONFIG)
-      mark_as_advanced(LibXml2_DIR)
-    elseif(LibXml2_FOUND AND NOT HAVE_LIBXML2_CONFIG)
-      mark_as_advanced(LIBXML2_INCLUDE_DIR)
-      mark_as_advanced(LIBXML2_LIBRARY)
-      mark_as_advanced(LIBXML2_XMLLINT_EXECUTABLE)
-    endif()
-  else()
+  if(NOT WIN32)
     mark_as_advanced(pkgcfg_lib_PC_LIBXML_xml2)
   endif()
 endfunction()
@@ -112,6 +111,7 @@ function(configure_clang_and_clang_tidy_settings _TARGET)
 
     if(NOT "${_TARGET}" STREQUAL "cellml")
       list(APPEND _COMPILE_OPTIONS
+        -Wno-old-style-cast
         -Wno-used-but-marked-unused
         --system-header-prefix=gtest/
       )
@@ -124,9 +124,21 @@ function(configure_clang_and_clang_tidy_settings _TARGET)
 
   if(CLANG_TIDY_AVAILABLE)
     if(NOT "${_TARGET}" STREQUAL "cellml")
-        set(_NO_BUGPRONE_EXCEPTION_ESCAPE -bugprone-exception-escape)
-        set(_NO_CPPCOREGUIDELINES_PRO_TYPE_VARARG -cppcoreguidelines-pro-type-vararg)
-        set(_NO_HICPP_VARARG -hicpp-vararg)
+        set(_DISABLED_BUGPRONE_CHECKS
+          -bugprone-exception-escape
+          -bugprone-suspicious-include
+        )
+        set(_DISABLED_CPPCOREGUIDELINES_CHECKS
+          -cppcoreguidelines-avoid-non-const-global-variables
+          -cppcoreguidelines-pro-bounds-pointer-arithmetic
+          -cppcoreguidelines-pro-type-vararg
+        )
+        set(_DISABLED_HICPP_CHECKS
+          -hicpp-vararg
+        )
+        set(_DISABLED_READABILITY_CHECKS
+          -readability-named-parameter
+        )
     endif()
 
     # The full list of Clang-Tidy checks can be found at
@@ -135,7 +147,7 @@ function(configure_clang_and_clang_tidy_settings _TARGET)
       -*
       bugprone-*
       -bugprone-branch-clone
-      ${_NO_BUGPRONE_EXCEPTION_ESCAPE}
+      ${_DISABLED_BUGPRONE_CHECKS}
       cert-*
       -cert-err58-cpp
       cppcoreguidelines-*
@@ -143,9 +155,9 @@ function(configure_clang_and_clang_tidy_settings _TARGET)
       -cppcoreguidelines-init-variables
       -cppcoreguidelines-owning-memory
       -cppcoreguidelines-pro-type-reinterpret-cast
-      ${_NO_CPPCOREGUIDELINES_PRO_TYPE_VARARG}
       -cppcoreguidelines-slicing
       -cppcoreguidelines-special-member-functions
+      ${_DISABLED_CPPCOREGUIDELINES_CHECKS}
       fuchsia-*
       -fuchsia-default-arguments
       -fuchsia-default-arguments-calls
@@ -158,12 +170,13 @@ function(configure_clang_and_clang_tidy_settings _TARGET)
       -google-runtime-references
       hicpp-*
       -hicpp-special-member-functions
-      ${_NO_HICPP_VARARG}
+      ${_DISABLED_HICPP_CHECKS}
       llvm-*
       -llvm-qualified-auto
       -llvm-header-guard
       misc-*
       -misc-non-private-member-variables-in-classes
+      -misc-no-recursion
       modernize-*
       -modernize-make-shared
       -modernize-pass-by-value
@@ -176,6 +189,7 @@ function(configure_clang_and_clang_tidy_settings _TARGET)
       -readability-convert-member-functions-to-static
       -readability-magic-numbers
       -readability-qualified-auto
+      ${_DISABLED_READABILITY_CHECKS}
     )
     string(REPLACE ";" ","
            _CLANG_TIDY_CHECKS "${_CLANG_TIDY_CHECKS}")

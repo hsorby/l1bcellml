@@ -769,6 +769,50 @@ TEST(Units, unitAttributes)
     EXPECT_DOUBLE_EQ(1.8, multiplier);
 }
 
+TEST(Units, unitAttributeReference)
+{
+    libcellml::UnitsPtr u = libcellml::Units::create();
+
+    EXPECT_EQ("", u->unitAttributeReference(0));
+    u->addUnit("NewUnit", 4, 1.05, 17.0);
+
+    EXPECT_EQ("NewUnit", u->unitAttributeReference(0));
+    EXPECT_EQ("", u->unitAttributeReference(4));
+}
+
+TEST(Units, unitAttributePrefix)
+{
+    libcellml::UnitsPtr u = libcellml::Units::create();
+
+    EXPECT_EQ("", u->unitAttributePrefix(0));
+    u->addUnit("NewUnit", 4, 1.05, 17.0);
+
+    EXPECT_EQ("4", u->unitAttributePrefix(0));
+    EXPECT_EQ("", u->unitAttributePrefix(3));
+}
+
+TEST(Units, unitAttributeExponent)
+{
+    libcellml::UnitsPtr u = libcellml::Units::create();
+
+    EXPECT_EQ(1.0, u->unitAttributeExponent(0));
+    u->addUnit("NewUnit", 4, 1.05, 17.0);
+
+    EXPECT_EQ(1.05, u->unitAttributeExponent(0));
+    EXPECT_EQ(1.0, u->unitAttributeExponent(2));
+}
+
+TEST(Units, unitAttributeMultiplier)
+{
+    libcellml::UnitsPtr u = libcellml::Units::create();
+
+    EXPECT_EQ(1.0, u->unitAttributeMultiplier(0));
+    u->addUnit("NewUnit", 4, 1.05, 17.0);
+
+    EXPECT_EQ(17.0, u->unitAttributeMultiplier(0));
+    EXPECT_EQ(1.0, u->unitAttributeMultiplier(5));
+}
+
 TEST(Units, multipleUnitUsingStandardRef)
 {
     auto u = libcellml::Units::create();
@@ -2484,11 +2528,12 @@ TEST(Units, addUnitsMultipleTimes)
     EXPECT_TRUE(model->addUnits(units));
     EXPECT_EQ(size_t(1), model->unitsCount());
 
-    // Try to add the same units a second time.
-    EXPECT_FALSE(model->addUnits(units));
+    // Try to add the same units a second time. Rejected.
+    EXPECT_TRUE(model->addUnits(units));
+
     // We can't add the same units more than once, hence we still have one
     // units.
-    EXPECT_EQ(size_t(1), model->unitsCount());
+    EXPECT_EQ(size_t(2), model->unitsCount());
 }
 
 TEST(Units, setGetUnitId)
@@ -2617,4 +2662,28 @@ TEST(Units, scalingFactorBetweenUnitsSameNameDifferentModelsDifferentScale)
 
     auto scaling = libcellml::Units::scalingFactor(u1, u2);
     EXPECT_EQ(1000.0, scaling);
+}
+
+TEST(Units, unknownUnitsScalingFactorCompatible)
+{
+    auto model = libcellml::Model::create("model1");
+    auto u1 = libcellml::Units::create("units");
+    u1->addUnit("banana");
+
+    model->addUnits(u1);
+
+    auto scaling = libcellml::Units::scalingFactor(u1, u1, true);
+    EXPECT_EQ(0.0, scaling);
+}
+
+TEST(Units, unknownUnitsScalingFactorIncompatible)
+{
+    auto model = libcellml::Model::create("model1");
+    auto u1 = libcellml::Units::create("units");
+    u1->addUnit("banana");
+
+    model->addUnits(u1);
+
+    auto scaling = libcellml::Units::scalingFactor(u1, u1, false);
+    EXPECT_EQ(0.0, scaling);
 }
