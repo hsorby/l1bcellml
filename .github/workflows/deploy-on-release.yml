@@ -41,7 +41,7 @@ jobs:
         # fetch libraries
         git clone https://github.com/cellml/libcellml -b release --depth 1 $SRC_DIR/libcellml
         git clone https://github.com/OpenCMISS-Dependencies/zlib -b v1.2.3 --depth 1 $SRC_DIR/zlib
-        git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.6 --depth 1 $SRC_DIR/libxml2
+        git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.10 --depth 1 $SRC_DIR/libxml2
 
         curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $DOWNLOADS_DIR/swig-4.0.2.tar.gz
         curl -L ${{ matrix.config.python_tarball }} > $DOWNLOADS_DIR/Python.tar.gz
@@ -88,6 +88,7 @@ jobs:
         make install_sw
 
     - name: Build and instal libffi
+      if: false
       shell: bash
       run: |
 
@@ -105,7 +106,7 @@ jobs:
       shell: bash
       run: |
 
-        export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=/usr/local/lib:/lib64
 
         cd $SRC_DIR/Python*
         curl -L https://gist.githubusercontent.com/hsorby/6481eed3abb20cf3cfe6bdc7a9c852d9/raw/ccd32fe61325bb8cdae1776a0535f06084761b0c/python-${{ matrix.config.python_full_version }}.patch > patch.txt
@@ -128,7 +129,8 @@ jobs:
       shell: bash
       run: |
 
-        export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+        echo $LD_LIBRARY_PATH
+        #export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
 
         cmake -S $SRC_DIR/libcellml -B $WORK_DIR/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $WORK_DIR/build-libcellml
