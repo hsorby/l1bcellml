@@ -15,6 +15,7 @@ jobs:
       DOWNLOADS_DIR: /home/downloads
       WORK_DIR: /home/work
       SRC_DIR: /home/src
+      LD_LIBRARY_PATH: /usr/local/lib:/lib64
     strategy:
       fail-fast: false
       matrix:
@@ -106,8 +107,6 @@ jobs:
       shell: bash
       run: |
 
-        export LD_LIBRARY_PATH=/usr/local/lib:/lib64
-
         cd $SRC_DIR/Python*
         curl -L https://gist.githubusercontent.com/hsorby/6481eed3abb20cf3cfe6bdc7a9c852d9/raw/ccd32fe61325bb8cdae1776a0535f06084761b0c/python-${{ matrix.config.python_full_version }}.patch > patch.txt
         patch -i patch.txt ${{ matrix.config.python_patch_file }}
@@ -129,9 +128,6 @@ jobs:
       shell: bash
       run: |
 
-        echo $LD_LIBRARY_PATH
-        #export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
-
         cmake -S $SRC_DIR/libcellml -B $WORK_DIR/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $WORK_DIR/build-libcellml
         make -j3
@@ -140,8 +136,6 @@ jobs:
       shell: bash
       run: |
 
-        export LD_LIBRARY_PATH=/usr/local/lib
-
         cd $WORK_DIR/build-libcellml
         make test
 
@@ -149,8 +143,6 @@ jobs:
       shell: bash
       run: |
         # Create Python Package
-
-        export LD_LIBRARY_PATH=/usr/local/lib
 
         python${{ matrix.config.python_version }} -m pip install --upgrade pip
         pip${{ matrix.config.python_version }} install setuptools twine wheel auditwheel
@@ -163,8 +155,6 @@ jobs:
         # Test Python Package
 
         cd $WORK_DIR/build-libcellml/src/bindings/python
-
-        export LD_LIBRARY_PATH=/usr/local/lib
 
         python${{ matrix.config.python_version }} -m venv $WORK_DIR/venv_test
         source $WORK_DIR/venv_test/bin/activate
@@ -183,8 +173,6 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         # Upload Python packages
-
-        export LD_LIBRARY_PATH=/usr/local/lib
 
         cd $WORK_DIR/build-libcellml/src/bindings/python
 
