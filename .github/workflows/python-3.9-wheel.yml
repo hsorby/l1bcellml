@@ -15,7 +15,6 @@ jobs:
       DOWNLOADS_DIR: /home/downloads
       WORK_DIR: /home/work
       SRC_DIR: /home/src
-      LD_LIBRARY_PATH: /usr/local/lib:/lib64
     strategy:
       fail-fast: false
       matrix:
@@ -82,6 +81,8 @@ jobs:
         ./configure --enable-shared --enable-optimizations
         make -j3 build_all 
         make altinstall
+        # Update ld cache
+        ldconfig
     - name: Build and instal swig
       shell: bash
       run: |
