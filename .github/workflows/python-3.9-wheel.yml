@@ -94,6 +94,7 @@ jobs:
     - name: Build libcellml
       shell: bash
       run: |
+        ldconfig
         cmake -S $SRC_DIR/libcellml -B $WORK_DIR/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $WORK_DIR/build-libcellml
         make -j3
