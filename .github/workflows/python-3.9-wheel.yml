@@ -95,8 +95,9 @@ jobs:
       shell: bash
       run: |
         ldconfig
-        ldconfig -p
         ldconfig -p | grep -i python
+        /usr/local/bin/python${{ matrix.config.python_version }} --version
+        python${{ matrix.config.python_version }} --version
         cmake -S $SRC_DIR/libcellml -B $WORK_DIR/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $WORK_DIR/build-libcellml
         make -j3
