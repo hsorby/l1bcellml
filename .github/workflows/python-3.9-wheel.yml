@@ -38,15 +38,15 @@ jobs:
         git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.10 --depth 1 $SRC_DIR/libxml2
         curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $DOWNLOADS_DIR/swig-4.0.2.tar.gz
         curl -L ${{ matrix.config.python_tarball }} > $DOWNLOADS_DIR/Python.tar.gz
-        curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $DOWNLOADS_DIR/openssl-1.1.1h.tar.gz
-        curl -L ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz > $DOWNLOADS_DIR/libffi-3.2.1.tar.gz
+        #curl -L https://www.openssl.org/source/openssl-1.1.1h.tar.gz > $DOWNLOADS_DIR/openssl-1.1.1h.tar.gz
+        #curl -L ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz > $DOWNLOADS_DIR/libffi-3.2.1.tar.gz
     - name: Extract source code
       shell: bash
       run: |
         cd $SRC_DIR
         tar -xzf $DOWNLOADS_DIR/swig-4.0.2.tar.gz
-        tar -xzf $DOWNLOADS_DIR/openssl-1.1.1h.tar.gz
-        tar -xzf $DOWNLOADS_DIR/libffi-3.2.1.tar.gz
+        #tar -xzf $DOWNLOADS_DIR/openssl-1.1.1h.tar.gz
+        #tar -xzf $DOWNLOADS_DIR/libffi-3.2.1.tar.gz
         tar -xzf $DOWNLOADS_DIR/Python.tar.gz
     - name: Build and instal zlib
       shell: bash
@@ -63,33 +63,17 @@ jobs:
         cd $WORK_DIR/build-libxml2
         make -j3
         make install
-    - name: Build and instal openssl
+    - name: Instal openssl and libffi headers
       shell: bash
       run: |
-        mkdir $WORK_DIR/build-openssl
-        cd $WORK_DIR/build-openssl
-        $SRC_DIR/openssl-1.1.1h/config --libdir=/usr/local/lib
-        make -j3
-        make install_sw
-    - name: Build and instal libffi
-      if: false
-      shell: bash
-      run: |
-        mkdir $WORK_DIR/build-libffi-3.2.1
-        cd $WORK_DIR/build-libffi-3.2.1
-        $SRC_DIR/libffi-3.2.1/configure --without-docs  --libdir=/usr/local/lib
-        make -j3
-        make install
-        cd /usr/local/lib
-        ln -s /usr/local/lib64/libffi.so
-        ln -s /usr/local/lib64/libffi.la
+        yum -y install libffi-devel openssl-devel
     - name: Build and instal Python
       shell: bash
       run: |
         cd $SRC_DIR/Python*
         curl -L https://gist.githubusercontent.com/hsorby/6481eed3abb20cf3cfe6bdc7a9c852d9/raw/4701096ce95130eb239945bb7875fdd9ab33bfde/python-${{ matrix.config.python_full_version }}.patch > patch.txt
         patch -i patch.txt ${{ matrix.config.python_patch_file }}
-        ./configure --enable-shared --enable-optimizations --with-openssl=/usr/local/ --with-system-ffi
+        ./configure --enable-shared --enable-optimizations
         make -j3 build_all 
         make altinstall
     - name: Build and instal swig
@@ -97,7 +81,7 @@ jobs:
       run: |
         mkdir $WORK_DIR/build-swig
         cd $WORK_DIR/build-swig
-        $SRC_DIR/swig-4.0.2/configure
+        $SRC_DIR/swig-4.0.2/configure --without-java --without-go --without-r
         make -j3
         make install
     - name: Build libcellml
