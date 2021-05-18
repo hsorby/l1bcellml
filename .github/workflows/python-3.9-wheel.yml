@@ -72,6 +72,14 @@ jobs:
       shell: bash
       run: |
         yum -y install libffi-devel openssl-devel
+    - name: Remove exising Pythons
+      shell: bash
+      run: |
+        echo "Before:"
+        ls /usr/local/bin/
+        run /usr/local/bin/python*
+        echo "After:"
+        ls /usr/local/bin/
     - name: Build and instal Python
       shell: bash
       run: |
@@ -101,6 +109,8 @@ jobs:
         
         ls /usr/local/include/
         ls /usr/local/bin/
+        
+        yum whatprovides /usr/local/bin/python3.9
         
         cmake -S $SRC_DIR/libcellml -B $WORK_DIR/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $WORK_DIR/build-libcellml
