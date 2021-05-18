@@ -77,7 +77,7 @@ jobs:
       run: |
         echo "Before:"
         ls /usr/local/bin/
-        run /usr/local/bin/python*
+        rm /usr/local/bin/python*
         echo "After:"
         ls /usr/local/bin/
     - name: Build and instal Python
