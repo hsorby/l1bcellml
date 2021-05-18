@@ -98,8 +98,10 @@ jobs:
         ldconfig -p | grep -i python
         /usr/local/bin/python${{ matrix.config.python_version }} --version
         python${{ matrix.config.python_version }} --version
-        ls /usr/local/include/python${{ matrix.config.python_version }}*
-        ls /usr/local/include/python*
+        
+        ls /usr/local/include/
+        ls /usr/local/bin/
+        
         cmake -S $SRC_DIR/libcellml -B $WORK_DIR/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $WORK_DIR/build-libcellml
         make -j3
