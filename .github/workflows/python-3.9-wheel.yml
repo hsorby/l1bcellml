@@ -72,14 +72,6 @@ jobs:
       shell: bash
       run: |
         yum -y install libffi-devel openssl-devel
-    - name: Remove exising Pythons
-      shell: bash
-      run: |
-        echo "Before:"
-        ls /usr/local/bin/
-        rm /usr/local/bin/python*
-        echo "After:"
-        ls /usr/local/bin/
     - name: Build and instal Python
       shell: bash
       run: |
@@ -91,6 +83,11 @@ jobs:
         make altinstall
         # Update ld cache
         ldconfig
+    - name: Create virtual environment
+      shell: bash
+      run: |
+        pip${{ matrix.config.python_version }} install virtualenv
+        virtualenv $WORK_DIR/venv
     - name: Build and instal swig
       shell: bash
       run: |
@@ -102,16 +99,7 @@ jobs:
     - name: Build libcellml
       shell: bash
       run: |
-        ldconfig
-        ldconfig -p | grep -i python
-        /usr/local/bin/python${{ matrix.config.python_version }} --version
-        python${{ matrix.config.python_version }} --version
-        
-        ls /usr/local/include/
-        ls /usr/local/bin/
-        
-        yum whatprovides /usr/local/bin/python3.9
-        
+        . $WORK_DIR/venv/bin/activate
         cmake -S $SRC_DIR/libcellml -B $WORK_DIR/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
         cd $WORK_DIR/build-libcellml
         make -j3
