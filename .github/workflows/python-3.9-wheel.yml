@@ -102,7 +102,7 @@ jobs:
         source $WORK_DIR/venv/bin/activate
         which python
         python --version
-        cmake -S $SRC_DIR/libcellml -B $WORK_DIR/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release
+        cmake -S $SRC_DIR/libcellml -B $WORK_DIR/build-libcellml -D COVERAGE=OFF -D BUILD_TYPE=Release -D Python_FIND_VIRTUALENV=ONLY
         cd $WORK_DIR/build-libcellml
         make -j3
     - name: Test
