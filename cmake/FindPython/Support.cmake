@@ -658,8 +658,6 @@ endfunction()
 
 
 function (_PYTHON_VALIDATE_INTERPRETER)
-message(STATUS ":_PYTHON_VALIDATE_INTERPRETER ${}")
-message(STATUS "_${_PYTHON_PREFIX}_EXECUTABLE: ${_${_PYTHON_PREFIX}_EXECUTABLE}")
   if (NOT _${_PYTHON_PREFIX}_EXECUTABLE)
     return()
   endif()
@@ -673,7 +671,6 @@ message(STATUS "_${_PYTHON_PREFIX}_EXECUTABLE: ${_${_PYTHON_PREFIX}_EXECUTABLE}"
 
   if (_PVI_CHECK_EXISTS AND NOT EXISTS "${_${_PYTHON_PREFIX}_EXECUTABLE}")
     # interpreter does not exist anymore
-message(STATUS ":interpreter does not exist anymore")
     set (_${_PYTHON_PREFIX}_Interpreter_REASON_FAILURE "Cannot find the interpreter \"${_${_PYTHON_PREFIX}_EXECUTABLE}\"" PARENT_SCOPE)
     set_property (CACHE _${_PYTHON_PREFIX}_EXECUTABLE PROPERTY VALUE "${_PYTHON_PREFIX}_EXECUTABLE-NOTFOUND")
     return()
@@ -681,8 +678,6 @@ message(STATUS ":interpreter does not exist anymore")
 
   _python_get_launcher (launcher INTERPRETER)
 
-message(STATUS "launcher: ${launcher}")
-message(STATUS "_${_PYTHON_PREFIX}_FIND_ABI: ${_${_PYTHON_PREFIX}_FIND_ABI}")
   # validate ABI compatibility
   if (DEFINED _${_PYTHON_PREFIX}_FIND_ABI)
     execute_process (COMMAND ${launcher} "${_${_PYTHON_PREFIX}_EXECUTABLE}" -c
@@ -704,7 +699,7 @@ message(STATUS "_${_PYTHON_PREFIX}_FIND_ABI: ${_${_PYTHON_PREFIX}_FIND_ABI}")
   endif()
 
   get_filename_component (python_name "${_${_PYTHON_PREFIX}_EXECUTABLE}" NAME)
-message(STATUS "exptected_version: ${expected_version}")
+
   if (expected_version)
     if (NOT python_name STREQUAL "python${expected_version}${abi}${CMAKE_EXECUTABLE_SUFFIX}")
       # compute number of components for version
@@ -743,7 +738,6 @@ message(STATUS "exptected_version: ${expected_version}")
         endif()
       endif()
       if (NOT _${_PYTHON_PREFIX}_EXECUTABLE)
-message(STATUS ": something went wrong.")
         return()
       endif()
     endif()
@@ -765,7 +759,6 @@ message(STATUS ": something went wrong.")
           set (_${_PYTHON_PREFIX}_Interpreter_REASON_FAILURE "Wrong major version for the interpreter \"${_${_PYTHON_PREFIX}_EXECUTABLE}\"" PARENT_SCOPE)
         endif()
         set_property (CACHE _${_PYTHON_PREFIX}_EXECUTABLE PROPERTY VALUE "${_PYTHON_PREFIX}_EXECUTABLE-NOTFOUND")
-message(STATUS ": something went wrong 2.")
         return()
       endif()
     endif()
@@ -789,11 +782,9 @@ message(STATUS ": something went wrong 2.")
         set (_${_PYTHON_PREFIX}_Interpreter_REASON_FAILURE "Wrong architecture for the interpreter \"${_${_PYTHON_PREFIX}_EXECUTABLE}\"" PARENT_SCOPE)
       endif()
       set_property (CACHE _${_PYTHON_PREFIX}_EXECUTABLE PROPERTY VALUE "${_PYTHON_PREFIX}_EXECUTABLE-NOTFOUND")
-message(STATUS ": something went wrong 3.")
       return()
     endif()
   endif()
-message(STATUS ": success ... ${launcher}")
 endfunction()
 
 
