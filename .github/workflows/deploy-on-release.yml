@@ -152,7 +152,8 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         cd $WORK_DIR/build-libcellml/src/bindings/python
-        twine upload --skip-existing wheelhouse/*
+        echo "twine upload --skip-existing wheelhouse/*"
+        #twine upload --skip-existing wheelhouse/*
 
   os-binaries:
     name: ${{ matrix.config.name }}
@@ -430,7 +431,8 @@ jobs:
         github-token: ${{secrets.MAINTAINER_WRITE_TOKEN}}
         script: |
           const script = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
-          script({github, context})
+          // script({github, context})
+          console.log("script({github, context})")
 
     - name: Create Python Package
       shell: bash
@@ -482,7 +484,8 @@ jobs:
           cd build/src/bindings/python
         fi
 
-        twine upload --skip-existing dist/*
+        echo "twine upload --skip-existing dist/*"
+        # twine upload --skip-existing dist/*
 
   emscripten:
     name: libcellml.js
@@ -538,6 +541,12 @@ jobs:
           emcmake cmake -DLibXml2_DIR=../usr/local/lib/cmake/libxml2-2.9.10/ -DZLIB_DIR=../usr/local/lib/cmake/ZLIB/ -DBUILD_TYPE=Release ../libcellml/
           make -j3
 
+      - name: Test libcellml.js
+        shell: bash
+        run: |
+          cd build-libcellml-release
+          ctest -V
+
       - name: Pack libcellml.js
         id: package-javascript
         shell: bash
@@ -562,7 +571,8 @@ jobs:
           github-token: ${{secrets.MAINTAINER_WRITE_TOKEN}}
           script: |
             const script = require(`${process.env.GITHUB_WORKSPACE}/libcellml/.github/scripts/upload-asset.js`)
-            script({github, context})
+            // script({github, context})
+            echo "Upload libcellml.js assets."
 
       - name: Publish libcellml.js
         shell: bash
@@ -570,4 +580,6 @@ jobs:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: |
           cd build-libcellml-release/src/bindings/javascript
-          npm publish --access public
+          #npm publish --access public
+          echo "npm publish --access public"
+
