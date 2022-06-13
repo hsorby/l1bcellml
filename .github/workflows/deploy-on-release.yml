@@ -6,6 +6,7 @@ on:
       - created
 
 env:
+  LIBCELLML_REPO: hsorby/l1bcellml
   BUILD_TYPE: Release
   MACOSX_DEPLOYMENT_TARGET: 10.14
 
@@ -38,6 +39,27 @@ jobs:
             python_tarball: "https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz"
           }
     steps:
+    - name: Checkout libCellML
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ env.LIBCELLML_REPO }}
+        path: libcellml
+        ref: release
+
+    - name: Checkout zlib
+      uses: actions/checkout@v2
+      with:
+        repository: OpenCMISS-Dependencies/zlib
+        path: zlib
+        ref: v1.2.3
+
+    - name: Checkout LibXml2
+      uses: actions/checkout@v2
+      with:
+        repository: OpenCMISS-Dependencies/libxml2
+        path: libxml2
+        ref: v2.9.10
+
     - name: Download source code
       shell: bash
       run: |
@@ -199,6 +221,8 @@ jobs:
     - name: Checkout libCellML
       uses: actions/checkout@v2
       with:
+        repository: ${{ env.LIBCELLML_REPO }}
+        path: libcellml
         ref: release
 
     - name: Checkout zlib
@@ -283,7 +307,6 @@ jobs:
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}Python)
         endif()
 
-
     - name: Configure
       shell: cmake -P {0}
       run: |
@@ -317,7 +340,7 @@ jobs:
 
         execute_process(
           COMMAND ${CMAKE_COMMAND}
-            -S .
+            -S libcellml
             -B build
             -D Python_EXECUTABLE=${PYTHON_EXE}
             ${OPTIONAL_ARGUMENTS}
@@ -494,7 +517,7 @@ jobs:
       - name: Checkout libCellML
         uses: actions/checkout@v2
         with:
-          repository: cellml/libcellml
+          repository: ${{ env.LIBCELLML_REPO }}
           path: libcellml
           ref: release
 
