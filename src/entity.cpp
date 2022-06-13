@@ -16,82 +16,50 @@ limitations under the License.
 
 #include "libcellml/entity.h"
 
+#include <utility>
+
 #include "libcellml/component.h"
 #include "libcellml/componententity.h"
+
+#include "entity_p.h"
 
 namespace libcellml {
 
 using EntityWeakPtr = std::weak_ptr<Entity>; /**< Type definition for weak entity pointer. */
 
-/**
- * @brief The Entity::EntityImpl struct.
- *
- * The private implementation for the Entity class.
- */
-struct Entity::EntityImpl
+Entity::Entity(Entity::EntityImpl *derivedPimpl)
+    : mPimpl(derivedPimpl)
 {
-    EntityWeakPtr mParent; /**< Pointer to parent. */
-    std::string mId; /**< String document identifier for this entity. */
-};
-
-Entity::Entity()
-    : mPimpl(new EntityImpl())
-{
-    mPimpl->mParent = {};
 }
 
-Entity::~Entity()
-{
-    delete mPimpl;
-}
+Entity::~Entity() = default;
 
 void Entity::setId(const std::string &id)
 {
-    mPimpl->mId = id;
+    pFunc()->mId = id;
 }
 
 std::string Entity::id() const
 {
-    return mPimpl->mId;
+    return pFunc()->mId;
 }
 
-EntityPtr Entity::parent() const
+void Entity::removeId()
 {
-    return mPimpl->mParent.lock();
+    pFunc()->mId = "";
 }
 
-void Entity::setParent(const EntityPtr &parent)
+bool Entity::equals(const EntityPtr &other) const
 {
-    mPimpl->mParent = parent;
+    return doEquals(other);
 }
 
-void Entity::removeParent()
+bool Entity::doEquals(const EntityPtr &other) const
 {
-    mPimpl->mParent = {};
-}
-
-bool Entity::hasParent() const
-{
-    bool hasParent = false;
-    EntityPtr parent = mPimpl->mParent.lock();
-    if (parent) {
-        hasParent = true;
+    if (other == nullptr) {
+        return false;
     }
-
-    return hasParent;
-}
-
-bool Entity::hasAncestor(const EntityPtr &entity) const
-{
-    bool hasAncestor = false;
-    EntityPtr parent = mPimpl->mParent.lock();
-    if (parent == entity) {
-        hasAncestor = true;
-    } else if (parent) {
-        hasAncestor = parent->hasAncestor(entity);
-    }
-
-    return hasAncestor;
+    return pFunc()->mId == other->id();
 }
 
 } // namespace libcellml

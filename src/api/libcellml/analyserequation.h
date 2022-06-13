@@ -47,13 +47,14 @@ public:
         TRUE_CONSTANT,
         VARIABLE_BASED_CONSTANT,
         RATE,
-        ALGEBRAIC
+        ALGEBRAIC,
+        EXTERNAL
     };
 
-    ~AnalyserEquation(); /**< Destructor. */
-    AnalyserEquation(const AnalyserEquation &rhs) = delete; /**< Copy constructor. */
-    AnalyserEquation(AnalyserEquation &&rhs) noexcept = delete; /**< Move constructor. */
-    AnalyserEquation &operator=(AnalyserEquation rhs) = delete; /**< Assignment operator. */
+    ~AnalyserEquation(); /**< Destructor, @private. */
+    AnalyserEquation(const AnalyserEquation &rhs) = delete; /**< Copy constructor, @private. */
+    AnalyserEquation(AnalyserEquation &&rhs) noexcept = delete; /**< Move constructor, @private. */
+    AnalyserEquation &operator=(AnalyserEquation rhs) = delete; /**< Assignment operator, @private. */
 
     /**
      * @brief Get the @c Type of this @c AnalyserEquation.
@@ -105,10 +106,10 @@ public:
     AnalyserVariablePtr variable() const;
 
 private:
-    AnalyserEquation(); /**< Constructor. */
+    AnalyserEquation(); /**< Constructor, @private. */
 
     struct AnalyserEquationImpl;
-    AnalyserEquationImpl *mPimpl;
+    AnalyserEquationImpl *mPimpl; /**< Private member to implementation pointer, @private. */
 };
 
 } // namespace libcellml

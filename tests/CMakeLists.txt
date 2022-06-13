@@ -10,7 +10,7 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.cmake_minimum_required (VERSION 3.1)
+# limitations under the License.
 
 include(GenerateExportHeader)
 
@@ -33,12 +33,11 @@ include(clone/tests.cmake)
 include(component/tests.cmake)
 include(connection/tests.cmake)
 include(coverage/tests.cmake)
+include(equality/tests.cmake)
 include(generator/tests.cmake)
 include(import_source/tests.cmake)
 include(importer/tests.cmake)
 include(isolated/tests.cmake)
-include(issue/tests.cmake)
-include(logger/tests.cmake)
 include(math/tests.cmake)
 include(model/tests.cmake)
 include(parser/tests.cmake)
@@ -68,6 +67,15 @@ set(TESTS_HEADER_FILES ${TEST_UTILS_HDR})
 
 include(test_resources.cmake)
 
+if(MSVC)
+  if(HAVE_ZLIB_TARGET AND ZLIB_TARGET_TYPE STREQUAL "SHARED_LIBRARY")
+    set(GEN_EXP_ZLIB_TARGET_FILE_DIR "\;\$<TARGET_FILE_DIR:z>")
+  endif()
+  if(HAVE_LIBXML2_TARGET AND LIBXML2_TARGET_TYPE STREQUAL "SHARED_LIBRARY")
+    set(GEN_EXP_XML2_TARGET_FILE_DIR "\;\$<TARGET_FILE_DIR:${LIBXML2_TARGET_NAME}>")
+  endif()
+endif()
+
 # Cycle through all the tests 'included' above
 set(TEST_LIST)
 foreach(TEST ${LIBCELLML_TESTS})
@@ -94,14 +102,8 @@ foreach(TEST ${LIBCELLML_TESTS})
 
   add_test(NAME ${CURRENT_CATEGORY}unit_${CURRENT_TEST} COMMAND ${CURRENT_TEST})
   if(MSVC)
-    if(HAVE_LIBXML2_CONFIG)
-      set_tests_properties(${CURRENT_CATEGORY}unit_${CURRENT_TEST}
-        PROPERTIES ENVIRONMENT "PATH=$<TARGET_FILE_DIR:cellml>\;$<TARGET_FILE_DIR:gtest_main>\;$<TARGET_FILE_DIR:xml2>")
-    else()
-      # The libxml2 dll must be on the path otherwise the tests will not be able to run.
-      set_tests_properties(${CURRENT_CATEGORY}unit_${CURRENT_TEST}
-        PROPERTIES ENVIRONMENT "PATH=$<TARGET_FILE_DIR:cellml>\;$<TARGET_FILE_DIR:gtest_main>")
-    endif()
+    set(_TEST_PROPERTIES "PATH=$<TARGET_FILE_DIR:cellml>\;$<TARGET_FILE_DIR:gtest_main>${GEN_EXP_XML2_TARGET_FILE_DIR}${GEN_EXP_ZLIB_TARGET_FILE_DIR}")
+    set_tests_properties(${CURRENT_CATEGORY}unit_${CURRENT_TEST} PROPERTIES ENVIRONMENT "${_TEST_PROPERTIES}")
   endif()
 
   list(APPEND TEST_LIST ${CURRENT_TEST})
@@ -173,7 +175,7 @@ if(LIBCELLML_LLVM_COVERAGE)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Running LLVM coverage tests")
 
-  add_custom_target(llvm_coverage_missing_lines
+  add_custom_target(llvm_coverage_report
     COMMAND ${LLVM_COV_EXE} show $<TARGET_FILE:cellml> -instr-profile=${DATA_PROFILE_FILENAME} -format=html -Xdemangler c++filt -Xdemangler -n -o coverage_report
     DEPENDS prepare_llvm_coverage
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

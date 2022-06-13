@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#pragma once
+
 #include "libcellml/analyservariable.h"
 
 #include "internaltypes.h"
@@ -34,6 +36,8 @@ struct AnalyserVariable::AnalyserVariableImpl
     VariableWeakPtr mInitialisingVariable;
     VariableWeakPtr mVariable;
     AnalyserEquationWeakPtr mEquation;
+
+    static AnalyserVariablePtr create();
 
     void populate(AnalyserVariable::Type type, size_t index,
                   const VariablePtr &initialisingVariable,

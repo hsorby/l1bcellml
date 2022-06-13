@@ -22,131 +22,139 @@ limitations under the License.
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdint>
+#include <cstring>
 #include <map>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
+#include "units_p.h"
 #include "utilities.h"
 
 namespace libcellml {
 
-/**
- * @brief Map Prefix to their string forms.
- *
- * An internal map used to convert a Prefix into its string form.
- */
-static const std::map<Units::Prefix, const std::string> prefixToString = {
-    {Units::Prefix::ATTO, "atto"},
-    {Units::Prefix::CENTI, "centi"},
-    {Units::Prefix::DECA, "deca"},
-    {Units::Prefix::DECI, "deci"},
-    {Units::Prefix::EXA, "exa"},
-    {Units::Prefix::FEMTO, "femto"},
-    {Units::Prefix::GIGA, "giga"},
-    {Units::Prefix::HECTO, "hecto"},
-    {Units::Prefix::KILO, "kilo"},
-    {Units::Prefix::MEGA, "mega"},
-    {Units::Prefix::MICRO, "micro"},
-    {Units::Prefix::MILLI, "milli"},
-    {Units::Prefix::NANO, "nano"},
-    {Units::Prefix::PETA, "peta"},
-    {Units::Prefix::PICO, "pico"},
-    {Units::Prefix::TERA, "tera"},
-    {Units::Prefix::YOCTO, "yocto"},
-    {Units::Prefix::YOTTA, "yotta"},
-    {Units::Prefix::ZEPTO, "zepto"},
-    {Units::Prefix::ZETTA, "zetta"}};
-
-/**
- * @brief Map StandardUnit to their string forms.
- *
- * An internal map used to convert a standard unit into its string form.
- */
-static const std::map<Units::StandardUnit, const std::string> standardUnitToString = {
-    {Units::StandardUnit::AMPERE, "ampere"},
-    {Units::StandardUnit::BECQUEREL, "becquerel"},
-    {Units::StandardUnit::CANDELA, "candela"},
-    {Units::StandardUnit::COULOMB, "coulomb"},
-    {Units::StandardUnit::DIMENSIONLESS, "dimensionless"},
-    {Units::StandardUnit::FARAD, "farad"},
-    {Units::StandardUnit::GRAM, "gram"},
-    {Units::StandardUnit::GRAY, "gray"},
-    {Units::StandardUnit::HENRY, "henry"},
-    {Units::StandardUnit::HERTZ, "hertz"},
-    {Units::StandardUnit::JOULE, "joule"},
-    {Units::StandardUnit::KATAL, "katal"},
-    {Units::StandardUnit::KELVIN, "kelvin"},
-    {Units::StandardUnit::KILOGRAM, "kilogram"},
-    {Units::StandardUnit::LITRE, "litre"},
-    {Units::StandardUnit::LUMEN, "lumen"},
-    {Units::StandardUnit::LUX, "lux"},
-    {Units::StandardUnit::METRE, "metre"},
-    {Units::StandardUnit::MOLE, "mole"},
-    {Units::StandardUnit::NEWTON, "newton"},
-    {Units::StandardUnit::OHM, "ohm"},
-    {Units::StandardUnit::PASCAL, "pascal"},
-    {Units::StandardUnit::RADIAN, "radian"},
-    {Units::StandardUnit::SECOND, "second"},
-    {Units::StandardUnit::SIEMENS, "siemens"},
-    {Units::StandardUnit::SIEVERT, "sievert"},
-    {Units::StandardUnit::STERADIAN, "steradian"},
-    {Units::StandardUnit::TESLA, "tesla"},
-    {Units::StandardUnit::VOLT, "volt"},
-    {Units::StandardUnit::WATT, "watt"},
-    {Units::StandardUnit::WEBER, "weber"}};
-
-/**
- * @brief The UnitDefinition struct.
- *
- * An internal structure to capture a unit definition.  The
- * prefix can be expressed using either an integer or an enum.
- * The enum structure member is given preference if both are set.
- */
-struct UnitDefinition
+std::vector<UnitDefinition>::const_iterator Units::UnitsImpl::findUnit(const std::string &reference) const
 {
-    std::string mReference; /**< Reference to the units for the unit.*/
-    std::string mPrefix; /**< String expression of the prefix for the unit.*/
-    std::string mExponent; /**< Exponent for the unit.*/
-    std::string mMultiplier; /**< Multiplier for the unit.*/
-    std::string mId; /**< Id for the unit.*/
-};
-
-/**
- * @brief The Units::UnitsImpl struct.
- *
- * The private implementation for the Units class.
- */
-struct Units::UnitsImpl
-{
-    std::vector<UnitDefinition> mUnits; /**< A vector of unit defined for this Units.*/
-
-    std::vector<UnitDefinition>::iterator findUnit(const std::string &reference);
-
-    /**
-     * @brief Test if this units is a standard unit that is a base unit.
-     *
-     * Only tests if the name of the units matches a standard unit name
-     * that is a base units.  Returns @c true if the unit name does match
-     * a base units name and @c false otherwise.
-     *
-     * @param name The name of the units.
-     *
-     * @return @c true if the name of the units is one of: "ampere",
-     * "candela", "dimensionless", "kelvin", "kilogram", "metre", "mole" , "second".
-     */
-    bool isBaseUnit(const std::string &name) const;
-};
-
-std::vector<UnitDefinition>::iterator Units::UnitsImpl::findUnit(const std::string &reference)
-{
-    return std::find_if(mUnits.begin(), mUnits.end(),
+    return std::find_if(mUnitDefinitions.begin(), mUnitDefinitions.end(),
                         [=](const UnitDefinition &u) -> bool { return u.mReference == reference; });
+}
+
+Units::UnitsImpl *Units::pFunc()
+{
+    return reinterpret_cast<Units::UnitsImpl *>(Entity::pFunc());
+}
+
+const Units::UnitsImpl *Units::pFunc() const
+{
+    return reinterpret_cast<Units::UnitsImpl const *>(Entity::pFunc());
+}
+
+Units::Units()
+    : NamedEntity(new Units::UnitsImpl())
+{
+    pFunc()->mUnits = this;
+}
+
+Units::Units(const std::string &name)
+    : NamedEntity(new Units::UnitsImpl())
+{
+    pFunc()->mUnits = this;
+    setName(name);
+}
+
+Units::~Units()
+{
+    delete pFunc();
 }
 
 bool Units::UnitsImpl::isBaseUnit(const std::string &name) const
 {
     return name == "ampere" || name == "candela" || name == "dimensionless" || name == "kelvin" || name == "kilogram" || name == "metre" || name == "mole" || name == "second";
+}
+
+bool Units::UnitsImpl::isBaseUnitWithHistory(History &history, const UnitsConstPtr &units) const
+{
+    if (mUnits->isImport()) {
+        ImportSourcePtr importedSource = mUnits->importSource();
+        if (importedSource != nullptr) {
+            ModelPtr model = importedSource->model();
+            if (model != nullptr) {
+                auto h = createHistoryEpoch(units, importeeModelUrl(history, mUnits->importSource()->url()));
+                if (checkForImportCycles(history, h)) {
+                    return false;
+                }
+                history.push_back(h);
+                if (model->hasUnits(mUnits->importReference())) {
+                    auto importedUnits = model->units(mUnits->importReference());
+                    // Call isBaseUnit recursively until unit is no longer an import.
+                    return importedUnits->pFunc()->isBaseUnitWithHistory(history, importedUnits);
+                }
+            }
+        }
+        return false;
+    }
+
+    auto unitsName = mUnits->name();
+    bool standardUnitCheck = true;
+    if (isStandardUnitName(unitsName)) {
+        standardUnitCheck = isBaseUnit(unitsName);
+    }
+    return (mUnits->unitCount() == 0) && standardUnitCheck;
+}
+
+bool Units::UnitsImpl::isResolvedWithHistory(History &history, const UnitsConstPtr &units) const
+{
+    if (!mUnits->isImport()) {
+        return true;
+    }
+
+    auto model = mUnits->importSource()->model();
+    if (model == nullptr) {
+        return false;
+    }
+
+    auto importedUnits = model->units(mUnits->importReference());
+    if (importedUnits == nullptr) {
+        return false;
+    }
+
+    auto h = createHistoryEpoch(units, importeeModelUrl(history, mUnits->importSource()->url()));
+    if (checkForImportCycles(history, h)) {
+        return false;
+    }
+
+    if (importedUnits->isImport()) {
+        history.push_back(h);
+
+        return importedUnits->pFunc()->isResolvedWithHistory(history, importedUnits);
+    }
+
+    for (size_t u = 0; (u < importedUnits->unitCount()); ++u) {
+        std::string reference;
+        std::string prefix;
+        std::string id;
+        double exponent;
+        double multiplier;
+        importedUnits->unitAttributes(u, reference, prefix, exponent, multiplier, id);
+        if (isStandardUnitName(reference)) {
+            continue;
+        }
+
+        auto childUnits = model->units(reference);
+        if (childUnits == nullptr) {
+            return false;
+        }
+
+        history.push_back(h);
+
+        if (!childUnits->pFunc()->isResolvedWithHistory(history, childUnits)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /**
@@ -182,9 +190,10 @@ bool updateUnitMultiplier(const UnitsPtr &units, int direction, double &multipli
             units->unitAttributes(i, ref, pre, exp, expMult, id);
             mult = std::log10(expMult);
 
-            if (isStandardPrefixName(pre)) {
-                prefixMult = standardPrefixList.at(pre);
-            } else {
+            bool ok;
+
+            prefixMult = convertPrefixToInt(pre, &ok);
+            if (!ok) {
                 return false;
             }
 
@@ -196,6 +205,9 @@ bool updateUnitMultiplier(const UnitsPtr &units, int direction, double &multipli
                 auto model = owningModel(units);
                 if (model != nullptr) {
                     auto refUnits = model->units(ref);
+                    if (refUnits == nullptr) {
+                        return false;
+                    }
                     double branchMult = 0.0;
                     // Return false when we can't find a valid prefix.
                     if (!updateUnitMultiplier(refUnits, 1, branchMult)) {
@@ -214,22 +226,6 @@ bool updateUnitMultiplier(const UnitsPtr &units, int direction, double &multipli
     return updated;
 }
 
-Units::Units()
-    : mPimpl(new UnitsImpl())
-{
-}
-
-Units::Units(const std::string &name)
-    : mPimpl(new UnitsImpl())
-{
-    setName(name);
-}
-
-Units::~Units()
-{
-    delete mPimpl;
-}
-
 UnitsPtr Units::create() noexcept
 {
     return std::shared_ptr<Units> {new Units {}};
@@ -242,24 +238,62 @@ UnitsPtr Units::create(const std::string &name) noexcept
 
 bool Units::isBaseUnit() const
 {
-    if (isImport()) {
-        ImportSourcePtr importedSource = importSource();
-        if (importedSource != nullptr) {
-            ModelPtr model = importedSource->model();
-            if (model != nullptr && model->hasUnits(importReference())) {
-                auto unit = model->units(importReference());
-                return unit->isBaseUnit(); // Call isBaseUnit recursively until unit is no longer an import
-            }
-        }
+    History history;
+    return pFunc()->isBaseUnitWithHistory(history, shared_from_this());
+}
+
+bool Units::doEquals(const EntityPtr &other) const
+{
+    if (!NamedEntity::doEquals(other)) {
         return false;
     }
 
-    auto unitsName = name();
-    bool standardUnitCheck = true;
-    if (isStandardUnitName(unitsName)) {
-        standardUnitCheck = mPimpl->isBaseUnit(unitsName);
+    auto units = std::dynamic_pointer_cast<Units>(other);
+
+    if ((units == nullptr)
+        || (pFunc()->mUnitDefinitions.size() != units->unitCount())
+        || !ImportedEntity::doEquals(units)) {
+        return false;
     }
-    return unitCount() == 0 && standardUnitCheck;
+
+    // Check unit definitions match.
+    static const auto PTRDIFF_T_MAX = size_t(std::numeric_limits<ptrdiff_t>::max());
+
+    std::string reference;
+    std::string prefix;
+    double exponent;
+    double multiplier;
+    std::string id;
+    std::vector<size_t> unmatchedUnitIndex(pFunc()->mUnitDefinitions.size());
+
+    std::iota(unmatchedUnitIndex.begin(), unmatchedUnitIndex.end(), 0);
+
+    for (const auto &unitDefinition : pFunc()->mUnitDefinitions) {
+        bool unitFound = false;
+        size_t index = 0;
+
+        for (index = 0; (index < unmatchedUnitIndex.size()) && !unitFound; ++index) {
+            size_t currentIndex = unmatchedUnitIndex.at(index);
+
+            units->unitAttributes(currentIndex, reference, prefix, exponent, multiplier, id);
+
+            if (areNearlyEqual(unitDefinition.mExponent, exponent)
+                && (unitDefinition.mId == id)
+                && areNearlyEqual(unitDefinition.mMultiplier, multiplier)
+                && (unitDefinition.mPrefix == prefix)
+                && (unitDefinition.mReference == reference)) {
+                unitFound = true;
+            }
+        }
+
+        if (!unitFound || (index >= PTRDIFF_T_MAX)) {
+            return false;
+        }
+
+        unmatchedUnitIndex.erase(unmatchedUnitIndex.begin() + ptrdiff_t(index) - 1);
+    }
+
+    return true;
 }
 
 void Units::addUnit(const std::string &reference, const std::string &prefix, double exponent,
@@ -267,27 +301,26 @@ void Units::addUnit(const std::string &reference, const std::string &prefix, dou
 {
     UnitDefinition ud;
     ud.mReference = reference;
-    // Allow all nonzero user-specified prefixes
-    try {
-        int prefixInteger = std::stoi(prefix);
-        if (prefixInteger != 0.0) {
+
+    // Allow all nonzero user-specified prefixes.
+    if (isCellMLInteger(prefix)) {
+        try {
+            int prefixInteger = std::stoi(prefix);
+            if (prefixInteger != 0) {
+                ud.mPrefix = prefix;
+            }
+        } catch (std::out_of_range &) {
             ud.mPrefix = prefix;
         }
-    } catch (std::invalid_argument &) {
-        ud.mPrefix = prefix;
-    } catch (std::out_of_range &) {
+    } else {
         ud.mPrefix = prefix;
     }
-    if (exponent != 1.0) {
-        ud.mExponent = convertToString(exponent);
-    }
-    if (multiplier != 1.0) {
-        ud.mMultiplier = convertToString(multiplier);
-    }
-    if (!id.empty()) {
-        ud.mId = id;
-    }
-    mPimpl->mUnits.push_back(ud);
+
+    ud.mExponent = exponent;
+    ud.mMultiplier = multiplier;
+    ud.mId = id;
+
+    pFunc()->mUnitDefinitions.push_back(ud);
 }
 
 void Units::addUnit(const std::string &reference, Prefix prefix, double exponent,
@@ -315,86 +348,126 @@ void Units::addUnit(const std::string &reference)
     addUnit(reference, "0", 1.0, 1.0, "");
 }
 
-void Units::addUnit(StandardUnit standardRef, const std::string &prefix, double exponent,
+void Units::addUnit(StandardUnit standardUnit, const std::string &prefix, double exponent,
                     double multiplier, const std::string &id)
 {
-    const std::string reference = standardUnitToString.find(standardRef)->second;
+    const std::string reference = standardUnitToString.find(standardUnit)->second;
     addUnit(reference, prefix, exponent, multiplier, id);
 }
 
-void Units::addUnit(StandardUnit standardRef, Prefix prefix, double exponent,
+void Units::addUnit(StandardUnit standardUnit, Prefix prefix, double exponent,
                     double multiplier, const std::string &id)
 {
-    const std::string reference = standardUnitToString.find(standardRef)->second;
+    const std::string reference = standardUnitToString.find(standardUnit)->second;
     const std::string prefixString = prefixToString.find(prefix)->second;
     addUnit(reference, prefixString, exponent, multiplier, id);
 }
 
-void Units::addUnit(StandardUnit standardRef, int prefix, double exponent,
+void Units::addUnit(StandardUnit standardUnit, int prefix, double exponent,
                     double multiplier, const std::string &id)
 {
-    const std::string reference = standardUnitToString.find(standardRef)->second;
+    const std::string reference = standardUnitToString.find(standardUnit)->second;
     const std::string prefixString = convertToString(prefix);
     addUnit(reference, prefixString, exponent, multiplier, id);
 }
 
-void Units::addUnit(StandardUnit standardRef, double exponent, const std::string &id)
+void Units::addUnit(StandardUnit standardUnit, double exponent, const std::string &id)
 {
-    const std::string reference = standardUnitToString.find(standardRef)->second;
+    const std::string reference = standardUnitToString.find(standardUnit)->second;
     addUnit(reference, "0", exponent, 1.0, id);
 }
 
-void Units::addUnit(StandardUnit standardRef)
+void Units::addUnit(StandardUnit standardUnit)
 {
-    const std::string reference = standardUnitToString.find(standardRef)->second;
+    const std::string reference = standardUnitToString.find(standardUnit)->second;
     addUnit(reference, "0", 1.0, 1.0, "");
 }
 
-void Units::unitAttributes(StandardUnit standardRef, std::string &prefix, double &exponent, double &multiplier, std::string &id) const
+void Units::unitAttributes(StandardUnit standardUnit, std::string &prefix, double &exponent, double &multiplier, std::string &id) const
 {
     std::string dummyReference;
-    const std::string reference = standardUnitToString.find(standardRef)->second;
-    auto result = mPimpl->findUnit(reference);
-    unitAttributes(size_t(result - mPimpl->mUnits.begin()), dummyReference, prefix, exponent, multiplier, id);
+    const std::string reference = standardUnitToString.find(standardUnit)->second;
+    auto result = pFunc()->findUnit(reference);
+    unitAttributes(size_t(result - pFunc()->mUnitDefinitions.begin()), dummyReference, prefix, exponent, multiplier, id);
 }
 
 void Units::unitAttributes(const std::string &reference, std::string &prefix, double &exponent, double &multiplier, std::string &id) const
 {
     std::string dummyReference;
-    auto result = mPimpl->findUnit(reference);
-    unitAttributes(size_t(result - mPimpl->mUnits.begin()), dummyReference, prefix, exponent, multiplier, id);
+    auto result = pFunc()->findUnit(reference);
+    unitAttributes(size_t(result - pFunc()->mUnitDefinitions.begin()), dummyReference, prefix, exponent, multiplier, id);
 }
 
 void Units::unitAttributes(size_t index, std::string &reference, std::string &prefix, double &exponent, double &multiplier, std::string &id) const
 {
     UnitDefinition ud;
-    if (index < mPimpl->mUnits.size()) {
-        ud = mPimpl->mUnits.at(index);
+    if (index < pFunc()->mUnitDefinitions.size()) {
+        ud = pFunc()->mUnitDefinitions.at(index);
     }
     reference = ud.mReference;
     prefix = ud.mPrefix;
-    if (ud.mExponent.empty() || !convertToDouble(ud.mExponent, exponent)) {
-        exponent = 1.0;
-    }
-    if (ud.mMultiplier.empty() || !convertToDouble(ud.mMultiplier, multiplier)) {
-        multiplier = 1.0;
-    }
+    exponent = ud.mExponent;
+    multiplier = ud.mMultiplier;
     id = ud.mId;
 }
 
-bool Units::setUnitId(size_t index, const std::string &id) const
+std::string Units::unitAttributeReference(size_t index) const
 {
-    if (index < mPimpl->mUnits.size()) {
-        mPimpl->mUnits[index].mId = id;
+    std::string ref;
+    std::string pre;
+    double exp;
+    double mult;
+    std::string id;
+    unitAttributes(index, ref, pre, exp, mult, id);
+    return ref;
+}
+
+std::string Units::unitAttributePrefix(size_t index) const
+{
+    std::string ref;
+    std::string pre;
+    double exp;
+    double mult;
+    std::string id;
+    unitAttributes(index, ref, pre, exp, mult, id);
+    return pre;
+}
+
+double Units::unitAttributeExponent(size_t index) const
+{
+    std::string ref;
+    std::string pre;
+    double exp;
+    double mult;
+    std::string id;
+    unitAttributes(index, ref, pre, exp, mult, id);
+    return exp;
+}
+
+double Units::unitAttributeMultiplier(size_t index) const
+{
+    std::string ref;
+    std::string pre;
+    double exp;
+    double mult;
+    std::string id;
+    unitAttributes(index, ref, pre, exp, mult, id);
+    return mult;
+}
+
+bool Units::setUnitId(size_t index, const std::string &id)
+{
+    if (index < pFunc()->mUnitDefinitions.size()) {
+        pFunc()->mUnitDefinitions[index].mId = id;
         return true;
     }
     return false;
 }
 
-std::string Units::unitId(size_t index)
+std::string Units::unitId(size_t index) const
 {
-    if (index < mPimpl->mUnits.size()) {
-        return mPimpl->mUnits.at(index).mId;
+    if (index < pFunc()->mUnitDefinitions.size()) {
+        return pFunc()->mUnitDefinitions.at(index).mId;
     }
     return "";
 }
@@ -402,9 +475,9 @@ std::string Units::unitId(size_t index)
 bool Units::removeUnit(const std::string &reference)
 {
     bool status = false;
-    auto result = mPimpl->findUnit(reference);
-    if (result != mPimpl->mUnits.end()) {
-        mPimpl->mUnits.erase(result);
+    auto result = pFunc()->findUnit(reference);
+    if (result != pFunc()->mUnitDefinitions.end()) {
+        pFunc()->mUnitDefinitions.erase(result);
         status = true;
     }
 
@@ -414,42 +487,23 @@ bool Units::removeUnit(const std::string &reference)
 bool Units::removeUnit(size_t index)
 {
     bool status = false;
-    if (index < mPimpl->mUnits.size()) {
-        mPimpl->mUnits.erase(mPimpl->mUnits.begin() + int64_t(index));
+    if (index < pFunc()->mUnitDefinitions.size()) {
+        pFunc()->mUnitDefinitions.erase(pFunc()->mUnitDefinitions.begin() + ptrdiff_t(index));
         status = true;
     }
 
     return status;
 }
 
-bool Units::removeUnit(StandardUnit standardRef)
+bool Units::removeUnit(StandardUnit standardUnit)
 {
-    const std::string reference = standardUnitToString.find(standardRef)->second;
+    const std::string reference = standardUnitToString.find(standardUnit)->second;
     return removeUnit(reference);
 }
 
 void Units::removeAllUnits()
 {
-    mPimpl->mUnits.clear();
-}
-
-void Units::doSetImportSource(const ImportSourcePtr &importSource)
-{
-    auto model = owningModel(shared_from_this());
-    auto units = shared_from_this();
-
-    auto oldImportSource = units->importSource();
-
-    if (model != nullptr) {
-        model->addImportSource(importSource);
-    }
-    if (importSource != nullptr) {
-        importSource->addUnits(units);
-    }
-    if (oldImportSource != nullptr) {
-        oldImportSource->removeUnits(units, false);
-    }
-    ImportedEntity::doSetImportSource(importSource);
+    pFunc()->mUnitDefinitions.clear();
 }
 
 void Units::setSourceUnits(ImportSourcePtr &importSource, const std::string &name)
@@ -460,7 +514,7 @@ void Units::setSourceUnits(ImportSourcePtr &importSource, const std::string &nam
 
 size_t Units::unitCount() const
 {
-    return mPimpl->mUnits.size();
+    return pFunc()->mUnitDefinitions.size();
 }
 
 double Units::scalingFactor(const UnitsPtr &units1, const UnitsPtr &units2, bool checkCompatibility)
@@ -493,7 +547,7 @@ void updateUnitsMapWithStandardUnit(const std::string &name, UnitsMap &unitsMap,
     for (const auto &baseUnitsComponent : unitsListIter->second) {
         auto unitsMapIter = unitsMap.find(baseUnitsComponent.first);
         if (unitsMapIter == unitsMap.end()) {
-            unitsMap[baseUnitsComponent.first] = 0.0;
+            unitsMap.emplace(baseUnitsComponent.first, 0.0);
         }
         unitsMap[baseUnitsComponent.first] += baseUnitsComponent.second * exp;
     }
@@ -526,7 +580,7 @@ bool updateUnitsMap(const UnitsPtr &units, UnitsMap &unitsMap, double exp = 1.0)
                 if (model == nullptr) {
                     // We cannot resolve the reference for this units so we add
                     // what we do know.
-                    unitsMap[ref] = uExp * exp;
+                    unitsMap.emplace(ref, uExp * exp);
                 } else {
                     auto refUnits = model->units(ref);
                     if ((refUnits == nullptr) || refUnits->isImport()) {
@@ -568,6 +622,9 @@ UnitsMap createUnitsMap(const UnitsPtr &units, bool &isValid)
 bool Units::requiresImports() const
 {
     // Function to check child unit dependencies for imports.
+    if (isImport()) {
+        return true;
+    }
 
     auto model = owningModel(shared_from_this());
     if (model != nullptr) {
@@ -583,7 +640,7 @@ bool Units::requiresImports() const
             if (child == nullptr) {
                 continue;
             }
-            if (child->isImport() || child->requiresImports()) {
+            if (child->requiresImports()) {
                 return true;
             }
         }
@@ -644,8 +701,7 @@ UnitsPtr Units::clone() const
     units->setName(name());
 
     if (isImport()) {
-        auto imp = importSource()->clone();
-        units->setImportSource(imp);
+        units->setImportSource(importSource());
     }
 
     units->setImportReference(importReference());
@@ -655,12 +711,18 @@ UnitsPtr Units::clone() const
     std::string id;
     double exponent;
     double multiplier;
-    for (size_t index = 0; index < mPimpl->mUnits.size(); ++index) {
+    for (size_t index = 0; index < pFunc()->mUnitDefinitions.size(); ++index) {
         unitAttributes(index, reference, prefix, exponent, multiplier, id);
         units->addUnit(reference, prefix, exponent, multiplier, id);
     }
 
     return units;
+}
+
+bool Units::doIsResolved() const
+{
+    History history;
+    return pFunc()->isResolvedWithHistory(history, shared_from_this());
 }
 
 } // namespace libcellml

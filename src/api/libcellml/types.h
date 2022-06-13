@@ -16,7 +16,6 @@ limitations under the License.
 
 #pragma once
 
-#include <any>
 #include <map>
 #include <memory>
 #include <utility>
@@ -33,12 +32,18 @@ class AnalyserEquation; /**< Forward declaration of AnalyserEquation class. */
 using AnalyserEquationPtr = std::shared_ptr<AnalyserEquation>; /**< Type definition for shared analyser equation pointer. */
 class AnalyserEquationAst; /**< Forward declaration of AnalyserEquationAst class. */
 using AnalyserEquationAstPtr = std::shared_ptr<AnalyserEquationAst>; /**< Type definition for shared analyser equation AST pointer. */
+class AnalyserExternalVariable; /**< Forward declaration of AnalyserExternalVariable class. */
+using AnalyserExternalVariablePtr = std::shared_ptr<AnalyserExternalVariable>; /**< Type definition for shared analyser external variable pointer. */
 class AnalyserModel; /**< Forward declaration of AnalyserModel class. */
 using AnalyserModelPtr = std::shared_ptr<AnalyserModel>; /**< Type definition for shared analyser model pointer. */
 class AnalyserVariable; /**< Forward declaration of AnalyserVariable class. */
 using AnalyserVariablePtr = std::shared_ptr<AnalyserVariable>; /**< Type definition for shared analyser variable pointer. */
 class Annotator; /**< Forward declaration of Annotator class. */
 using AnnotatorPtr = std::shared_ptr<Annotator>; /**< Type definition for @c std::shared Annotator pointer. */
+
+class AnyCellmlElement; /**< Forward declaration of AnyCellmlElement class. */
+using AnyCellmlElementPtr = std::shared_ptr<AnyCellmlElement>; /**< Type definition for @c std::shared AnyCellmlElement pointer. */
+
 class Generator; /**< Forward declaration of Generator class. */
 using GeneratorPtr = std::shared_ptr<Generator>; /**< Type definition for shared generator pointer. */
 class GeneratorProfile; /**< Forward declaration of GeneratorProfile class. */
@@ -60,21 +65,21 @@ using ValidatorPtr = std::shared_ptr<Validator>; /**< Type definition for shared
 class Component; /**< Forward declaration of Component class. */
 using ComponentPtr = std::shared_ptr<Component>; /**< Type definition for shared component pointer. */
 class ComponentEntity; /**< Forward declaration of ComponentEntity class. */
-using ComponentEntityConstPtr = std::shared_ptr<const ComponentEntity>; /**< Type definition for shared component entity const pointer. */
 using ComponentEntityPtr = std::shared_ptr<ComponentEntity>; /**< Type definition for shared component entity pointer. */
 class Entity; /**< Forward declaration of Entity class. */
 using EntityPtr = std::shared_ptr<Entity>; /**< Type definition for shared entity pointer. */
-using EntityConstPtr = std::shared_ptr<const Entity>; /**< Type definition for shared entity const pointer. */
 class ImportedEntity; /**< Forward declaration of ImportedEntity class. */
 using ImportedEntityPtr = std::shared_ptr<ImportedEntity>; /**< Type definition for shared imported entity pointer. */
 class ImportSource; /**< Forward declaration of ImportSource class. */
 using ImportSourcePtr = std::shared_ptr<ImportSource>; /**< Type definition for shared import source pointer. */
 class Model; /**< Forward declaration of Model class. */
 using ModelPtr = std::shared_ptr<Model>; /**< Type definition for shared model pointer. */
+class ParentedEntity; /**< Forward declaration of parented entity class. */
+using ParentedEntityPtr = std::shared_ptr<ParentedEntity>; /**< Type definition for shared parented entity pointer. */
 class Reset; /**< Forward declaration of Reset class. */
 using ResetPtr = std::shared_ptr<Reset>; /**< Type definition for shared reset pointer. */
-class Unit; /**< Forward declaration of Unit class. */
-using UnitPtr = std::shared_ptr<Unit>; /**< Type definition for shared unit pointer. */
+class UnitsItem; /**< Forward declaration of UnitsItem class. */
+using UnitsItemPtr = std::shared_ptr<UnitsItem>; /**< Type definition for shared units item pointer. */
 class Units; /**< Forward declaration of Units class. */
 using UnitsPtr = std::shared_ptr<Units>; /**< Type definition for shared units pointer. */
 class Variable; /**< Forward declaration of Variable class. */
@@ -83,31 +88,31 @@ class VariablePair; /**< Forward declaration of VariablePair class. */
 using VariablePairPtr = std::shared_ptr<VariablePair>; /**< Type definition for shared variable pair pointer. */
 
 /**
- * @brief The Unit class
+ * @brief The UnitsItem class
  *
- * The Unit class contains a @ref Units to the parent Units item, and
- * the index to the @ref Unit item within the @ref Units.
+ * The UnitsItem class contains a @ref Units to the parent Units item, and
+ * the index to the @ref UnitsItem item within the @ref Units.
  */
-class LIBCELLML_EXPORT Unit
+class LIBCELLML_EXPORT UnitsItem
 {
 public:
-    ~Unit(); /**< Destructor. */
-    Unit() = delete; /**< Constructor. */
-    Unit(const Unit &rhs) = delete; /**< Copy constructor. */
-    Unit(Unit &&rhs) noexcept = delete; /**< Move constructor. */
-    Unit &operator=(Unit rhs) = delete; /**< Assignment operator. */
+    ~UnitsItem(); /**< Destructor. */
+    UnitsItem() = delete; /**< Constructor, @private. */
+    UnitsItem(const UnitsItem &rhs) = delete; /**< Copy constructor, @private. */
+    UnitsItem(UnitsItem &&rhs) noexcept = delete; /**< Move constructor, @private. */
+    UnitsItem &operator=(UnitsItem rhs) = delete; /**< Assignment operator, @private. */
 
     /**
-     * @brief Create a unit reference object.
+     * @brief Create a units item reference object.
      *
-     * Factory method to create a @ref UnitPtr.  Create a unit with @ref Units
+     * Factory method to create a @ref UnitsItemPtr.  Create a units item with @ref Units
      * and index with::
      *
-     *   auto unit = libcellml::UnitPtr::create(units, index);
+     *   auto unitsItem = libcellml::UnitsItemPtr::create(units, index);
      *
-     * @return A smart pointer to a @ref UnitPtr object.
+     * @return A smart pointer to a @ref UnitsItemPtr object.
      */
-    static UnitPtr create(const UnitsPtr &units, size_t index) noexcept;
+    static UnitsItemPtr create(const UnitsPtr &units, size_t index) noexcept;
 
     /**
      * @brief Get the unit.
@@ -138,10 +143,10 @@ public:
     bool isValid() const;
 
 private:
-    explicit Unit(const UnitsPtr &units, size_t index); /**< Constructor with two variables as parameters. */
+    explicit UnitsItem(const UnitsPtr &units, size_t index); /**< Constructor with two variables as parameters. */
 
-    struct UnitImpl; /**< Forward declaration for pImpl idiom. */
-    UnitImpl *mPimpl; /**< Private member to implementation pointer. */
+    struct UnitsItemImpl; /**< Forward declaration for pImpl idiom, @private. */
+    UnitsItemImpl *mPimpl; /**< Private member to implementation pointer, @private. */
 };
 
 /**
@@ -156,10 +161,10 @@ class LIBCELLML_EXPORT VariablePair
 {
 public:
     ~VariablePair(); /**< Destructor. */
-    VariablePair() = delete; /**< Constructor. */
-    VariablePair(const VariablePair &rhs) = delete; /**< Copy constructor. */
-    VariablePair(VariablePair &&rhs) noexcept = delete; /**< Move constructor. */
-    VariablePair &operator=(VariablePair rhs) = delete; /**< Assignment operator. */
+    VariablePair() = delete; /**< Constructor, @private. */
+    VariablePair(const VariablePair &rhs) = delete; /**< Copy constructor, @private. */
+    VariablePair(VariablePair &&rhs) noexcept = delete; /**< Move constructor, @private. */
+    VariablePair &operator=(VariablePair rhs) = delete; /**< Assignment operator, @private. */
 
     /**
      * @brief Create a variable pair object.
@@ -204,35 +209,126 @@ public:
 private:
     explicit VariablePair(const VariablePtr &variable1, const VariablePtr &variable2); /**< Constructor with two variables as parameters. */
 
-    struct VariablePairImpl; /**< Forward declaration for pImpl idiom. */
-    VariablePairImpl *mPimpl; /**< Private member to implementation pointer. */
+    struct VariablePairImpl; /**< Forward declaration for pImpl idiom, @private. */
+    VariablePairImpl *mPimpl; /**< Private member to implementation pointer, @private. */
 };
 
 /**
- * @brief Type definition for CellmlElementType and a std::any.
+ * @brief The AnyCellmlElement class
  *
- * An AnyItem is a @c std::pair containing:
- *  - a @ref CellmlElementType enum, and
- *  - a @c std::any item.
- *
- * Use @c std::any_cast to cast the item to its underlying type.
- *
- * Casts to use for the second item in the pair are mapped according to the following statements:
- *  - CellmlElementType::COMPONENT => std::any_cast<ComponentPtr>.
- *  - CellmlElementType::COMPONENT_REF => std::any_cast<ComponentPtr>.
- *  - CellmlElementType::CONNECTION => std::any_cast<VariablePairPtr>.
- *  - CellmlElementType::ENCAPSULATION => std::any_cast<ModelPtr>.
- *  - CellmlElementType::IMPORT => std::any_cast<ImportSourcePtr>.
- *  - CellmlElementType::MAP_VARIABLES => std::any_cast<VariablePairPtr>.
- *  - CellmlElementType::MODEL => std::any_cast<ModelPtr>.
- *  - CellmlElementType::RESET => std::any_cast<ResetPtr>.
- *  - CellmlElementType::RESET_VALUE => std::any_cast<ResetPtr>.
- *  - CellmlElementType::TEST_VALUE => std::any_cast<ResetPtr>.
- *  - CellmlElementType::UNDEFINED => not castable.
- *  - CellmlElementType::UNIT => std::any_cast<UnitPtr>.
- *  - CellmlElementType::UNITS => std::any_cast<UnitsPtr>.
- *  - CellmlElementType::VARIABLE => std::any_cast<VariablePtr>.
+ * The AnyCellmlElement class contains a @ref Model, @ref Component, etc.,
+ * depending on the @ref CellmlElementType enum that describes which type is
+ * stored.
  */
-using AnyItem = std::pair<CellmlElementType, std::any>;
+class LIBCELLML_EXPORT AnyCellmlElement
+{
+    friend class Analyser;
+    friend class Annotator;
+    friend class Importer;
+    friend class Issue;
+    friend class Parser;
+    friend class Validator;
+
+public:
+    ~AnyCellmlElement(); /**< Destructor, @private. */
+    AnyCellmlElement(const AnyCellmlElement &rhs) = delete; /**< Copy constructor, @private. */
+    AnyCellmlElement(AnyCellmlElement &&rhs) noexcept = delete; /**< Move constructor, @private. */
+    AnyCellmlElement &operator=(AnyCellmlElement rhs) = delete; /**< Assignment operator, @private. */
+
+    /**
+     * @brief Get the @ref CellmlElementType.
+     *
+     * Get the @ref CellmlElementType.
+     *
+     * @return The type.
+     */
+    CellmlElementType type() const;
+
+    /**
+     * @brief Get the component.
+     *
+     * Get the component.
+     *
+     * @return The @ref Component, or @c nullptr if the internal type is not
+     * @ref CellmlElementType::COMPONENT.
+     */
+    ComponentPtr component() const;
+
+    /**
+     * @brief Get the import source.
+     *
+     * Get the import source.
+     *
+     * @return The @ref ImportSource, or @c nullptr if the internal type is not
+     * @ref CellmlElementType::IMPORT.
+     */
+    ImportSourcePtr importSource() const;
+
+    /**
+     * @brief Get the model.
+     *
+     * Get the model.
+     *
+     * @return The @ref Model, or @c nullptr if the internal type is not
+     * @ref CellmlElementType::MODEL.
+     */
+    ModelPtr model() const;
+
+    /**
+     * @brief Get the reset.
+     *
+     * Get the reset.
+     *
+     * @return The @ref Reset, or @c nullptr if the internal type is not
+     * @ref CellmlElementType::RESET.
+     */
+    ResetPtr reset() const;
+
+    /**
+     * @brief Get the units.
+     *
+     * Get the units.
+     *
+     * @return The @ref Units, or @c nullptr if the internal type is not
+     * @ref CellmlElementType::UNITS.
+     */
+    UnitsPtr units() const;
+
+    /**
+     * @brief Get the units item.
+     *
+     * Get the units item.
+     *
+     * @return The @ref UnitsItem, or @c nullptr if the internal type is not
+     * @ref CellmlElementType::UNIT.
+     */
+    UnitsItemPtr unitsItem() const;
+
+    /**
+     * @brief Get the variable.
+     *
+     * Get the variable.
+     *
+     * @return The @ref Variable, or @c nullptr if the internal type is not
+     * @ref CellmlElementType::VARIABLE.
+     */
+    VariablePtr variable() const;
+
+    /**
+     * @brief Get the variable pair.
+     *
+     * Get the variable pair.
+     *
+     * @return The a @ref VariablePair, or @c nullptr if the
+     * internal type is not @ref CellmlElementType::CONNECTION or @ref CellmlElementType::MAP_VARIABLES.
+     */
+    VariablePairPtr variablePair() const;
+
+private:
+    AnyCellmlElement(); /**< Constructor, @private. */
+
+    struct AnyCellmlElementImpl; /**< Forward declaration for pImpl idiom. */
+    AnyCellmlElementImpl *mPimpl; /**< Private member to implementation pointer. */
+};
 
 } // namespace libcellml

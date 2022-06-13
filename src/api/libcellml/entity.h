@@ -16,6 +16,7 @@ limitations under the License.
 
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "libcellml/exportdefinitions.h"
@@ -31,10 +32,9 @@ namespace libcellml {
 class LIBCELLML_EXPORT Entity
 {
 public:
-    virtual ~Entity(); /**< Destructor. */
+    virtual ~Entity() = 0; /**< Destructor. */
     Entity(const Entity &rhs) = delete; /**< Copy constructor. */
     Entity(Entity &&rhs) noexcept = delete; /**< Move constructor. */
-    Entity &operator=(Entity rhs) = delete; /**< Assignment operator. */
 
     /**
      * @brief Set the @p id document identifier for this entity.
@@ -60,61 +60,72 @@ public:
     std::string id() const;
 
     /**
-     * @brief Returns the parent of the CellML Entity.
+     * @brief Remove the identifier for this entity.
      *
-     * @return A pointer to the entity's parent if it has one,
-     * otherwise it returns the null pointer.
+     * Clear the identifier for this entity. Future calls to id() will
+     * return an empty string.
      */
-    EntityPtr parent() const;
+    void removeId();
 
     /**
-     * @brief Sets the entity as the parent of this entity.
+     * @brief Test to see if this entity is equal to the @p other entity.
      *
-     * Set the parent of the entity to the entity given.
+     * The attributes and properties of the entity are tested against the @p other
+     * entity's attributes and properties, and compared for equality.
      *
-     * @param parent An @c Entity.
+     * If an entity has any children associated with it, then the order that children appear in
+     * is **not** taken into account.
+     *
+     * The parents of either entity (if they exist) are ignored when determining equality.
+     *
+     * @param other The entity to test against.
+     * @return @c true if this entity is equal to the @p other entity, @c false otherwise.
      */
-    void setParent(const EntityPtr &parent);
-
-    /**
-     * @brief Clear the pointer to the parent entity.
-     *
-     * Clears the pointer to the parent entity.
-     */
-    void removeParent();
-
-    /**
-     * @brief Test to see if the given entity has a parent.
-     *
-     * Tests the given entity to determine if the entity has a parent.
-     * If the entity has a parent then @c true is returned otherwise
-     * @c false is returned.m
-     *
-     * @return @c true if this entity has a parent, @c false otherwise.
-     */
-    bool hasParent() const;
-
-    /**
-     * @brief Test to see if the given entity is an ancestor of this entity.
-     *
-     * Tests the given entity to determine if the entity or
-     * any of its parent entities already has this entity as a parent.
-     * This allows for a test against creating cycles. If the given entity
-     * is a parent of the current entity then the result is @c true otherwise the
-     * result is false.
-     *
-     * @param component The entity to test against.
-     *
-     * @return @c true if this entity has the given entity as a parent, @c false otherwise.
-     */
-    bool hasAncestor(const EntityPtr &entity) const;
+    bool equals(const EntityPtr &other) const;
 
 protected:
-    Entity(); /**< Constructor. */
+    /**
+     * @brief Virtual equals(const EntityPtr &other) method to be implemented by derived classes.
+     *
+     * Virtual equals(const EntityPtr &other) method to allow entity classes to
+     * implement their own versions. @private.
+     *
+     * @param other The other @ref Entity to perform equality against.
+     *
+     * @return True if the entities are equal, false otherwise.
+     */
+    virtual bool doEquals(const EntityPtr &other) const;
+
+    class EntityImpl; /**< Forward declaration for pImpl idiom, @private. */
+
+    explicit Entity(EntityImpl *derivedPimpl); /**< Constructor for derived classes, @private. */
+
+    /**
+     * @brief Getter for private implementation pointer.
+     *
+     * Getter for private implementation pointer, @private.
+     *
+     * @return A pointer to EntityImpl.
+     */
+    EntityImpl *pFunc()
+    {
+        return mPimpl;
+    }
+
+    /**
+     * @brief Const getter for private implementation pointer.
+     *
+     * Const getter for private implementation pointer, @private.
+     *
+     * @return A pointer to const EntityImpl.
+     */
+    const EntityImpl *pFunc() const
+    {
+        return mPimpl;
+    }
 
 private:
-    struct EntityImpl;
-    EntityImpl *mPimpl;
+    EntityImpl *mPimpl; /**< Private member to implementation pointer, @private. */
 };
 
 } // namespace libcellml

@@ -52,7 +52,7 @@ std::chrono::steady_clock::time_point timeNow()
 
 int elapsedTime(const std::chrono::steady_clock::time_point &startTime)
 {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(timeNow() - startTime).count();
+    return int(std::chrono::duration_cast<std::chrono::milliseconds>(timeNow() - startTime).count());
 }
 
 void printIssues(const libcellml::LoggerPtr &l, bool headings, bool cellmlElementTypes, bool rule)
@@ -66,9 +66,6 @@ void printIssues(const libcellml::LoggerPtr &l, bool headings, bool cellmlElemen
         case libcellml::Issue::Level::WARNING:
             std::cout << "Warning " << std::setw(width) << i + 1 << ": ";
             break;
-        case libcellml::Issue::Level::HINT:
-            std::cout << "Hint " << std::setw(width) << i + 1 << ": ";
-            break;
         case libcellml::Issue::Level::MESSAGE:
             std::cout << "Message " << std::setw(width) << i + 1 << ": ";
             break;
@@ -80,7 +77,7 @@ void printIssues(const libcellml::LoggerPtr &l, bool headings, bool cellmlElemen
             std::cout << ", " << l->issue(i)->referenceHeading();
         }
         if (cellmlElementTypes) {
-            std::cout << ", " << static_cast<int>(l->issue(i)->cellmlElementType());
+            std::cout << ", " << static_cast<int>(l->issue(i)->item()->type());
         }
         if (rule) {
             std::cout << ", " << static_cast<int>(l->issue(i)->referenceRule());
@@ -188,6 +185,36 @@ void printModel(const libcellml::ModelPtr &model, bool includeMaths)
     }
 }
 
+template<typename T>
+std::vector<T> expectedValues(size_t size, T value)
+{
+    std::vector<T> res;
+
+    res.assign(size, value);
+
+    return res;
+}
+
+std::vector<libcellml::CellmlElementType> expectedCellmlElementTypes(size_t size, libcellml::CellmlElementType type)
+{
+    return expectedValues<libcellml::CellmlElementType>(size, type);
+}
+
+std::vector<libcellml::Issue::Level> expectedLevels(size_t size, libcellml::Issue::Level level)
+{
+    return expectedValues<libcellml::Issue::Level>(size, level);
+}
+
+std::vector<libcellml::Issue::ReferenceRule> expectedReferenceRules(size_t size, libcellml::Issue::ReferenceRule rule)
+{
+    return expectedValues<libcellml::Issue::ReferenceRule>(size, rule);
+}
+
+std::vector<std::string> expectedUrls(size_t size, std::string url)
+{
+    return expectedValues<std::string>(size, url);
+}
+
 void expectEqualIssues(const std::vector<std::string> &issues, const libcellml::LoggerPtr &logger)
 
 {
@@ -197,30 +224,36 @@ void expectEqualIssues(const std::vector<std::string> &issues, const libcellml::
     }
 }
 
-void expectEqualIssuesSpecificationHeadings(const std::vector<std::string> &issues,
-                                            const std::vector<std::string> &specificationHeadings,
-                                            const libcellml::LoggerPtr &logger)
+void expectEqualIssuesSpecificationHeadingsUrls(const std::vector<std::string> &issues,
+                                                const std::vector<std::string> &specificationHeadings,
+                                                const std::vector<std::string> &urls,
+                                                const libcellml::LoggerPtr &logger)
 {
     EXPECT_EQ(issues.size(), logger->issueCount());
     EXPECT_EQ(specificationHeadings.size(), logger->issueCount());
     for (size_t i = 0; i < logger->issueCount() && i < issues.size(); ++i) {
         EXPECT_EQ(issues.at(i), logger->issue(i)->description());
         EXPECT_EQ(specificationHeadings.at(i), logger->issue(i)->referenceHeading());
+        EXPECT_EQ(urls.at(i), logger->issue(i)->url());
     }
 }
 
-void expectEqualIssuesCellmlElementTypesLevels(const std::vector<std::string> &issues,
-                                               const std::vector<libcellml::CellmlElementType> &cellmlElementTypes,
-                                               const std::vector<libcellml::Issue::Level> &levels,
-                                               const libcellml::LoggerPtr &logger)
+void expectEqualIssuesCellmlElementTypesLevelsReferenceRulesUrls(const std::vector<std::string> &issues,
+                                                                 const std::vector<libcellml::CellmlElementType> &cellmlElementTypes,
+                                                                 const std::vector<libcellml::Issue::Level> &levels,
+                                                                 const std::vector<libcellml::Issue::ReferenceRule> &referenceRules,
+                                                                 const std::vector<std::string> &urls,
+                                                                 const libcellml::LoggerPtr &logger)
 {
     EXPECT_EQ(issues.size(), logger->issueCount());
     EXPECT_EQ(cellmlElementTypes.size(), logger->issueCount());
     EXPECT_EQ(levels.size(), logger->issueCount());
     for (size_t i = 0; i < logger->issueCount() && i < issues.size(); ++i) {
         EXPECT_EQ(issues.at(i), logger->issue(i)->description());
-        EXPECT_EQ(cellmlElementTypes.at(i), logger->issue(i)->cellmlElementType());
+        EXPECT_EQ(cellmlElementTypes.at(i), logger->issue(i)->item()->type());
         EXPECT_EQ(levels.at(i), logger->issue(i)->level());
+        EXPECT_EQ(referenceRules.at(i), logger->issue(i)->referenceRule());
+        EXPECT_EQ(urls.at(i), logger->issue(i)->url());
     }
 }
 
@@ -345,25 +378,6 @@ void compareComponent(const libcellml::ComponentPtr &c1, const libcellml::Compon
     }
 }
 
-void compareImportSource(const libcellml::ImportSourcePtr &i1, const libcellml::ImportSourcePtr &i2, const libcellml::ModelPtr &m2)
-{
-    EXPECT_EQ(i1->url(), i2->url());
-
-    EXPECT_EQ(i1->unitsCount(), i2->unitsCount());
-    for (size_t index = 0; index < i1->unitsCount(); ++index) {
-        auto u1 = i1->units(index);
-        auto u2 = i2->units(index);
-        compareUnits(u1, u2, m2);
-    }
-
-    EXPECT_EQ(i1->componentCount(), i2->componentCount());
-    for (size_t index = 0; index < i1->componentCount(); ++index) {
-        auto c1 = i1->component(index);
-        auto c2 = i2->component(index);
-        compareComponent(c1, c2, m2);
-    }
-}
-
 void compareModel(const libcellml::ModelPtr &m1, const libcellml::ModelPtr &m2)
 {
     EXPECT_EQ(m1->id(), m2->id());
@@ -371,7 +385,6 @@ void compareModel(const libcellml::ModelPtr &m1, const libcellml::ModelPtr &m2)
 
     EXPECT_EQ(m1->unitsCount(), m2->unitsCount());
     EXPECT_EQ(m1->componentCount(), m2->componentCount());
-    EXPECT_EQ(m1->importSourceCount(), m2->importSourceCount());
 
     for (size_t index = 0; index < m1->unitsCount(); ++index) {
         auto u1 = m1->units(index);
@@ -383,12 +396,6 @@ void compareModel(const libcellml::ModelPtr &m1, const libcellml::ModelPtr &m2)
         auto c1 = m1->component(index);
         auto c2 = m2->component(index);
         compareComponent(c1, c2, m2);
-    }
-
-    for (size_t index = 0; index < m1->importSourceCount(); ++index) {
-        auto i1 = m1->importSource(index);
-        auto i2 = m2->importSource(index);
-        compareImportSource(i1, i2, m2);
     }
 }
 

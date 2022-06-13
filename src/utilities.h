@@ -31,14 +31,17 @@ limitations under the License.
 namespace libcellml {
 
 /**
- * Base URLs of specification and example sites from which the Issue::url() will be constructed.
+ * Base URLs of sites from which Issue::url() strings will be constructed.
  */
 static const std::string baseSpecificationUrl = "https://cellml-specification.readthedocs.io/en/latest/reference/formal_and_informative/";
+static const std::string docsUrl = "https://libcellml.org/documentation/guides/latest/runtime_codes/index";
+
+static const size_t MAX_SIZE_T = std::numeric_limits<size_t>::max();
 
 /**
  * Vector of base units.
  */
-static const std::vector<std::string> baseUnitsList = {
+static const NameList baseUnitsList = {
     "ampere",
     "candela",
     "dimensionless",
@@ -55,9 +58,9 @@ static const std::map<std::string, std::map<std::string, double>> standardUnitsL
     {"ampere", {{"ampere", 1.0}}},
     {"becquerel", {{"second", -1.0}}},
     {"candela", {{"candela", 1.0}}},
-    {"coulomb", {{"ampere", -1.0}, {"second", 1.0}}},
+    {"coulomb", {{"ampere", 1.0}, {"second", 1.0}}},
     {"dimensionless", {{"dimensionless", 1.0}}},
-    {"farad", {{"ampere", 2.0}, {"kilogram", -1.0}, {"metre", -2.0}, {"second", -4.0}}},
+    {"farad", {{"ampere", 2.0}, {"kilogram", -1.0}, {"metre", -2.0}, {"second", 4.0}}},
     {"gram", {{"kilogram", 1.0}}},
     {"gray", {{"metre", 2.0}, {"second", -2.0}}},
     {"henry", {{"ampere", -2.0}, {"kilogram", 1.0}, {"metre", 2.0}, {"second", -2.0}}},
@@ -134,7 +137,6 @@ static const std::map<std::string, int> standardPrefixList = {
     {"kilo", 3},
     {"hecto", 2},
     {"deca", 1},
-    {"", 0},
     {"deci", -1},
     {"centi", -2},
     {"milli", -3},
@@ -144,61 +146,12 @@ static const std::map<std::string, int> standardPrefixList = {
     {"femto", -15},
     {"atto", -18},
     {"zepto", -21},
-    {"yocto", -24},
-    {"24", 24},
-    {"23", 23},
-    {"22", 22},
-    {"21", 21},
-    {"20", 20},
-    {"19", 19},
-    {"18", 18},
-    {"17", 17},
-    {"16", 16},
-    {"15", 15},
-    {"14", 14},
-    {"13", 13},
-    {"12", 12},
-    {"11", 11},
-    {"10", 10},
-    {"9", 9},
-    {"8", 8},
-    {"7", 7},
-    {"6", 6},
-    {"5", 5},
-    {"4", 4},
-    {"3", 3},
-    {"2", 2},
-    {"1", 1},
-    {"0", 0},
-    {"-1", -1},
-    {"-2", -2},
-    {"-3", -3},
-    {"-4", -4},
-    {"-5", -5},
-    {"-6", -6},
-    {"-7", -7},
-    {"-8", -8},
-    {"-9", -9},
-    {"-10", -10},
-    {"-11", -11},
-    {"-12", -12},
-    {"-13", -13},
-    {"-14", -14},
-    {"-15", -15},
-    {"-16", -16},
-    {"-17", -17},
-    {"-18", -18},
-    {"-19", -19},
-    {"-20", -20},
-    {"-21", -21},
-    {"-22", -22},
-    {"-23", -23},
-    {"-24", -24}};
+    {"yocto", -24}};
 
 /**
  * List of MathML elements supported by CellML.
  */
-static const std::vector<std::string> supportedMathMLElements = {
+static const NameList supportedMathMLElements = {
     "ci", "cn", "sep", "apply", "piecewise", "piece", "otherwise", "eq", "neq", "gt", "lt", "geq", "leq", "and", "or",
     "xor", "not", "plus", "minus", "times", "divide", "power", "root", "abs", "exp", "ln", "log", "floor",
     "ceiling", "min", "max", "rem", "diff", "bvar", "logbase", "degree", "sin", "cos", "tan", "sec", "csc",
@@ -218,38 +171,54 @@ static const std::map<Variable::InterfaceType, std::string> interfaceTypeToStrin
     {Variable::InterfaceType::PUBLIC_AND_PRIVATE, "public_and_private"}};
 
 /**
- * @brief Convert the @p in @c std::string to the @p out @c double.
+ * @brief Convert the @p in @c std::string to a @c double.
  *
- * Convert the @p in @c std::string to a @c double. If @p in can be converted
- * using @c std::stod, return @c true and update @p out, otherwise return
- * @c false. To avoid returning @c false, @p in must be known to be convertible
- * to a @c double before calling this function.
+ * Convert the @p in @c std::string to a @c double.
+ * If given, sets the parameter @p ok to @c true if the conversion succeeded
+ * and @c false if it didn't.
+ *
+ * If the @p in is not a CellML real the conversion will not succeed.
  *
  * @sa isCellMLReal
  *
  * @param in The @c std::string value to convert to a @c double.
- * @param out The @c double value resulting in the conversion.
+ * @param ok Optional parameter returns @c true if the conversion was successful and @c false if it wasn't.
  *
- * @return @c true if @in represents a @c double, @c false otherwise.
+ * @return The double value of @p in.
  */
-bool convertToDouble(const std::string &in, double &out);
+double convertToDouble(const std::string &in, bool *ok = nullptr);
 
 /**
- * @brief Convert the @p in @c std::string to the @p out @c int.
+ * @brief Convert the @p in @c std::string to an @c int.
  *
- * Convert the @p in @c std::string to an @c int. If @p in can be converted
- * using @c std::stoi, return @c true and update @p out, otherwise return
- * @c false. To avoid returning @c false, @p in must be known to be convertible
- * to an @c int before calling this function.
+ * Convert the @p in @c std::string to an @c int.
+ * If given, sets the parameter @p ok to @c true if the conversion succeeded
+ * and @c false if it didn't.
+ *
+ * If @p in is not a CellML integer the conversion will not succeed.
  *
  * @sa isCellMLInteger
  *
  * @param in The @c std::string value to convert to an @c int.
- * @param out The @c int value resulting in the conversion.
+ * @param ok Optional parameter returns @c true if the conversion was successful and @c false if it wasn't.
  *
- * @return @c true if @in represents an @c int, @c false otherwise.
+ * @return The integer value of @p in.
  */
-bool convertToInt(const std::string &in, int &out);
+int convertToInt(const std::string &in, bool *ok = nullptr);
+
+/**
+ * @brief Convert a units prefix to an int.
+ *
+ * Converts the given units prefix (@p in) into its equivalent integer value.
+ * If given, sets the parameter @p ok to @c true if the conversion succeeded
+ * and @c false if it didn't.
+ *
+ * @param in The @c std::string value to convert to an @c int.
+ * @param ok Optional parameter returns @c true if the conversion was successful and @c false if it wasn't.
+ *
+ * @return The integer value of the @p prefix.
+ */
+int convertPrefixToInt(const std::string &in, bool *ok = nullptr);
 
 /**
  * @brief Convert a @c int to @c std::string format.
@@ -278,15 +247,16 @@ std::string convertToString(size_t value);
 /**
  * @brief Convert a @c double to @c std::string format.
  *
+ * @overload
+ *
  * Convert the @p value to @c std::string representation.
  *
- * @overload std::string convertToString(int value)
- *
  * @param value The @c double value number to convert.
+ * @param fullPrecision Whether the @p value is converted using full precision.
  *
  * @return @c std::string representation of the @p value.
  */
-std::string convertToString(double value);
+std::string convertToString(double value, bool fullPrecision = true);
 
 /**
  * @brief Check if the @p input @c std::string has any non-whitespace characters.
@@ -340,17 +310,70 @@ bool isCellMLInteger(const std::string &candidate);
 bool isCellMLReal(const std::string &candidate);
 
 /**
- * @brief Test if @p value1 @c double and @p value2 @c double are equal.
+ * @brief Test if @p a @c double and @p b @c double are equal.
  *
- * Return @c true if @p value1 @c double and @p value2 @c double are equal,
+ * Return @c true if @p a @c double and @p b @c double are equal,
  * otherwise return @c false.
  *
- * @param value1 The first @c double value to test.
- * @param value2 The second @c double value to test.
+ * @param a The first @c double value to test.
+ * @param b The second @c double value to test.
  *
- * @return @c true if @p value1 and @p value2 are equal and @c false otherwise.
+ * @return @c true if @p a and @p b are equal and @c false otherwise.
  */
-bool areEqual(double value1, double value2);
+bool areEqual(double a, double b);
+
+/**
+ * @brief Decide if two doubles are nearly equal.
+ *
+ * Test two doubles to determine if they are close enough
+ * to be considered equal.
+ *
+ * Uses a modified form of comparing floats:
+ *
+ *   https://bitbashing.io/comparing-floats.html
+ *
+ * @param a A @c double to test.
+ * @param b A @c double to test.
+ *
+ * @return @c true if the given doubles are considered close, @c false otherwise.
+ */
+bool areNearlyEqual(double a, double b);
+
+/**
+ * @brief Compare strings to determine if they are equal.
+ *
+ * Compare the given strings to determine if they are equal or not.
+ * The current test is a simplistic comparison of string equality.
+ *
+ * @param str1 The first parameter to compare against parameter two.
+ * @param str2 The second parameter to compare against parameter one.
+ *
+ * @return Return @c true if the @p str1 is equal to @p str2, @c false otherwise.
+ */
+bool areEqual(const std::string &str1, const std::string &str2);
+
+/**
+ * @brief Get all the imported components from the given component entity.
+ *
+ * Get all the imported components from the given component entity.  Tracing
+ * through the component hierarchy to find them.
+ *
+ * @param componentEntity The component entity to search.
+ *
+ * @return A vector of @ref ComponentPtr that are imported components.
+ */
+std::vector<ComponentPtr> getImportedComponents(const ComponentEntityConstPtr &componentEntity);
+
+/**
+ * @brief Get all imported units from a model.
+ *
+ * Get all imported units from a model.
+ *
+ * @param model The model to search for imported units.
+ *
+ * @return A vector of @ref UnitsPtr that are imported units.
+ */
+std::vector<UnitsPtr> getImportedUnits(const ModelConstPtr &model);
 
 /**
  * @brief Compute the SHA-1 value of the @p string @c std::string.
@@ -381,7 +404,7 @@ void removeComponentFromEntity(const EntityPtr &entity, const ComponentPtr &comp
  * @brief Check if the provided @p name is a standard unit.
  *
  * Checks if the provided @p name is one of the standard units in the
- * @c Units::StandardUnit @c enum. Returns @c true if @p name is a standard unit
+ * @ref libcellml::Units::StandardUnit @c enum. Returns @c true if @p name is a standard unit
  * and @c false otherwise.
  *
  * @param name The @c std::string name to check against the list of standard units.
@@ -391,13 +414,13 @@ void removeComponentFromEntity(const EntityPtr &entity, const ComponentPtr &comp
 bool isStandardUnitName(const std::string &name);
 
 /**
- * @brief Test if the provided @c Units is a standard unit.
+ * @brief Test if the provided @ref Units is a standard unit.
  *
  * Tests to determine if the provided @p units is equivalent to
  * a standard unit.  Returns @c true if the @p units is a standard unit
  * and @c false otherwise.
  *
- * @param units The @c Units to test.
+ * @param units The @ref Units to test.
  *
  * @return @c true if @p units is a standard unit, @c false otherwise.
  */
@@ -412,7 +435,7 @@ bool isStandardUnit(const UnitsPtr &units);
  *
  * @param name The @c std::string name to check against the list of standard prefixes.
  *
- * @return @c true if @name is a standard prefix and @c false otherwise.
+ * @return @c true if @p name is a standard prefix and @c false otherwise.
  */
 bool isStandardPrefixName(const std::string &name);
 
@@ -425,29 +448,28 @@ bool isStandardPrefixName(const std::string &name);
  *
  * @param component The @c ComponentPtr to search for the @c VariablePtr in.
  * @param variable The @c VariablePtr to return the index of.
+ *
  * @return The index of the @p variable found in the component.  Returns the
  * number of variables in the component if the variable was not found.
  */
-size_t getVariableIndexInComponent(const ComponentPtr &component, const VariablePtr &variable);
+size_t indexOf(const VariablePtr &variable, const ComponentConstPtr &component);
 
 /**
- * @brief Test to determine if @p variable1 and @p variable2 are the same or
- * (directly or indirectly) equivalent.
+ * @brief Test to determine if @p variable1 and @p variable2 are equivalent.
  *
- * Test to see if @p variable1 is the same or (directly or indirectly)
- * equivalent to @p variable2. Returns @c true if @p variable1 is the same or
- * (directly or indirectly) equivalent to @p variable2 and @c false otherwise.
+ * Test to see if @p variable1 is the same as or equivalent to @p variable2.
+ * Returns @c true if @p variable1 is the same as or equivalent to @p variable2
+ * and @c false otherwise.
  *
- * @param variable1 The @c Variable to test if it is the same or (directly or
- * indirectly) equivalent to @p variable2.
- * @param variable2 The @c Variable that is potentially the same or (directly or
- * indirectly) equivalent to @p variable1.
+ * @param variable1 The @c Variable to test if it is equivalent to @p variable2.
+ * @param variable2 The @c Variable that is potentially equivalent to
+ * @p variable1.
  *
- * @return @c true if @p variable1 is the same or (directly or indirectly)
- * equivalent to @p variable2 and @c false otherwise.
+ * @return @c true if @p variable1 is equivalent to @p variable2 and @c false
+ * otherwise.
  */
-bool isSameOrEquivalentVariable(const VariablePtr &variable1,
-                                const VariablePtr &variable2);
+bool areEquivalentVariables(const VariablePtr &variable1,
+                            const VariablePtr &variable2);
 
 /**
  * @brief Test to determine if @p entity1 is a child of @p entity2.
@@ -455,12 +477,12 @@ bool isSameOrEquivalentVariable(const VariablePtr &variable1,
  * Test to see if @p entity1 is a child of @p entity2.  Returns @c true if
  * @p entity1 is a child of @p entity2 and @c false otherwise.
  *
- * @param entity1 The @c Entity to test if it is a child of @p entity2.
- * @param entity2 The @c Entity that is potentially the parent of @p entity1.
+ * @param entity1 The @c ParentedEntity to test if it is a child of @p entity2.
+ * @param entity2 The @c ParentedEntity that is potentially the parent of @p entity1.
  *
  * @return @c true if @p entity1 is a child of @p entity2 and @c false otherwise.
  */
-bool isEntityChildOf(const EntityPtr &entity1, const EntityPtr &entity2);
+bool isEntityChildOf(const ParentedEntityPtr &entity1, const ParentedEntityPtr &entity2);
 
 /**
  * @brief Test to determine if @p entity1 and @p entity2 are siblings.
@@ -468,12 +490,12 @@ bool isEntityChildOf(const EntityPtr &entity1, const EntityPtr &entity2);
  * Test to determine if @p entity1 and @p entity2 are siblings.  Returns
  * @c true if @p entity1 and @p entity2 are siblings, @c false otherwise.
  *
- * @param entity1 An @c Entity to test if it is a sibling to @p entity2.
- * @param entity2 An @c Entity to test if it is a sibling to @p entity1.
+ * @param entity1 An @c ParentedEntity to test if it is a sibling to @p entity2.
+ * @param entity2 An @c ParentedEntity to test if it is a sibling to @p entity1.
  *
  * @return @c true if @p entity1 and @p entity2 are siblings, @c false otherwise.
  */
-bool areEntitiesSiblings(const EntityPtr &entity1, const EntityPtr &entity2);
+bool areEntitiesSiblings(const ParentedEntityPtr &entity1, const ParentedEntityPtr &entity2);
 
 /**
  * @brief Determine the interface type of the @p variable.
@@ -499,6 +521,19 @@ Variable::InterfaceType determineInterfaceType(const VariablePtr &variable);
  * @param variables The list of equivalent variables found.
  */
 void findAllVariablesWithEquivalences(const ComponentPtr &component, VariablePtrs &variables);
+
+/**
+ * @brief Split a string.
+ *
+ * Split the given string with the given delimiter.  If a delimiter is not given
+ * then ';' is used.  If the delimiter is not found a copy of @p content is returned.
+ *
+ * @param content The @c std::string to split.
+ * @param delimiter The delimiter to split the string with, default ';'.
+ *
+ * @return A @c std::vector of @c std::strings.
+ */
+Strings split(const std::string &content, const std::string &delimiter = ";");
 
 /**
  * @brief Trim whitespace from the front of a string (in place).
@@ -560,37 +595,51 @@ static inline std::string trimCopy(std::string s)
 }
 
 /**
- * @brief Collect all existing id attributes within the given model.
+ * @brief Replace text in string.
+ *
+ * Replace the @c std::string @p from in @p string with @c std::string @p to.
+ * If the string @p from is not found in @p string then the @p string is returned unchanged.
+ *
+ * @param string The string to make the substution in.
+ * @param from The string to replace.
+ * @param to The replacement string.
+ *
+ * @return The modified string.
+ */
+std::string replace(std::string string, const std::string &from, const std::string &to);
+
+/**
+ * @brief Collect all existing identifier attributes within the given model.
  *
  * @param model The @c ModelPtr to interrogate.
  *
- * @return An @c IdList collection of existing ids.
+ * @return An @c IdList collection of existing identifiers.
  */
 IdList listIds(const ModelPtr &model);
 
 /**
- * @brief Creates an id string for a "type" object, unique in the context of @p idList.
+ * @brief Creates an identifier string for a "type" object, unique in the context of @p idList.
  *
- * The id format is a 6-digit hexadecimal string.
+ * The identifier format is a 6-digit hexadecimal string.
  *
- * @return A string representing a unique id.
+ * @return A string representing a unique identifier.
  */
 std::string makeUniqueId(IdList &idList);
 
 /**
- * Function to support linking units names to their corresponding @c Units items.
+ * Function to support linking units names to their corresponding @ref Units items.
  *
  * @param component The component to check.
- * @param issueList A vector of @c IssuePtr items in which unlinked units are recorded for reporting.
+ * @param descriptionList A @c std::vector of variables paired with a description.
  *
  * @return @c true if all variables have been successfully linked to units, @c false otherwise.
  */
-bool linkComponentVariableUnits(const ComponentPtr &component, std::vector<IssuePtr> &issueList);
+bool linkComponentVariableUnits(const ComponentPtr &component, DescriptionList &descriptionList);
 
 /**
  * @overload
  *
- * @brief Utility function used when linking units names to their corresponding @c Units items.
+ * @brief Utility function used when linking units names to their corresponding @ref Units items.
  *
  * Returns @c true if all variables in the component can be linked to their units, or
  * @c false otherwise.
@@ -604,20 +653,20 @@ bool traverseComponentEntityTreeLinkingUnits(const ComponentEntityPtr &component
 /**
  * @overload
  *
- *  Utility function used when linking units names to their corresponding @c Units items.
+ *  Utility function used when linking units names to their corresponding @ref Units items.
  *
  * @param componentEntity The component entity to check.
- * @param issueList An optional @c std::vector of @c IssuePtr items which is used to record cases of missing units.
+ * @param descriptionList A @c std::vector of variables paired with a description.
  *
  * @return @c true upon success; @c false if not all variables could be linked to units.
  * */
-bool traverseComponentEntityTreeLinkingUnits(const ComponentEntityPtr &componentEntity, std::vector<IssuePtr> &issueList);
+bool traverseComponentEntityTreeLinkingUnits(const ComponentEntityPtr &componentEntity, DescriptionList &descriptionList);
 
 /**
  * @brief Test whether a component contains variables naming units which have not yet
- *        been linked to @c Units items.
+ *        been linked to @ref Units items.
  *
- * Utility function used when linking units names to their corresponding @c Units items. It
+ * Utility function used when linking units names to their corresponding @ref Units items. It
  * will return a value of @c true when there are variables without linked units, or @c false
  * otherwise.
  *
@@ -626,18 +675,6 @@ bool traverseComponentEntityTreeLinkingUnits(const ComponentEntityPtr &component
  * @return @c true when unlinked variables are found, @c false otherwise.
  */
 bool areComponentVariableUnitsUnlinked(const ComponentPtr &component);
-
-void recordVariableEquivalences(const ComponentPtr &component, EquivalenceMap &equivalenceMap, IndexStack &indexStack);
-void generateEquivalenceMap(const ComponentPtr &component, EquivalenceMap &map, IndexStack &indexStack);
-void applyEquivalenceMapToModel(const EquivalenceMap &map, const ModelPtr &model);
-NameList componentNames(const ModelPtr &model);
-NameList unitsNamesUsed(const ComponentPtr &component);
-IndexStack reverseEngineerIndexStack(const ComponentPtr &component);
-EquivalenceMap rebaseEquivalenceMap(const EquivalenceMap &map, const IndexStack &originStack, const IndexStack &destinationStack);
-std::vector<UnitsPtr> unitsUsed(const ModelPtr &model, const ComponentPtr &component);
-ComponentNameMap createComponentNamesMap(const ComponentPtr &component);
-void findAndReplaceComponentsCnUnitsNames(const ComponentPtr &component, const StringStringMap &replaceMap);
-std::string replace(std::string string, const std::string &from, const std::string &to);
 
 /**
  * @brief Create a connection map for the given variables.
@@ -663,5 +700,115 @@ ConnectionMap createConnectionMap(const VariablePtr &variable1, const VariablePt
  * @return A @c std::vector of @ref VariablePtr.
  */
 std::vector<VariablePtr> equivalentVariables(const VariablePtr &variable);
+
+/**
+ * @brief Test the given @p entities are equal to entities in @p owner.
+ *
+ * Test to see if all the entities given in @p entities are equal to
+ * entities in @p owner.  The order that the entities appear in is not
+ * taken into account.
+ *
+ * @param owner The owner to compare entities with.
+ * @param entities The list of entities to equate.
+ *
+ * @return @c true if all the entities in @p entities are equal to entites in the @p owner.
+ */
+bool equalEntities(const EntityPtr &owner, const std::vector<EntityPtr> &entities);
+
+/**
+ * @brief Get all the import sources in the @p model.
+ *
+ * Get all the import sources from the imported @ref Component s
+ * and @ref Units in the given @p model.
+ *
+ * @param model The model to find all import sources from.
+ *
+ * @return A @c std::vector of all the @ref ImportSource s found in the model.
+ */
+std::vector<ImportSourcePtr> getAllImportSources(const ModelConstPtr &model);
+
+/**
+ * @brief Return the @ref IndexStack for the given @p component.
+ *
+ * Return the @ref IndexStack for the given @p component.
+ *
+ * @param component The component to find the index stack for.
+ *
+ * @return An @ref IndexStack.
+ */
+IndexStack indexStackOf(const ComponentPtr &component);
+
+/**
+ * @brief Create a history epoch for a @ref Units with optional destination URL.
+ *
+ * Create a history epoch for a @ref Units.  If a destination URL is not given
+ * then it will be taken from the import source if the @p units is an imported units.
+ *
+ * @param units The @ref Units to create a history entry for.
+ * @param sourceUrl The source URL for the units.
+ * @param destinationUrl The optional destination URL for the units.
+ *
+ * @return The history epoch.
+ */
+HistoryEpochPtr createHistoryEpoch(const UnitsConstPtr &units, const std::string &sourceUrl, const std::string &destinationUrl = "");
+
+/**
+ * @brief Create a history epoch for a @ref Component with optional destination URL.
+ *
+ * Create a history epoch for a @ref Component.  If a destination URL is not given
+ * then it will be taken from the import source if the @p component is an imported component.
+ *
+ * @param component The @ref Component to create a history entry for.
+ * @param sourceUrl The source URL for the component.
+ * @param destinationUrl The optional destination URL for the component.
+ *
+ * @return The history epoch.
+ */
+HistoryEpochPtr createHistoryEpoch(const ComponentConstPtr &component, const std::string &sourceUrl, const std::string &destinationUrl = "");
+
+/**
+ * @brief Figure out the URL of the importee from the history.
+ *
+ * Look through the history to figure out the importee import URL.
+ * @ref ORIGIN_MODEL_REF is returned by default.
+ *
+ * @param history The history of locations visited.
+ * @param url The destination URL of the imported entity.
+ * @return A std::string.
+ */
+std::string importeeModelUrl(const History &history, const std::string &url);
+
+/**
+ * @brief Check through the @p history and determine if @p h has already been visited.
+ *
+ * Check through the @p history and determine if @p h has already been visited.
+ *
+ * @param history The history of locations visited.
+ * @param h The epoch to check for existence.
+ * @return @c true if @p h is already present in @p history, @c false otherwise.
+ */
+bool checkForImportCycles(const History &history, const HistoryEpochPtr &h);
+
+/**
+ * @brief Form the description for a cyclic dependency.
+ *
+ * Form the description for a cyclic dependency.
+ *
+ * @param history The history of the cyclic dependency.
+ * @param action The action that made cyclic dependency, e.g. "resolve", "flatten".
+ *
+ * @return The @c std::string description of the cyclic dependency.
+ */
+std::string formDescriptionOfCyclicDependency(const History &history, const std::string &action);
+
+void recordVariableEquivalences(const ComponentPtr &component, EquivalenceMap &equivalenceMap, IndexStack &indexStack);
+void generateEquivalenceMap(const ComponentPtr &component, EquivalenceMap &map, IndexStack &indexStack);
+void applyEquivalenceMapToModel(const EquivalenceMap &map, const ModelPtr &model);
+NameList componentNames(const ModelPtr &model);
+NameList unitsNamesUsed(const ComponentPtr &component);
+EquivalenceMap rebaseEquivalenceMap(const EquivalenceMap &map, const IndexStack &originStack, const IndexStack &destinationStack);
+std::vector<UnitsPtr> unitsUsed(const ModelPtr &model, const ComponentPtr &component);
+ComponentNameMap createComponentNamesMap(const ComponentPtr &component);
+void findAndReplaceComponentsCnUnitsNames(const ComponentPtr &component, const StringStringMap &replaceMap);
 
 } // namespace libcellml

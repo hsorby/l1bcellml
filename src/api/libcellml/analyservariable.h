@@ -49,13 +49,14 @@ public:
         STATE,
         CONSTANT,
         COMPUTED_CONSTANT,
-        ALGEBRAIC
+        ALGEBRAIC,
+        EXTERNAL
     };
 
-    ~AnalyserVariable(); /**< Destructor. */
-    AnalyserVariable(const AnalyserVariable &rhs) = delete; /**< Copy constructor. */
-    AnalyserVariable(AnalyserVariable &&rhs) noexcept = delete; /**< Move constructor. */
-    AnalyserVariable &operator=(AnalyserVariable rhs) = delete; /**< Assignment operator. */
+    ~AnalyserVariable(); /**< Destructor, @private. */
+    AnalyserVariable(const AnalyserVariable &rhs) = delete; /**< Copy constructor, @private. */
+    AnalyserVariable(AnalyserVariable &&rhs) noexcept = delete; /**< Move constructor, @private. */
+    AnalyserVariable &operator=(AnalyserVariable rhs) = delete; /**< Assignment operator, @private. */
 
     /**
      * @brief Get the @c Type of this @c AnalyserVariable.
@@ -96,15 +97,15 @@ public:
     VariablePtr initialisingVariable() const;
 
     /**
-     * @brief Get the @c Variable for this @c AnalyserVariable.
+     * @brief Get the (primary) @c Variable for this @c AnalyserVariable.
      *
-     * Return the @c Variable for this @c AnalyserVariable. Its @c Component is
-     * the one in which the @c Variable is first defined (in the case of the
-     * variable of integration), initialised (in the case of a constant) or
-     * computed (in the case of a state, computed constant or algebraic
-     * variable). It may or may not be the same @c Variable as the one returned
-     * by @sa initialisingVariable (e.g., a state variable is initialised in one
-     * component and computed in another).
+     * Return the (primary) @c Variable for this @c AnalyserVariable. Its
+     * @c Component is the one in which the @c Variable is first defined (in the
+     * case of the variable of integration), initialised (in the case of a
+     * constant) or computed (in the case of a state, computed constant or
+     * algebraic variable). It may or may not be the same @c Variable as the one
+     * returned by @sa initialisingVariable (e.g., a state variable is
+     * initialised in one component and computed in another).
      *
      * @sa initialisingVariable
      *
@@ -122,10 +123,10 @@ public:
     AnalyserEquationPtr equation() const;
 
 private:
-    AnalyserVariable(); /**< Constructor. */
+    AnalyserVariable(); /**< Constructor, @private. */
 
     struct AnalyserVariableImpl;
-    AnalyserVariableImpl *mPimpl;
+    AnalyserVariableImpl *mPimpl; /**< Private member to implementation pointer, @private. */
 };
 
 } // namespace libcellml

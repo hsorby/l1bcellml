@@ -769,6 +769,50 @@ TEST(Units, unitAttributes)
     EXPECT_DOUBLE_EQ(1.8, multiplier);
 }
 
+TEST(Units, unitAttributeReference)
+{
+    libcellml::UnitsPtr u = libcellml::Units::create();
+
+    EXPECT_EQ("", u->unitAttributeReference(0));
+    u->addUnit("NewUnit", 4, 1.05, 17.0);
+
+    EXPECT_EQ("NewUnit", u->unitAttributeReference(0));
+    EXPECT_EQ("", u->unitAttributeReference(4));
+}
+
+TEST(Units, unitAttributePrefix)
+{
+    libcellml::UnitsPtr u = libcellml::Units::create();
+
+    EXPECT_EQ("", u->unitAttributePrefix(0));
+    u->addUnit("NewUnit", 4, 1.05, 17.0);
+
+    EXPECT_EQ("4", u->unitAttributePrefix(0));
+    EXPECT_EQ("", u->unitAttributePrefix(3));
+}
+
+TEST(Units, unitAttributeExponent)
+{
+    libcellml::UnitsPtr u = libcellml::Units::create();
+
+    EXPECT_EQ(1.0, u->unitAttributeExponent(0));
+    u->addUnit("NewUnit", 4, 1.05, 17.0);
+
+    EXPECT_EQ(1.05, u->unitAttributeExponent(0));
+    EXPECT_EQ(1.0, u->unitAttributeExponent(2));
+}
+
+TEST(Units, unitAttributeMultiplier)
+{
+    libcellml::UnitsPtr u = libcellml::Units::create();
+
+    EXPECT_EQ(1.0, u->unitAttributeMultiplier(0));
+    u->addUnit("NewUnit", 4, 1.05, 17.0);
+
+    EXPECT_EQ(17.0, u->unitAttributeMultiplier(0));
+    EXPECT_EQ(1.0, u->unitAttributeMultiplier(5));
+}
+
 TEST(Units, multipleUnitUsingStandardRef)
 {
     auto u = libcellml::Units::create();
@@ -2484,11 +2528,12 @@ TEST(Units, addUnitsMultipleTimes)
     EXPECT_TRUE(model->addUnits(units));
     EXPECT_EQ(size_t(1), model->unitsCount());
 
-    // Try to add the same units a second time.
-    EXPECT_FALSE(model->addUnits(units));
+    // Try to add the same units a second time. Rejected.
+    EXPECT_TRUE(model->addUnits(units));
+
     // We can't add the same units more than once, hence we still have one
     // units.
-    EXPECT_EQ(size_t(1), model->unitsCount());
+    EXPECT_EQ(size_t(2), model->unitsCount());
 }
 
 TEST(Units, setGetUnitId)
@@ -2617,4 +2662,72 @@ TEST(Units, scalingFactorBetweenUnitsSameNameDifferentModelsDifferentScale)
 
     auto scaling = libcellml::Units::scalingFactor(u1, u2);
     EXPECT_EQ(1000.0, scaling);
+}
+
+TEST(Units, scalingFactorBetweenUnitsDifferentScale)
+{
+    auto u1 = libcellml::Units::create("units");
+    u1->addUnit("second", "kilo");
+
+    auto u2 = libcellml::Units::create("units");
+    u2->addUnit("second", 5, 1);
+
+    auto scaling = libcellml::Units::scalingFactor(u1, u2);
+    EXPECT_EQ(100.0, scaling);
+}
+
+TEST(Units, unknownUnitsScalingFactorCompatible)
+{
+    auto model = libcellml::Model::create("model1");
+    auto u1 = libcellml::Units::create("units");
+    u1->addUnit("banana");
+
+    model->addUnits(u1);
+
+    auto scaling = libcellml::Units::scalingFactor(u1, u1, true);
+    EXPECT_EQ(0.0, scaling);
+}
+
+TEST(Units, unknownUnitsScalingFactorIncompatible)
+{
+    auto model = libcellml::Model::create("model1");
+    auto u1 = libcellml::Units::create("units");
+    u1->addUnit("banana");
+
+    model->addUnits(u1);
+
+    auto scaling = libcellml::Units::scalingFactor(u1, u1, false);
+    EXPECT_EQ(0.0, scaling);
+}
+
+TEST(Units, circularImportDeeperLevelBaseUnits)
+{
+    auto model1 = libcellml::Model::create("model1");
+    auto model2 = libcellml::Model::create("model2");
+    auto model3 = libcellml::Model::create("model3");
+
+    auto units1 = libcellml::Units::create("units1");
+    auto units2 = libcellml::Units::create("units2");
+    auto units3 = libcellml::Units::create("units3");
+
+    auto imp1 = libcellml::ImportSource::create();
+    auto imp2 = libcellml::ImportSource::create();
+    auto imp3 = libcellml::ImportSource::create();
+
+    imp1->setModel(model2);
+    imp2->setModel(model3);
+    imp3->setModel(model2);
+
+    model1->addUnits(units1);
+    model2->addUnits(units2);
+    model3->addUnits(units3);
+
+    units1->setImportSource(imp1);
+    units1->setImportReference("units2");
+    units2->setImportSource(imp2);
+    units2->setImportReference("units3");
+    units3->setImportSource(imp3);
+    units3->setImportReference("units2");
+
+    EXPECT_FALSE(units1->isBaseUnit());
 }

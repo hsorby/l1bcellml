@@ -10,17 +10,19 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.cmake_minimum_required (VERSION 3.1)
+# limitations under the License.
 
 set(TEST_SRCS
   test_analyser.py
   test_analyser_equation_ast.py
+  test_analyser_external_variable.py
   test_annotator.py
   test_component.py
   test_docstrings.py
   test_entity.py
   test_generator.py
   test_generator_profile.py
+  test_import_requirement.py
   test_import_source.py
   test_importer.py
   test_issue.py
@@ -37,16 +39,13 @@ set(TEST_SRCS
 include(test_resources.cmake)
 
 
-if(WIN32)
-  if(TARGET xml2)
-    set(GEN_EXP_XML2_TARGET_FILE_DIR "\;\$<TARGET_FILE_DIR:xml2>")
-  endif()
+if(MSVC)
   if(NOT POLICY CMP0078)
     set(_PYTHON_MODULE_TARGET _entity)
       else()
     set(_PYTHON_MODULE_TARGET entity)
   endif()
-  set(_RUN_PYTHON_ENVIRONMENT "PATH=$<TARGET_FILE_DIR:cellml>\;$<TARGET_FILE_DIR:${_PYTHON_MODULE_TARGET}>${GEN_EXP_XML2_TARGET_FILE_DIR}\;%PATH%;PYTHONPATH=${PROJECT_BINARY_DIR}/src/bindings/python/$<CONFIG>")
+  set(_RUN_PYTHON_ENVIRONMENT "PATH=$<TARGET_FILE_DIR:cellml>\;$<TARGET_FILE_DIR:${_PYTHON_MODULE_TARGET}>\;%PATH%;PYTHONPATH=${PROJECT_BINARY_DIR}/src/bindings/python${CONFIG_DIR_SUFFIX}")
 else()
   set(_RUN_PYTHON_ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/src/bindings/python")
 endif()
@@ -77,7 +76,7 @@ if(LIBCELLML_PYTHON_COVERAGE)
     DEPENDS python_bindings
     COMMENT "Running Python coverage tests")
 
-  add_custom_target(python_coverage_html_report
+  add_custom_target(python_coverage_report
     COMMAND ${CMAKE_COMMAND} -E env ${_RUN_PYTHON_ENVIRONMENT} ${Python_EXECUTABLE} runner.py ${_CONFIG_ARGUMENT} html
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS python_bindings
