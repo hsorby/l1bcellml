@@ -6,7 +6,6 @@ on:
       - created
 
 env:
-  LIBCELLML_REPO: hsorby/l1bcellml
   BUILD_TYPE: Release
   MACOSX_DEPLOYMENT_TARGET: 10.14
 
@@ -39,27 +38,6 @@ jobs:
             python_tarball: "https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz"
           }
     steps:
-    - name: Checkout libCellML
-      uses: actions/checkout@v2
-      with:
-        repository: ${{ env.LIBCELLML_REPO }}
-        path: libcellml
-        ref: release
-
-    - name: Checkout zlib
-      uses: actions/checkout@v2
-      with:
-        repository: OpenCMISS-Dependencies/zlib
-        path: zlib
-        ref: v1.2.3
-
-    - name: Checkout LibXml2
-      uses: actions/checkout@v2
-      with:
-        repository: OpenCMISS-Dependencies/libxml2
-        path: libxml2
-        ref: v2.9.10
-
     - name: Download source code
       shell: bash
       run: |
@@ -174,8 +152,7 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         cd $WORK_DIR/build-libcellml/src/bindings/python
-        echo "twine upload --skip-existing wheelhouse/*"
-        #twine upload --skip-existing wheelhouse/*
+        twine upload --skip-existing wheelhouse/*
 
   os-binaries:
     name: ${{ matrix.config.name }}
@@ -221,8 +198,6 @@ jobs:
     - name: Checkout libCellML
       uses: actions/checkout@v2
       with:
-        repository: ${{ env.LIBCELLML_REPO }}
-        path: libcellml
         ref: release
 
     - name: Checkout zlib
@@ -307,6 +282,7 @@ jobs:
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}Python)
         endif()
 
+
     - name: Configure
       shell: cmake -P {0}
       run: |
@@ -340,7 +316,7 @@ jobs:
 
         execute_process(
           COMMAND ${CMAKE_COMMAND}
-            -S libcellml
+            -S .
             -B build
             -D Python_EXECUTABLE=${PYTHON_EXE}
             ${OPTIONAL_ARGUMENTS}
@@ -454,8 +430,7 @@ jobs:
         github-token: ${{secrets.MAINTAINER_WRITE_TOKEN}}
         script: |
           const script = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
-          // script({github, context})
-          console.log("script({github, context})")
+          script({github, context})
 
     - name: Create Python Package
       shell: bash
@@ -507,8 +482,7 @@ jobs:
           cd build/src/bindings/python
         fi
 
-        echo "twine upload --skip-existing dist/*"
-        # twine upload --skip-existing dist/*
+        twine upload --skip-existing dist/*
 
   emscripten:
     name: libcellml.js
@@ -517,7 +491,7 @@ jobs:
       - name: Checkout libCellML
         uses: actions/checkout@v2
         with:
-          repository: ${{ env.LIBCELLML_REPO }}
+          repository: cellml/libcellml
           path: libcellml
           ref: release
 
@@ -564,12 +538,6 @@ jobs:
           emcmake cmake -DLibXml2_DIR=../usr/local/lib/cmake/libxml2-2.9.10/ -DZLIB_DIR=../usr/local/lib/cmake/ZLIB/ -DBUILD_TYPE=Release ../libcellml/
           make -j3
 
-      - name: Test libcellml.js
-        shell: bash
-        run: |
-          cd build-libcellml-release
-          ctest -V
-
       - name: Pack libcellml.js
         id: package-javascript
         shell: bash
@@ -594,8 +562,7 @@ jobs:
           github-token: ${{secrets.MAINTAINER_WRITE_TOKEN}}
           script: |
             const script = require(`${process.env.GITHUB_WORKSPACE}/libcellml/.github/scripts/upload-asset.js`)
-            // script({github, context})
-            echo "Upload libcellml.js assets."
+            script({github, context})
 
       - name: Publish libcellml.js
         shell: bash
@@ -603,6 +570,4 @@ jobs:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: |
           cd build-libcellml-release/src/bindings/javascript
-          #npm publish --access public
-          echo "npm publish --access public"
-
+          npm publish --access public
