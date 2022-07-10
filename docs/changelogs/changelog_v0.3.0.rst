@@ -3,8 +3,6 @@ No category
 ===========
 
 * Remove base_unit by `@hsorby <https://api.github.com/users/hsorby>`_ [`#1 <https://github.com/hsorby/l1bcellml/pull/1>`_].
-* Remove base_unit by `@hsorby <https://api.github.com/users/hsorby>`_ [`#1 <https://github.com/hsorby/l1bcellml/pull/1>`_].
-* Remove base_unit by `@hsorby <https://api.github.com/users/hsorby>`_ [`#1 <https://github.com/hsorby/l1bcellml/pull/1>`_].
 
 Contributors
 ------------
