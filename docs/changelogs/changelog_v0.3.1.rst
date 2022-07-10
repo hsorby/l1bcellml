@@ -2,7 +2,7 @@
 No category
 ===========
 
-* Update CMakeLists.txt by @hsorby [`#6 https://github.com/hsorby/l1bcellml/pull/6`_].
+* Update CMakeLists.txt by @hsorby [https://github.com/hsorby/l1bcellml/pull/6].
 
 Contributors
 ------------
