@@ -21,7 +21,7 @@ describe("Version tests", () => {
   beforeAll(async () => {
         libcellml = await libCellMLModule();
     });
- test('Checking version string.', () => {
-   expect(libcellml.versionString()).toBe('0.2.0');
- });
+  test('Checking version string.', () => {
+    expect(libcellml.versionString()).toBe('0.3.2');
+  });
 })
