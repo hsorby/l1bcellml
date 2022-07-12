@@ -1,11 +1,11 @@
-# The content of this file was generated using the Python profile of libCellML 0.3.2.
+# The content of this file was generated using the Python profile of libCellML 0.3.3.
 
 from enum import Enum
 from math import *
 
 
 __version__ = "0.3.0"
-LIBCELLML_VERSION = "0.3.2"
+LIBCELLML_VERSION = "0.3.3"
 
 STATE_COUNT = 4
 VARIABLE_COUNT = 17
