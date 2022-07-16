@@ -36,6 +36,26 @@ jobs:
             python_tarball: "https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz"
           }
     steps:
+    - name: Checkout libCellML
+      uses: actions/checkout@v2
+      with:
+        ref: release
+        path: ${{ process.env.SRC_DIR }}/libcellml
+
+    - name: Checkout zlib
+      uses: actions/checkout@v2
+      with:
+        repository: OpenCMISS-Dependencies/zlib
+        path: ${{ process.env.SRC_DIR }}/zlib
+        ref: v1.2.3
+
+    - name: Checkout LibXml2
+      uses: actions/checkout@v2
+      with:
+        repository: OpenCMISS-Dependencies/libxml2
+        path: ${{ process.env.SRC_DIR }}/libxml2
+        ref: v2.9.10
+
     - name: Download source code
       shell: bash
       run: |
@@ -43,10 +63,11 @@ jobs:
         mkdir $WORK_DIR
         mkdir $SRC_DIR
         # fetch libraries
-        git clone https://github.com/hsorby/l1bcellml -b release --depth 1 $SRC_DIR/libcellml
+        ls $SRC_DIR
+        #git clone https://github.com/hsorby/l1bcellml -b release --depth 1 $SRC_DIR/libcellml
         #git clone https://github.com/cellml/libcellml -b release --depth 1 $SRC_DIR/libcellml
-        git clone https://github.com/OpenCMISS-Dependencies/zlib -b v1.2.3 --depth 1 $SRC_DIR/zlib
-        git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.10 --depth 1 $SRC_DIR/libxml2
+        #git clone https://github.com/OpenCMISS-Dependencies/zlib -b v1.2.3 --depth 1 $SRC_DIR/zlib
+        #git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.10 --depth 1 $SRC_DIR/libxml2
         curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $DOWNLOADS_DIR/swig-4.0.2.tar.gz
         curl -L ${{ matrix.config.python_tarball }} > $DOWNLOADS_DIR/Python.tar.gz
 
