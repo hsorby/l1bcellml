@@ -81,9 +81,11 @@ jobs:
     - name: Move checked out source code
       shell: bash
       run: |
-        mv $GITHUB_WORKSPACE/libcellml $SRC/libcellml
-        mv $GITHUB_WORKSPACE/libxml2 $SRC/libxml2
-        mv $GITHUB_WORKSPACE/zlib $SRC/zlib
+        mv $GITHUB_WORKSPACE/libcellml $SRC_DIR/libcellml
+        mv $GITHUB_WORKSPACE/libxml2 $SRC_DIR/libxml2
+        mv $GITHUB_WORKSPACE/zlib $SRC_DIR/zlib
+        echo mv $GITHUB_WORKSPACE/libcellml $SRC_DIR/libcellml
+        ls $SRC_DIR
 
     - name: Build and instal zlib
       shell: bash
