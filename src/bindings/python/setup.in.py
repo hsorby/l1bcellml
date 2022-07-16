@@ -24,6 +24,20 @@ from setuptools.command.install import install
 doclines = __doc__.split("\n")
 
 
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+    class bdist_wheel(_bdist_wheel):
+
+        def finalize_options(self):
+            _bdist_wheel.finalize_options(self)
+            # Mark us as not a pure python package
+            self.root_is_pure = False
+
+except ImportError:
+    bdist_wheel = None
+
+
 class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
@@ -38,7 +52,7 @@ setup(
     author='libCellML developers',
     author_email='libcellml@googlegroups.com',
     packages=['libcellml'],
-    package_data={'libcellml': [@SETUP_PY_PACKAGE_FILES_STR@]},
+    #package_data={'libcellml': [@SETUP_PY_PACKAGE_FILES_STR@]},
     url='@PYPI_PACKAGE_URL@',
     license='Apache Software License',
     description=doclines[0],
@@ -46,6 +60,7 @@ setup(
     long_description=open('README.rst').read(),
     long_description_content_type='text/x-rst',
     distclass=BinaryDistribution,
+    cmdclass={'bdist_wheel': bdist_wheel},
     include_package_data=True,
     zip_safe=False,
 )
