@@ -56,22 +56,21 @@ jobs:
         path: libxml2
         ref: v2.9.10
 
-    - name: Download source code
+    - name: Make directories
       shell: bash
       run: |
         mkdir $DOWNLOADS_DIR
         mkdir $WORK_DIR
         mkdir $SRC_DIR
+
+    - name: Fetch SWIG and Python source code
+      shell: bash
+      run: |
         # fetch libraries
-        ls $SRC_DIR
-        #git clone https://github.com/hsorby/l1bcellml -b release --depth 1 $SRC_DIR/libcellml
-        #git clone https://github.com/cellml/libcellml -b release --depth 1 $SRC_DIR/libcellml
-        #git clone https://github.com/OpenCMISS-Dependencies/zlib -b v1.2.3 --depth 1 $SRC_DIR/zlib
-        #git clone https://github.com/OpenCMISS-Dependencies/libxml2 -b v2.9.10 --depth 1 $SRC_DIR/libxml2
         curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $DOWNLOADS_DIR/swig-4.0.2.tar.gz
         curl -L ${{ matrix.config.python_tarball }} > $DOWNLOADS_DIR/Python.tar.gz
 
-    - name: Extract source code
+    - name: Extract SWIG and Python source code
       shell: bash
       run: |
         cd $SRC_DIR
@@ -84,8 +83,6 @@ jobs:
         mv $GITHUB_WORKSPACE/libcellml $SRC_DIR/libcellml
         mv $GITHUB_WORKSPACE/libxml2 $SRC_DIR/libxml2
         mv $GITHUB_WORKSPACE/zlib $SRC_DIR/zlib
-        echo mv $GITHUB_WORKSPACE/libcellml $SRC_DIR/libcellml
-        ls $SRC_DIR
 
     - name: Build and instal zlib
       shell: bash
