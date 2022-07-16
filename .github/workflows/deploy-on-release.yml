@@ -170,8 +170,8 @@ jobs:
         - {
             name: "Windows Server 2019 MSVC Py39", deploy_libs: false, deploy_python: true,
             os: windows-2019,
-            libxml2_dir: '-D "LibXml2_DIR=../usr/local/lib/cmake/libxml2-2.9.10/"',
-            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB/ZLIB/CMake/"',
+            libxml2_dir: '-D "LibXml2_DIR=../usr/local/libxml2-2.9.10/CMake/"',
+            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB/ZLIB-1.2.3/CMake/"',
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.9
           }
         - {
