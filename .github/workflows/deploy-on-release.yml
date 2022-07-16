@@ -79,11 +79,12 @@ jobs:
         tar -xzf $DOWNLOADS_DIR/Python.tar.gz
 
     - name: Move checked out source code
-       shell: bash
-       run: |
-          mv $$GITHUB_WORKSPACE/libcellml $SRC/libcellml
-          mv $$GITHUB_WORKSPACE/libxml2 $SRC/libxml2
-          mv $$GITHUB_WORKSPACE/zlib $SRC/zlib
+      shell: bash
+      run: |
+        mv $$GITHUB_WORKSPACE/libcellml $SRC/libcellml
+        mv $$GITHUB_WORKSPACE/libxml2 $SRC/libxml2
+        mv $$GITHUB_WORKSPACE/zlib $SRC/zlib
+
     - name: Build and instal zlib
       shell: bash
       run: |
