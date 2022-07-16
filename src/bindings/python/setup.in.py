@@ -34,6 +34,16 @@ try:
             # Mark us as not a pure python package
             self.root_is_pure = False
 
+        def get_tag(self):
+            python, abi, plat = _bdist_wheel.get_tag(self)
+            # We don't contain any python source
+            #python, abi = 'py2.py3', 'none'
+            print("=============")
+            print("python:", python)
+            print("abi:", abi)
+            print("plat:", plat)
+            return python, abi, plat
+
 except ImportError:
     bdist_wheel = None
 
