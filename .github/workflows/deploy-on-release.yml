@@ -121,6 +121,7 @@ jobs:
     - name: Create virtual environment
       shell: bash
       run: |
+        cd $WORK_DIR
         python${{ matrix.config.python_version }} -m venv venv
         source $WORK_DIR/venv/bin/activate
         python${{ matrix.config.python_version }} -m pip install --upgrade pip
