@@ -138,16 +138,18 @@ jobs:
         pip${{ matrix.config.python_version }} install setuptools twine wheel auditwheel
         cd $WORK_DIR/build-libcellml/src/bindings/python
         python${{ matrix.config.python_version }} setup.py bdist_wheel
+        env
+        whl=`ls $WORK_DIR/build-libcellml/src/bindings/python/dist/*.whl`
+        auditwheel repair $whl
 
     - name: Test Python Package
       shell: bash
       run: |
         # Test Python Package
-        cd $WORK_DIR/build-libcellml/src/bindings/python
         python${{ matrix.config.python_version }} -m venv $WORK_DIR/venv_test
         source $WORK_DIR/venv_test/bin/activate
-        whl=`ls $WORK_DIR/build-libcellml/src/bindings/python/dist/*.whl`
-        auditwheel repair $whl
+        #whl=`ls $WORK_DIR/build-libcellml/src/bindings/python/dist/*.whl`
+        #auditwheel repair $whl
         whl=`ls $WORK_DIR/build-libcellml/src/bindings/python/wheelhouse/*.whl`
         pip install $whl
         python -c "import libcellml"
