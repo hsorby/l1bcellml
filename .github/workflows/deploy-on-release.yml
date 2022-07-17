@@ -11,7 +11,7 @@ jobs:
   many-linux-wheels:
     name: ${{ matrix.config.name }}
     runs-on: ubuntu-20.04
-    container: quay.io/pypa/manylinux2014_x86_64
+    container: quay.io/pypa/manylinux2014_x86_64:2022-07-17-51324db
     env:
       DOWNLOADS_DIR: /home/downloads
       WORK_DIR: /home/work
