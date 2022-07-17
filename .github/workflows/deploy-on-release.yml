@@ -42,20 +42,6 @@ jobs:
         ref: release
         path: libcellml
 
-    - name: Checkout zlib
-      uses: actions/checkout@v2
-      with:
-        repository: OpenCMISS-Dependencies/zlib
-        path: zlib
-        ref: v1.2.3
-
-    - name: Checkout LibXml2
-      uses: actions/checkout@v2
-      with:
-        repository: OpenCMISS-Dependencies/libxml2
-        path: libxml2
-        ref: v2.9.10
-
     - name: Make directories
       shell: bash
       run: |
@@ -67,39 +53,41 @@ jobs:
       shell: bash
       run: |
         # fetch libraries
-        curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $DOWNLOADS_DIR/swig-4.0.2.tar.gz
+        # curl -L https://cfhcable.dl.sourceforge.net/project/swig/swig/swig-4.0.2/swig-4.0.2.tar.gz > $DOWNLOADS_DIR/swig-4.0.2.tar.gz
         curl -L ${{ matrix.config.python_tarball }} > $DOWNLOADS_DIR/Python.tar.gz
 
     - name: Extract SWIG and Python source code
       shell: bash
       run: |
         cd $SRC_DIR
-        tar -xzf $DOWNLOADS_DIR/swig-4.0.2.tar.gz
+        # tar -xzf $DOWNLOADS_DIR/swig-4.0.2.tar.gz
         tar -xzf $DOWNLOADS_DIR/Python.tar.gz
 
     - name: Move checked out source code
       shell: bash
       run: |
         mv $GITHUB_WORKSPACE/libcellml $SRC_DIR/libcellml
-        mv $GITHUB_WORKSPACE/libxml2 $SRC_DIR/libxml2
-        mv $GITHUB_WORKSPACE/zlib $SRC_DIR/zlib
+        # mv $GITHUB_WORKSPACE/libxml2 $SRC_DIR/libxml2
+        # mv $GITHUB_WORKSPACE/zlib $SRC_DIR/zlib
 
-    - name: Build and instal zlib
+    - name: Instal zlib development files
       shell: bash
       run: |
         # build libraries
-        cmake -S $SRC_DIR/zlib -B $WORK_DIR/build-zlib -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF
-        cd $WORK_DIR/build-zlib
-        make -j3
-        make install
+        # cmake -S $SRC_DIR/zlib -B $WORK_DIR/build-zlib -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF
+        # cd $WORK_DIR/build-zlib
+        # make -j3
+        # make install
+        yum -y install zlib-devel
 
-    - name: Build and instal libXml2
+    - name: Instal libXml2 development files
       shell: bash
       run: |
-        cmake -S $SRC_DIR/libxml2 -B $WORK_DIR/build-libxml2 -D CMAKE_BUILD_TYPE=Release  -D CMAKE_BUILD_TYPE=Release -D BUILD_SHARED_LIBS=OFF -D LIBXML2_BUILD_TESTS=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_PROGRAMS=OFF -D LIBXML2_WITH_TESTS=OFF
-        cd $WORK_DIR/build-libxml2
-        make -j3
-        make install
+        # cmake -S $SRC_DIR/libxml2 -B $WORK_DIR/build-libxml2 -D CMAKE_BUILD_TYPE=Release  -D CMAKE_BUILD_TYPE=Release -D BUILD_SHARED_LIBS=OFF -D LIBXML2_BUILD_TESTS=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_PROGRAMS=OFF -D LIBXML2_WITH_TESTS=OFF
+        # cd $WORK_DIR/build-libxml2
+        # make -j3
+        # make install
+        yum -y install libxml2-devel
 
     - name: Instal openssl and libffi headers
       shell: bash
@@ -125,15 +113,6 @@ jobs:
         python${{ matrix.config.python_version }} -m venv venv
         source $WORK_DIR/venv/bin/activate
         python${{ matrix.config.python_version }} -m pip install --upgrade pip
-
-    - name: Build and instal swig
-      shell: bash
-      run: |
-        mkdir $WORK_DIR/build-swig
-        cd $WORK_DIR/build-swig
-        $SRC_DIR/swig-4.0.2/configure --without-alllang --with-python --with-python3
-        make -j3
-        make install
 
     - name: Build libcellml
       shell: bash

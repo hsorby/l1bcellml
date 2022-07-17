@@ -28,28 +28,6 @@ from setuptools.command.build_ext import build_ext
 doclines = __doc__.split("\n")
 
 
-# This is a fake module to trick setuptools into creating a wheel.
-_module_name = "libcellml"
-
-
-class CMakeExtension(Extension):
-    def __init__(self, name, cmake_lists_dir='.', sources=[], **kwa):
-        Extension.__init__(self, name, sources=sources, **kwa)
-        self.cmake_lists_dir = os.path.abspath(cmake_lists_dir)
-
-
-class CMakeBuild(build_ext):
-
-    def build_extensions(self):
-        """
-        This doesn't do anything but it fools setuptools into thinking that it does?
-        Manylinux started to install libraries into a purelib folder which didn't pass muster.
-        """
-        for ext in self.extensions:
-
-            extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-       
-
 class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
@@ -58,13 +36,19 @@ class BinaryDistribution(Distribution):
         return True
 
 
+# This creates a list which is empty but returns a length of 1.
+# Should make the wheel a binary distribution and platlib compliant.
+class EmptyListWithLength(list):
+    def __len__(self):
+        return 1
+
+
 setup(
     name='@PYPI_PACKAGE_NAME@',
     version='@PYPI_PACKAGE_VERSION@@PYPI_PACKAGE_DEVELOPER_VERSION@',
     author='libCellML developers',
     author_email='libcellml@googlegroups.com',
     packages=['libcellml'],
-    #package_data={'libcellml': [@SETUP_PY_PACKAGE_FILES_STR@]},
     url='@PYPI_PACKAGE_URL@',
     license='Apache Software License',
     description=doclines[0],
@@ -72,8 +56,7 @@ setup(
     long_description=open('README.rst').read(),
     long_description_content_type='text/x-rst',
     distclass=BinaryDistribution,
-    ext_modules=[CMakeExtension(_module_name)],
-    cmdclass={'build_ext': CMakeBuild},
+    ext_modules=EmptyListWithLength(),
     package_data={'libcellml': [@SETUP_PY_PACKAGE_FILES_STR@]},
     include_package_data=True,
     zip_safe=False,
