@@ -189,13 +189,13 @@ jobs:
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.8
           }
         - {
-            name: "macOS 10.15 Clang Py38", deploy_libs: false, deploy_python: true,
+            name: "macOS 12.4 Clang Py38", deploy_libs: false, deploy_python: true,
             os: macos-12,
             python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
           }
         - {
-            name: "macOS 10.15 Clang Py39", deploy_libs: false, deploy_python: true,
+            name: "macOS 12.4 Clang Py39", deploy_libs: false, deploy_python: true,
             os: macos-12,
             python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.9/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.9
