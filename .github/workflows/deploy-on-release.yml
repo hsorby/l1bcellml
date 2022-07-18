@@ -135,7 +135,7 @@ jobs:
       run: |
         # Create Python Package
         source $WORK_DIR/venv/bin/activate
-        pip install setuptools
+        pip install -U setuptools
         pip install twine wheel auditwheel
         cd $WORK_DIR/build-libcellml/src/bindings/python
         python setup.py bdist_wheel
