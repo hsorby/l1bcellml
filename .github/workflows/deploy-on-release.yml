@@ -135,7 +135,8 @@ jobs:
       run: |
         # Create Python Package
         source $WORK_DIR/venv/bin/activate
-        pip${{ matrix.config.python_version }} install setuptools twine wheel auditwheel
+        pip install setuptools >= 56.0
+        pip${{ matrix.config.python_version }} install twine wheel auditwheel
         cd $WORK_DIR/build-libcellml/src/bindings/python
         python${{ matrix.config.python_version }} setup.py bdist_wheel
         env
