@@ -139,6 +139,7 @@ jobs:
         cd $WORK_DIR/build-libcellml/src/bindings/python
         python${{ matrix.config.python_version }} setup.py bdist_wheel
         env
+        pip list
         whl=`ls $WORK_DIR/build-libcellml/src/bindings/python/dist/*.whl`
         auditwheel repair $whl
 
