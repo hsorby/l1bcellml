@@ -112,7 +112,7 @@ jobs:
         cd $WORK_DIR
         python${{ matrix.config.python_version }} -m venv venv
         source $WORK_DIR/venv/bin/activate
-        python${{ matrix.config.python_version }} -m pip install --upgrade pip
+        python -m pip install --upgrade pip
 
     - name: Build libcellml
       shell: bash
@@ -135,10 +135,10 @@ jobs:
       run: |
         # Create Python Package
         source $WORK_DIR/venv/bin/activate
-        pip install setuptools >= 56.0
-        pip${{ matrix.config.python_version }} install twine wheel auditwheel
+        pip install setuptools
+        pip install twine wheel auditwheel
         cd $WORK_DIR/build-libcellml/src/bindings/python
-        python${{ matrix.config.python_version }} setup.py bdist_wheel
+        python setup.py bdist_wheel
         env
         pip list
         whl=`ls $WORK_DIR/build-libcellml/src/bindings/python/dist/*.whl`
