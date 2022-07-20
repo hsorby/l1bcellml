@@ -16,8 +16,8 @@ cmake_minimum_required(VERSION 3.10.2)
 
 set(PROJECT_NAME libCellML)
 set(PROJECT_URL https://libcellml.org)
-set(_PROJECT_VERSION 0.2.0)
-set(PROJECT_DEVELOPER_VERSION -dev.21)
+set(_PROJECT_VERSION 0.3.2)
+set(PROJECT_DEVELOPER_VERSION -dev.2)
 project(${PROJECT_NAME} VERSION ${_PROJECT_VERSION} LANGUAGES CXX)
 
 # Set policies that affect the build.
@@ -163,9 +163,12 @@ unset(TWAE CACHE)
 # BUILD_TYPE ==> LIBCELLML_BUILD_TYPE
 if(NOT IS_MULTI_CONFIG)
   set(_PARAM_ANNOTATION "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.")
-  set(LIBCELLML_BUILD_TYPE "Debug" CACHE STRING "${_PARAM_ANNOTATION}")
-  if(DEFINED BUILD_TYPE)
+  if(DEFINED BUILD_TYPE AND NOT BUILD_TYPE STREQUAL "")
     set(LIBCELLML_BUILD_TYPE ${BUILD_TYPE} CACHE STRING "${_PARAM_ANNOTATION}" FORCE)
+  elseif(NOT CMAKE_BUILD_TYPE STREQUAL "")
+    set(LIBCELLML_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "${_PARAM_ANNOTATION}")
+  else()
+    set(LIBCELLML_BUILD_TYPE "Debug" CACHE STRING "${_PARAM_ANNOTATION}" FORCE)
   endif()
 endif()
 unset(BUILD_TYPE CACHE)
@@ -214,7 +217,7 @@ endif()
 # will eventually be replaced with the /W4 and /WX options (see
 # target_warnings_as_errors()).
 # This manipulation can be removed once the minimum version can
-# be lifted to at least version 3.15 because the warning level will not 
+# be lifted to at least version 3.15 because the warning level will not
 # automatically be set.
 if(MSVC AND CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 3.15)
   if(LIBCELLML_TREAT_WARNINGS_AS_ERRORS)
@@ -290,3 +293,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/cmake/packaging)
 if(LIBCELLML_ENABLE_UTILITIES)
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/cmake/utils)
 endif()
+
+# Add target to print out version
+add_custom_target(print_version
+  COMMAND ${CMAKE_COMMAND} -E echo "version=v${PROJECT_VERSION}${PROJECT_DEVELOPER_VERSION}")
+

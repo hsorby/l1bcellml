@@ -32,3 +32,12 @@ While there are many types of contribution, this section focuses on contribution
    :glob:
 
    *
+
+Changelogs
+==========
+
+.. toctree::
+   :glob:
+
+   changelogs/*
+
