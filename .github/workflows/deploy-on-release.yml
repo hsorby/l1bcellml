@@ -312,11 +312,11 @@ jobs:
           set(PYTHON_EXE /usr/localFrameworks/Python.framework/Versions/${{ matrix.config.python_version }}/Python)
         endif()
         if ("${{ matrix.config.os }}" STREQUAL "ubuntu-20.04")
-          set(PYTHON_EXE ${PYTHON_LOCATION}/python)
+          set(PYTHON_EXE python${{ matrix.config.python_version }})
           list(APPEND OPTIONAL_ARGUMENTS -D PACKAGE_ANY_LINUX=TRUE)
         endif()
 
-        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
+        #list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.libxml2_dir }})
 
         execute_process(
