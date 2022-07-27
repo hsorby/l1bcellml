@@ -287,13 +287,13 @@ jobs:
         endforeach()
         file(TO_NATIVE_PATH "${WIN_PATH}" WIN_PATH)
         set(ENV{PATH} "${WIN_PATH}")
-        execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib" -B "${ACTION_DIR}/build-zlib" -DBUILD_SHARED_LIBS=FALSE -DCMAKE_INSTALL_PREFIX=../usr/local)
+        execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib" -B "${ACTION_DIR}/build-zlib" -DBUILD_SHARED_LIBS=FALSE -DCMAKE_INSTALL_PREFIX=$ENV{GITHUB_WORKSPACE}/usr/local)
         execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --config Release
           WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
         execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
           WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2" ${{ matrix.zlib_dir }}  -DCMAKE_INSTALL_PREFIX=../usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
+        execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2" ${{ matrix.zlib_dir }}  -DCMAKE_INSTALL_PREFIX=$ENV{GITHUB_WORKSPACE}/usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
           RESULT_VARIABLE _RESULT OUTPUT_VARIABLE _OUTPUT ERROR_VARIABLE _ERROR)
         execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --config Release
           WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
