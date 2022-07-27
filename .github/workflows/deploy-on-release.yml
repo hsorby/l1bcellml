@@ -251,7 +251,7 @@ jobs:
 #        endif()
 
     - name: Prepare ${{ matrix.os }} environment
-      if: ${{ runner.os == Windows }}
+      if: ${{ runner.os == 'Windows' }}
       shell: cmake -P {0}
       run: |
         # Prepare environment script.
