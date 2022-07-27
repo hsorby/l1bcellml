@@ -167,30 +167,30 @@ jobs:
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
-#        - {
-#            name: "Windows Server 2019 MSVC Py39", deploy_libs: false, deploy_python: true,
-#            os: windows-2019,
-#            libxml2_dir: '-D "LibXml2_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/"',
-#            zlib_dir: '-D "ZLIB_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/ZLIB/ZLIB-1.2.3/CMake/"',
-#            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.9
-#          }
-#        - {
-#            name: "Ubuntu 20.04 GCC Py38", deploy_libs: false, deploy_python: false,
-#            os: ubuntu-20.04, container: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
-#            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.8
-#          }
-#        - {
-#            name: "macOS 12 Clang Py38", deploy_libs: false, deploy_python: true,
-#            os: macos-12,
-#            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
-#            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
-#          }
-#        - {
-#            name: "macOS 12 Clang Py39", deploy_libs: false, deploy_python: true,
-#            os: macos-12,
-#            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.9/",
-#            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.9
-#          }
+        - {
+            name: "Windows Server 2019 MSVC Py39", deploy_libs: false, deploy_python: true,
+            os: windows-2019,
+            libxml2_dir: '-D "LibXml2_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/"',
+            zlib_dir: '-D "ZLIB_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/ZLIB/ZLIB-1.2.3/CMake/"',
+            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.9
+          }
+        - {
+            name: "Ubuntu 20.04 GCC Py38", deploy_libs: false, deploy_python: false,
+            os: ubuntu-20.04, container: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
+            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.8
+          }
+        - {
+            name: "macOS 12 Clang Py38", deploy_libs: false, deploy_python: true,
+            os: macos-12,
+            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
+            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
+          }
+        - {
+            name: "macOS 12 Clang Py39", deploy_libs: false, deploy_python: true,
+            os: macos-12,
+            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.9/",
+            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.9
+          }
 
     steps:
     - name: Checkout libCellML
@@ -238,16 +238,8 @@ jobs:
 #          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swig-4.0.2.tar.gz")
 #        endif()
 
-    - name: Prepare Linux environment
-      if: ${{ runner.os == 'Linux' }}
-      shell: cmake -P {0}
-      run: |
-        # Prepare environment script.
-
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
-
     - name: Prepare macOS environment
-      if: ${{ runner.os == 'macOS' }}
+      if: runner.os == 'macOS'
       shell: cmake -P {0}
       run: |
         # Prepare environment script.
@@ -257,8 +249,16 @@ jobs:
         file(GLOB _DYNAMIC_LIBRARY $ENV{pythonLocation}/lib/libpython*.dylib)
         execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}Python)
 
+    - name: Test environment
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        ls /usr/local/Frameworks/
+        ls /usr/local/Frameworks/Python.framework
+        ls -l /usr/local/Frameworks/Python.framework
+
     - name: Prepare Windows environment
-      if: ${{ runner.os == 'Windows' }}
+      if: runner.os == 'Windows'
       shell: cmake -P {0}
       run: |
         # Prepare environment script.
