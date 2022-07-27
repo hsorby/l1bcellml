@@ -258,6 +258,7 @@ jobs:
       if: runner.os == 'macOS'
       shell: bash
       run: |
+        brew info python
         ls /usr/local/Frameworks/
         ls /usr/local/Frameworks/Python.framework
         ls -l /usr/local/Frameworks/Python.framework
