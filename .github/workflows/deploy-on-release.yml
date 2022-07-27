@@ -176,19 +176,19 @@ jobs:
           }
         - {
             name: "Ubuntu 20.04 GCC Py38", deploy_libs: false, deploy_python: false,
-            os: ubuntu-20.04, container: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
+            os: ubuntu-20.04, container: ubuntu-latest,
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.8
           }
         - {
             name: "macOS 12 Clang Py38", deploy_libs: false, deploy_python: true,
             os: macos-12,
-            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
+            python_rpath: "/usr/local/Frameworks/Python.framework/Versions/3.8/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
           }
         - {
             name: "macOS 12 Clang Py39", deploy_libs: false, deploy_python: true,
             os: macos-12,
-            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.9/",
+            python_rpath: "/usr/local/Frameworks/Python.framework/Versions/3.9/",
             build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.9
           }
 
@@ -246,7 +246,8 @@ jobs:
 
         execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }})
         execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}Python)
-        file(GLOB _DYNAMIC_LIBRARY $ENV{pythonLocation}/lib/libpython*.dylib)
+        #set(_DYNAMIC_LIBRARY $ENV{pythonLocation}/lib/libpython${{ matrix.config.python_version }}.dylib)
+        set(_DYNAMIC_LIBRARY $ENV{pythonLocation}/bin/python${{ matrix.config.python_version }})
         execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}Python)
 
     - name: Test environment
@@ -257,7 +258,7 @@ jobs:
         ls /usr/local/Frameworks/Python.framework
         ls -l /usr/local/Frameworks/Python.framework
         ls -l /usr/local/Frameworks/Python.framework/Versions/
-        ls -l /usr/local/Frameworks/Python.framework/Versions/3.9
+        ls -l /usr/local/Frameworks/Python.framework/Versions/3.9/
 
     - name: Prepare Windows environment
       if: runner.os == 'Windows'
@@ -311,14 +312,13 @@ jobs:
 
         if ("${{ matrix.config.cc }}" STREQUAL "clang")
           list(APPEND OPTIONAL_ARGUMENTS -D LLVM_COVERAGE=OFF)
-          set(PYTHON_EXE python${{ matrix.config.python_version }})
+          set(PYTHON_EXE ${{ matrix.config.python_rpath }}Python)
         endif()
         if ("${{ matrix.config.os }}" STREQUAL "ubuntu-20.04")
           set(PYTHON_EXE python${{ matrix.config.python_version }})
           list(APPEND OPTIONAL_ARGUMENTS -D PACKAGE_ANY_LINUX=TRUE)
         endif()
 
-        #list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.libxml2_dir }})
 
         execute_process(
