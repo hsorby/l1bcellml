@@ -256,6 +256,8 @@ jobs:
         ls /usr/local/Frameworks/
         ls /usr/local/Frameworks/Python.framework
         ls -l /usr/local/Frameworks/Python.framework
+        ls -l /usr/localFrameworks/Python.framework/Versions/
+        ls -l /usr/localFrameworks/Python.framework/Versions/3.9
 
     - name: Prepare Windows environment
       if: runner.os == 'Windows'
@@ -309,7 +311,7 @@ jobs:
 
         if ("${{ matrix.config.cc }}" STREQUAL "clang")
           list(APPEND OPTIONAL_ARGUMENTS -D LLVM_COVERAGE=OFF)
-          set(PYTHON_EXE /usr/localFrameworks/Python.framework/Versions/${{ matrix.config.python_version }}/Python)
+          set(PYTHON_EXE python${{ matrix.config.python_version }})
         endif()
         if ("${{ matrix.config.os }}" STREQUAL "ubuntu-20.04")
           set(PYTHON_EXE python${{ matrix.config.python_version }})
