@@ -244,8 +244,8 @@ jobs:
       run: |
         # Prepare environment script.
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }}/bin)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }}/lib)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }}bin)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }}lib)
         execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}Python)
         execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}lib/libpython${{ matrix.config.python_rpath }}.dylib)
         #set(_DYNAMIC_LIBRARY $ENV{pythonLocation}/lib/libpython${{ matrix.config.python_version }}.dylib)
@@ -263,7 +263,7 @@ jobs:
         ls -l /usr/local/Frameworks/Python.framework
         ls -l /usr/local/Frameworks/Python.framework/Versions/
         ls -l /usr/local/Frameworks/Python.framework/Versions/${{ matrix.config.python_rpath }}
-        ls -l /usr/local/Frameworks/Python.framework/Versions/${{ matrix.config.python_rpath }}/lib/
+        ls -l /usr/local/Frameworks/Python.framework/Versions/${{ matrix.config.python_rpath }}lib/
 
     - name: Prepare Windows environment
       if: runner.os == 'Windows'
