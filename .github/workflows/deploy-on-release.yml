@@ -153,37 +153,25 @@ jobs:
         # twine upload --skip-existing wheelhouse/*
 
   os-binaries:
-    name: ${{ matrix.name }}
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: "Windows Server 2019 MSVC Py38"
-            deploy_libs: false
-            deploy_python: true
-            os: windows-2019
-            libxml2_dir: -DLibXml2_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/
-            zlib_dir: -DZLIB_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/ZLIB-1.2.3/CMake/
-            build_type: Release
-            cc: cl
-            css: cl
-            python_version: 3.8
+        config:
+        - {
+            name: "Windows Server 2019 MSVC Py38", deploy_libs: false, deploy_python: true,
+            os: windows-2019,
+            libxml2_dir: '-D "LibXml2_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/"',
+            zlib_dir: '-D "ZLIB_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/ZLIB-1.2.3/CMake/"',
+            build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-#        config:
-#        - {
-#            name: "Windows Server 2019 MSVC Py38", deploy_libs: false, deploy_python: true,
-#            os: windows-2019,
-#            libxml2_dir: '-D "LibXml2_DIR=../usr/local/libxml2-2.9.10/CMake/"',
-#            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB-1.2.3/CMake/"',
-#            build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
-#            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-#          }
+          }
 #        - {
 #            name: "Windows Server 2019 MSVC Py39", deploy_libs: false, deploy_python: true,
 #            os: windows-2019,
-#            libxml2_dir: '-D "LibXml2_DIR=../usr/local/libxml2-2.9.10/CMake/"',
-#            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB/ZLIB-1.2.3/CMake/"',
+#            libxml2_dir: '-D "LibXml2_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/"',
+#            zlib_dir: '-D "ZLIB_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/ZLIB/ZLIB-1.2.3/CMake/"',
 #            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.9
 #          }
 #        - {
@@ -224,10 +212,10 @@ jobs:
         path: libxml2
         ref: v2.9.10
 
-    - name: Set up Python ${{ matrix.python_version }}
+    - name: Set up Python ${{ matrix.config.python_version }}
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python_version }}
+        python-version: ${{ matrix.config.python_version }}
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -264,10 +252,10 @@ jobs:
       run: |
         # Prepare environment script.
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.python_rpath }})
-        execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.python_rpath }}Python)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }})
+        execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}Python)
         file(GLOB _DYNAMIC_LIBRARY $ENV{pythonLocation}/lib/libpython*.dylib)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.python_rpath }}Python)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}Python)
 
     - name: Prepare Windows environment
       if: ${{ runner.os == 'Windows' }}
@@ -275,7 +263,7 @@ jobs:
       run: |
         # Prepare environment script.
 
-        message(STATUS "this: ${{ matrix.libxml2_dir }}")
+        message(STATUS "this: ${{ matrix.config.libxml2_dir }}")
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         set(WIN_PATH)
         file(TO_CMAKE_PATH "$ENV{PATH}" ENV_PATH)
@@ -293,7 +281,7 @@ jobs:
         execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
           WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2" ${{ matrix.zlib_dir }}  -DCMAKE_INSTALL_PREFIX=$ENV{GITHUB_WORKSPACE}/usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
+        execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2" ${{ matrix.config.zlib_dir }}  -DCMAKE_INSTALL_PREFIX=$ENV{GITHUB_WORKSPACE}/usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
           RESULT_VARIABLE _RESULT OUTPUT_VARIABLE _OUTPUT ERROR_VARIABLE _ERROR)
         execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --config Release
           WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
@@ -306,8 +294,8 @@ jobs:
         # Configure library script
         set(OPTIONAL_ARGUMENTS)
 
-        set(ENV{CC} ${{ matrix.cc }})
-        set(ENV{CXX} ${{ matrix.cxx }})
+        set(ENV{CC} ${{ matrix.config.cc }})
+        set(ENV{CXX} ${{ matrix.config.cxx }})
 
         set(PYTHON_LOCATION $ENV{pythonLocation})
 
@@ -315,23 +303,21 @@ jobs:
         if ("${{ runner.os }}" STREQUAL "Windows")
           #set(ENV{PATH} "${ACTION_DIR}/swigwin-4.0.2;$ENV{PATH}")
           file(TO_CMAKE_PATH "${PYTHON_LOCATION}/python.exe" PYTHON_EXE)
-          file(TO_CMAKE_PATH "${{ matrix.libxml2_dir }}" LIBXML2_CONFIG_ARG)
-          message(STATUS "that: ${LIBXML2_CONFIG_ARG}")
         else()
           list(APPEND OPTIONAL_ARGUMENTS -D BUILD_TYPE=$ENV{BUILD_TYPE})
           list(APPEND OPTIONAL_ARGUMENTS -D COVERAGE=OFF)
           set(PYTHON_EXE ${PYTHON_LOCATION}/python)
         endif()
 
-        if ("${{ matrix.cc }}" STREQUAL "clang")
+        if ("${{ matrix.config.cc }}" STREQUAL "clang")
           list(APPEND OPTIONAL_ARGUMENTS -D LLVM_COVERAGE=OFF)
         endif()
-        if ("${{ matrix.os }}" STREQUAL "ubuntu-20.04")
+        if ("${{ matrix.config.os }}" STREQUAL "ubuntu-20.04")
           list(APPEND OPTIONAL_ARGUMENTS -D PACKAGE_ANY_LINUX=TRUE)
         endif()
 
-        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.swig_executable }})
-        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.libxml2_dir }})
+        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
+        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.libxml2_dir }})
 
         execute_process(
           COMMAND ${CMAKE_COMMAND}
@@ -445,7 +431,7 @@ jobs:
     - name: Upload Libraries
       id: deploy
       uses: actions/github-script@v3
-      if: ${{ matrix.deploy_libs }}
+      if: ${{ matrix.config.deploy_libs }}
       env:
         DATA: ${{ steps.package.outputs.files }}
       with:
@@ -456,7 +442,7 @@ jobs:
 
     - name: Create Python Package
       shell: bash
-      if: ${{ matrix.deploy_python }}
+      if: ${{ matrix.config.deploy_python }}
       run: |
         # Deploy Python
 
@@ -472,7 +458,7 @@ jobs:
 
     - name: Test Python Package
       shell: bash
-      if: ${{ matrix.deploy_python }}
+      if: ${{ matrix.config.deploy_python }}
       run: |
         # Test Python Package
 
@@ -485,9 +471,10 @@ jobs:
           whl=`ls build/src/bindings/python/dist/*.whl`
           source venv_test/bin/activate
           pip install delocate
-          delocate-wheel -w wheelhouse -v $whl
-          whl=`ls wheelhouse/*.whl`
-          delocate-listdeps --all $whl
+          # This really didn't work out well
+          #delocate-wheel -w wheelhouse -v $whl
+          #whl=`ls wheelhouse/*.whl`
+          #delocate-listdeps --all $whl
         else
           whl=`ls build/src/bindings/python/dist/*.whl`
           source venv_test/bin/activate
@@ -498,7 +485,7 @@ jobs:
 
     - name: Upload Python Package
       shell: bash
-      if: ${{ matrix.deploy_python }}
+      if: ${{ matrix.config.deploy_python }}
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
