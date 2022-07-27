@@ -162,16 +162,16 @@ jobs:
         - {
             name: "Windows Server 2019 MSVC Py38", deploy_libs: false, deploy_python: true,
             os: windows-2019,
-            libxml2_dir: '-D "LibXml2_DIR=${{github.env.GITHUB_WORKSPACE}}/usr/local/libxml2-2.9.10/CMake/"',
-            zlib_dir: '-D "ZLIB_DIR=${{github.env.GITHUB_WORKSPACE}}/usr/local/ZLIB-1.2.3/CMake/"',
+            libxml2_dir: '-D "LibXml2_DIR=../usr/local/libxml2-2.9.10/CMake/"',
+            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB-1.2.3/CMake/"',
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
             name: "Windows Server 2019 MSVC Py39", deploy_libs: false, deploy_python: true,
             os: windows-2019,
-            libxml2_dir: '-D "LibXml2_DIR=${GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/"',
-            zlib_dir: '-D "ZLIB_DIR=${GITHUB_WORKSPACE}/usr/local/ZLIB/ZLIB-1.2.3/CMake/"',
+            libxml2_dir: '-D "LibXml2_DIR=../usr/local/libxml2-2.9.10/CMake/"',
+            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB/ZLIB-1.2.3/CMake/"',
             build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.9
           }
         - {
@@ -255,13 +255,13 @@ jobs:
           endforeach()
           file(TO_NATIVE_PATH "${WIN_PATH}" WIN_PATH)
           set(ENV{PATH} "${WIN_PATH}")
-          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib" -B "${ACTION_DIR}/build-zlib" -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/usr/local)
+          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib" -B "${ACTION_DIR}/build-zlib" -DBUILD_SHARED_LIBS=FALSE -DCMAKE_INSTALL_PREFIX=$ENV{GITHUB_WORKSPACE}/usr/local)
           execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
           execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
 
-          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2" ${{ matrix.config.zlib_dir }}  -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
+          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2" ${{ matrix.config.zlib_dir }}  -DCMAKE_INSTALL_PREFIX=$ENV{GITHUB_WORKSPACE}/usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
             RESULT_VARIABLE _RESULT OUTPUT_VARIABLE _OUTPUT ERROR_VARIABLE _ERROR)
           execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
@@ -414,9 +414,13 @@ jobs:
 
     - name: Prepare environment for uploading assets
       shell: bash
+      env:
+        DATA: ${{ steps.package.outputs.files }}
       run: |
         cd $GITHUB_WORKSPACE/.github/scripts/
         npm install mime
+        echo $DATA
+        ls $DATA
 
     - name: Upload Libraries
       id: deploy
