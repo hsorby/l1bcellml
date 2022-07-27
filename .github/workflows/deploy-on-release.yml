@@ -251,6 +251,13 @@ jobs:
 #        endif()
 
     - name: Prepare ${{ matrix.os }} environment
+      if: ${{ runner.os == 'Linux' }}
+      shell: cmake -P {0}
+      run: |
+        # Prepare environment script.
+
+        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    - name: Prepare ${{ matrix.os }} environment
       if: ${{ runner.os == 'Windows' }}
       shell: cmake -P {0}
       run: |
