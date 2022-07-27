@@ -256,8 +256,8 @@ jobs:
         ls /usr/local/Frameworks/
         ls /usr/local/Frameworks/Python.framework
         ls -l /usr/local/Frameworks/Python.framework
-        ls -l /usr/localFrameworks/Python.framework/Versions/
-        ls -l /usr/localFrameworks/Python.framework/Versions/3.9
+        ls -l /usr/local/Frameworks/Python.framework/Versions/
+        ls -l /usr/local/Frameworks/Python.framework/Versions/3.9
 
     - name: Prepare Windows environment
       if: runner.os == 'Windows'
