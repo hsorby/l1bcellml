@@ -158,39 +158,51 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config:
-        - {
-            name: "Windows Server 2019 MSVC Py38", deploy_libs: false, deploy_python: true,
-            os: windows-2019,
-            libxml2_dir: '-D "LibXml2_DIR=../usr/local/libxml2-2.9.10/CMake/"',
-            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB-1.2.3/CMake/"',
-            build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-          }
-        - {
-            name: "Windows Server 2019 MSVC Py39", deploy_libs: false, deploy_python: true,
-            os: windows-2019,
-            libxml2_dir: '-D "LibXml2_DIR=../usr/local/libxml2-2.9.10/CMake/"',
-            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB/ZLIB-1.2.3/CMake/"',
-            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.9
-          }
-        - {
-            name: "Ubuntu 20.04 GCC Py38", deploy_libs: false, deploy_python: false,
-            os: ubuntu-20.04, container: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
-            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.8
-          }
-        - {
-            name: "macOS 12.4 Clang Py38", deploy_libs: false, deploy_python: true,
-            os: macos-12,
-            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
-            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
-          }
-        - {
-            name: "macOS 12.4 Clang Py39", deploy_libs: false, deploy_python: true,
-            os: macos-12,
-            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.9/",
-            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.9
-          }
+        include:
+          -name: "Windows Server 2019 MSVC Py38"
+           deploy_libs: false
+           deploy_python: true
+           os: windows-2019
+           libxml2_dir: -DLibXml2_DIR=${GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/
+           zlib_dir: -DZLIB_DIR=${GITHUB_WORKSPACE}/usr/local/ZLIB-1.2.3/CMake/
+           build_type: Release
+           cc: cl
+           css: cl
+           python_version: 3.8
+           environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+#        config:
+#        - {
+#            name: "Windows Server 2019 MSVC Py38", deploy_libs: false, deploy_python: true,
+#            os: windows-2019,
+#            libxml2_dir: '-D "LibXml2_DIR=../usr/local/libxml2-2.9.10/CMake/"',
+#            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB-1.2.3/CMake/"',
+#            build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
+#            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+#          }
+#        - {
+#            name: "Windows Server 2019 MSVC Py39", deploy_libs: false, deploy_python: true,
+#            os: windows-2019,
+#            libxml2_dir: '-D "LibXml2_DIR=../usr/local/libxml2-2.9.10/CMake/"',
+#            zlib_dir: '-D "ZLIB_DIR=../usr/local/ZLIB/ZLIB-1.2.3/CMake/"',
+#            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.9
+#          }
+#        - {
+#            name: "Ubuntu 20.04 GCC Py38", deploy_libs: false, deploy_python: false,
+#            os: ubuntu-20.04, container: ubuntu-latest, swig_executable: "-D SWIG_EXECUTABLE=/usr/local/bin/swig",
+#            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.8
+#          }
+#        - {
+#            name: "macOS 12.4 Clang Py38", deploy_libs: false, deploy_python: true,
+#            os: macos-12,
+#            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
+#            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
+#          }
+#        - {
+#            name: "macOS 12.4 Clang Py39", deploy_libs: false, deploy_python: true,
+#            os: macos-12,
+#            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.9/",
+#            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.9
+#          }
 
     steps:
     - name: Checkout libCellML
