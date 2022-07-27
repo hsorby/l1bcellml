@@ -331,7 +331,7 @@ jobs:
         endif()
 
         list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.swig_executable }})
-        list(APPEND OPTIONAL_ARGUMENTS ${LIBXML2_CONFIG_ARG})
+        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.libxml2_dir }})
 
         execute_process(
           COMMAND ${CMAKE_COMMAND}
