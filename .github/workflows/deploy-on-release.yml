@@ -163,8 +163,8 @@ jobs:
             deploy_libs: false
             deploy_python: true
             os: windows-2019
-            libxml2_dir: -DLibXml2_DIR=${GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/
-            zlib_dir: -DZLIB_DIR=${GITHUB_WORKSPACE}/usr/local/ZLIB-1.2.3/CMake/
+            libxml2_dir: -DLibXml2_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/
+            zlib_dir: -DZLIB_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/ZLIB-1.2.3/CMake/
             build_type: Release
             cc: cl
             css: cl
@@ -233,24 +233,25 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
       if: runner.os == 'Windows'
 
-    - name: Fetch swig
-      shell: cmake -P {0}
-      run: |
-        # Fetch swig script.
+#    - name: Fetch swig
+#      shell: cmake -P {0}
+#      run: |
+#        # Fetch swig script.
 
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        if ("${{ runner.os }}" STREQUAL "Windows")
-          set(swig_url "http://prdownloads.sourceforge.net/swig/swigwin-4.0.2.zip")
-          file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swigwin-4.0.2.zip" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swigwin-4.0.2.zip" WORKING_DIRECTORY "${ACTION_DIR}")
+#        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
+#        if ("${{ runner.os }}" STREQUAL "Windows")
+#          set(swig_url "http://prdownloads.sourceforge.net/swig/swigwin-4.0.2.zip")
+#          file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swigwin-4.0.2.zip" SHOW_PROGRESS)
+#          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swigwin-4.0.2.zip" WORKING_DIRECTORY "${ACTION_DIR}")
 
-        else()
-          set(swig_url "http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz")
-          file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swig-4.0.2.tar.gz")
-        endif()
+#        else()
+#          set(swig_url "http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz")
+#          file(DOWNLOAD "${swig_url}" "${ACTION_DIR}/swig-4.0.2.tar.gz" SHOW_PROGRESS)
+#          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf "${ACTION_DIR}/swig-4.0.2.tar.gz")
+#        endif()
 
-    - name: Prepare environment
+    - name: Prepare ${{ matrix.os }} environment
+      if: ${{ runner.os == "Windows" }}
       shell: cmake -P {0}
       run: |
         # Prepare environment script.
