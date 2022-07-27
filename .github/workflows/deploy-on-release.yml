@@ -213,7 +213,7 @@ jobs:
         ref: v2.9.10
 
     - name: Set up Python ${{ matrix.config.python_version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.config.python_version }}
 
