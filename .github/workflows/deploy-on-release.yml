@@ -263,6 +263,7 @@ jobs:
       run: |
         # Prepare environment script.
 
+        message(STATUS "this: ${{ matrix.libxml2_dir }}")
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(WIN_PATH)
