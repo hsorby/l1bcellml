@@ -153,8 +153,8 @@ jobs:
         # twine upload --skip-existing wheelhouse/*
 
   os-binaries:
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -192,13 +192,13 @@ jobs:
 #            build_type: "Release", cc: "gcc", cxx: "g++", python_version: 3.8
 #          }
 #        - {
-#            name: "macOS 12.4 Clang Py38", deploy_libs: false, deploy_python: true,
+#            name: "macOS 12 Clang Py38", deploy_libs: false, deploy_python: true,
 #            os: macos-12,
 #            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.8/",
 #            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.8
 #          }
 #        - {
-#            name: "macOS 12.4 Clang Py39", deploy_libs: false, deploy_python: true,
+#            name: "macOS 12 Clang Py39", deploy_libs: false, deploy_python: true,
 #            os: macos-12,
 #            python_rpath: "/usr/local/opt/python/Frameworks/Python.framework/Versions/3.9/",
 #            build_type: "Release", cc: "clang", cxx: "clang++", python_version: 3.9
@@ -224,10 +224,10 @@ jobs:
         path: libxml2
         ref: v2.9.10
 
-    - name: Set up Python ${{ matrix.config.python_version }}
+    - name: Set up Python ${{ matrix.python_version }}
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.config.python_version }}
+        python-version: ${{ matrix.python_version }}
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -273,7 +273,7 @@ jobs:
           execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
 
-          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2" ${{ matrix.config.zlib_dir }}  -DCMAKE_INSTALL_PREFIX=../usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
+          execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2" ${{ matrix.zlib_dir }}  -DCMAKE_INSTALL_PREFIX=../usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
             RESULT_VARIABLE _RESULT OUTPUT_VARIABLE _OUTPUT ERROR_VARIABLE _ERROR)
           execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --config Release
             WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
@@ -286,10 +286,10 @@ jobs:
         endif()
 
         if ("${{ runner.os }}" STREQUAL "macOS")
-          execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }})
-          execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}Python)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.python_rpath }})
+          execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.python_rpath }}Python)
           file(GLOB _DYNAMIC_LIBRARY $ENV{pythonLocation}/lib/libpython*.dylib)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}Python)
+          execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.python_rpath }}Python)
         endif()
 
 
@@ -299,8 +299,8 @@ jobs:
         # Configure library script
         set(OPTIONAL_ARGUMENTS)
 
-        set(ENV{CC} ${{ matrix.config.cc }})
-        set(ENV{CXX} ${{ matrix.config.cxx }})
+        set(ENV{CC} ${{ matrix.cc }})
+        set(ENV{CXX} ${{ matrix.cxx }})
 
         set(PYTHON_LOCATION $ENV{pythonLocation})
 
@@ -314,15 +314,15 @@ jobs:
           set(PYTHON_EXE ${PYTHON_LOCATION}/python)
         endif()
 
-        if ("${{ matrix.config.cc }}" STREQUAL "clang")
+        if ("${{ matrix.cc }}" STREQUAL "clang")
           list(APPEND OPTIONAL_ARGUMENTS -D LLVM_COVERAGE=OFF)
         endif()
-        if ("${{ matrix.config.os }}" STREQUAL "ubuntu-latest")
+        if ("${{ matrix.os }}" STREQUAL "ubuntu-20.04")
           list(APPEND OPTIONAL_ARGUMENTS -D PACKAGE_ANY_LINUX=TRUE)
         endif()
 
-        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.swig_executable }})
-        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.libxml2_dir }})
+        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.swig_executable }})
+        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.libxml2_dir }})
 
         execute_process(
           COMMAND ${CMAKE_COMMAND}
@@ -364,7 +364,7 @@ jobs:
 
         if ("${{ runner.os }}" STREQUAL "macOS")
           # Have to manipulate the rpath for the Python macOS binaries in the libcellml Python package.
-          set(DESIRED_RPATHS "${{ matrix.config.python_rpath }}")
+          set(DESIRED_RPATHS "${{ matrix.python_rpath }}")
           file(GLOB _TARGET_BINARIES ${ACTION_DIR}/build/src/bindings/python/libcellml/_*.so)
           foreach(_TARGET_BINARY ${_TARGET_BINARIES})
             foreach(DESIRED_RPATH ${DESIRED_RPATHS})
@@ -436,7 +436,7 @@ jobs:
     - name: Upload Libraries
       id: deploy
       uses: actions/github-script@v3
-      if: ${{ matrix.config.deploy_libs }}
+      if: ${{ matrix.deploy_libs }}
       env:
         DATA: ${{ steps.package.outputs.files }}
       with:
@@ -447,7 +447,7 @@ jobs:
 
     - name: Create Python Package
       shell: bash
-      if: ${{ matrix.config.deploy_python }}
+      if: ${{ matrix.deploy_python }}
       run: |
         # Deploy Python
 
@@ -463,7 +463,7 @@ jobs:
 
     - name: Test Python Package
       shell: bash
-      if: ${{ matrix.config.deploy_python }}
+      if: ${{ matrix.deploy_python }}
       run: |
         # Test Python Package
 
@@ -489,7 +489,7 @@ jobs:
 
     - name: Upload Python Package
       shell: bash
-      if: ${{ matrix.config.deploy_python }}
+      if: ${{ matrix.deploy_python }}
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
