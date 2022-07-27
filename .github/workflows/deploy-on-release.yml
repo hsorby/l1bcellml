@@ -262,8 +262,8 @@ jobs:
         ls /usr/local/Frameworks/Python.framework
         ls -l /usr/local/Frameworks/Python.framework
         ls -l /usr/local/Frameworks/Python.framework/Versions/
-        ls -l /usr/local/Frameworks/Python.framework/Versions/${{ matrix.config.python_rpath }}
-        ls -l /usr/local/Frameworks/Python.framework/Versions/${{ matrix.config.python_rpath }}lib/
+        ls -l /usr/local/Frameworks/Python.framework/Versions/${{ matrix.config.python_version }}
+        ls -l /usr/local/Frameworks/Python.framework/Versions/${{ matrix.config.python_version }}lib/
 
     - name: Prepare Windows environment
       if: runner.os == 'Windows'
