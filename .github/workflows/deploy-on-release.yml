@@ -8,7 +8,7 @@ on:
 
 env:
   BUILD_TYPE: Release
-  MACOSX_DEPLOYMENT_TARGET: 10.14
+  MACOSX_DEPLOYMENT_TARGET: 10.15
 
 jobs:
   many-linux-wheels:
@@ -263,7 +263,6 @@ jobs:
       run: |
         # Prepare environment script.
 
-        message(STATUS "this: ${{ matrix.config.libxml2_dir }}")
         set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
         set(WIN_PATH)
         file(TO_CMAKE_PATH "$ENV{PATH}" ENV_PATH)
@@ -306,13 +305,14 @@ jobs:
         else()
           list(APPEND OPTIONAL_ARGUMENTS -D BUILD_TYPE=$ENV{BUILD_TYPE})
           list(APPEND OPTIONAL_ARGUMENTS -D COVERAGE=OFF)
-          set(PYTHON_EXE ${PYTHON_LOCATION}/python)
         endif()
 
         if ("${{ matrix.config.cc }}" STREQUAL "clang")
           list(APPEND OPTIONAL_ARGUMENTS -D LLVM_COVERAGE=OFF)
+          set(PYTHON_EXE /usr/localFrameworks/Python.framework/Versions/${{ matrix.config.python_version }}/Python)
         endif()
         if ("${{ matrix.config.os }}" STREQUAL "ubuntu-20.04")
+          set(PYTHON_EXE ${PYTHON_LOCATION}/python)
           list(APPEND OPTIONAL_ARGUMENTS -D PACKAGE_ANY_LINUX=TRUE)
         endif()
 
