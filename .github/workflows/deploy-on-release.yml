@@ -244,15 +244,15 @@ jobs:
       run: |
         # Prepare environment script.
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }}bin)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }}lib)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }})
+        #execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${{ matrix.config.python_rpath }}lib)
         execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}Python)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}lib/libpython${{ matrix.config.python_rpath }}.dylib)
+        #execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${{ matrix.config.python_rpath }}lib/libpython${{ matrix.config.python_rpath }}.dylib)
         #set(_DYNAMIC_LIBRARY $ENV{pythonLocation}/lib/libpython${{ matrix.config.python_version }}.dylib)
-        set(_PYTHON_EXE $ENV{pythonLocation}/bin/python${{ matrix.config.python_version }})
-        set(_DYNAMIC_LIBRARY $ENV{pythonLocation}/lib/libpython${{ matrix.config.python_version }}.dylib)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_PYTHON_EXE} ${{ matrix.config.python_rpath }}Python)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}lib/libpython${{ matrix.config.python_version }}.dylib)
+        #set(_PYTHON_EXE $ENV{pythonLocation}/bin/python${{ matrix.config.python_version }})
+        set(_DYNAMIC_LIBRARY $ENV{pythonLocation}/Python)
+        #execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_PYTHON_EXE} ${{ matrix.config.python_rpath }}Python)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${_DYNAMIC_LIBRARY} ${{ matrix.config.python_rpath }}Python)
 
     - name: Test environment
       if: runner.os == 'macOS'

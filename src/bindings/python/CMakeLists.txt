@@ -126,8 +126,12 @@ foreach(SWIG_INTERFACE_SRC ${SWIG_INTERFACE_SRCS})
       COMPILE_OPTIONS "-Wno-deprecated-declarations"
     )
   endif()
+  message(STATUS "========")
+  message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
+  message(STATUS "Python_LIBRARY_DIRS: ${Python_LIBRARY_DIRS}")
+  message(STATUS "Python_RUNTIME_LIBRARY_DIRS: ${Python_RUNTIME_LIBRARY_DIRS}")
   if(APPLE)
-    set(RPATH_ORIGIN "@loader_path/.")
+    set(RPATH_ORIGIN "@loader_path/.;/usr/local/Frameworks/Python.framework/3.8")
   elseif(UNIX)
     set(RPATH_ORIGIN "\$ORIGIN")
   else()
@@ -136,7 +140,7 @@ foreach(SWIG_INTERFACE_SRC ${SWIG_INTERFACE_SRCS})
   set_target_properties(${MODULE_TARGET} PROPERTIES
     CXX_VISIBILITY_PRESET hidden
     BUILD_WITH_INSTALL_RPATH TRUE
-    INSTALL_RPATH ${RPATH_ORIGIN}
+    INSTALL_RPATH "${RPATH_ORIGIN}"
     FOLDER bindings/python
     RUNTIME_OUTPUT_DIRECTORY ${LIBCELLML_PYTHON_PACKAGE_DIR}
     LIBRARY_OUTPUT_DIRECTORY ${LIBCELLML_PYTHON_PACKAGE_DIR}
