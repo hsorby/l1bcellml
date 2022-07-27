@@ -460,6 +460,13 @@ jobs:
         if [ ${{ runner.os }} = Windows ]; then
           whl=`ls build/src/bindings/python/Release/dist/*.whl`
           source venv_test/Scripts/activate
+        elif [ ${{ runner.os }} = macOS ]; then
+          whl=`ls build/src/bindings/python/dist/*.whl`
+          source venv_test/bin/activate
+          pip install delocate
+          delocate-wheel -w wheelhouse -v $whl
+          whl=`ls wheelhouse/*.whl`
+          delocate-listdeps --all $whl
         else
           whl=`ls build/src/bindings/python/dist/*.whl`
           source venv_test/bin/activate
