@@ -213,6 +213,7 @@ jobs:
         ref: v2.9.10
 
     - name: Set up Python ${{ matrix.config.python_version }}
+      if: runner.os != 'macOS'
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.config.python_version }}
@@ -259,6 +260,7 @@ jobs:
       shell: bash
       run: |
         brew info python
+        brew install python@${{ matrix.config.python_version }}
         ls /usr/local/Frameworks/
         ls /usr/local/Frameworks/Python.framework
         ls -l /usr/local/Frameworks/Python.framework
