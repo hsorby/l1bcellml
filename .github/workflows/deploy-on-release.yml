@@ -420,7 +420,6 @@ jobs:
         cd $GITHUB_WORKSPACE/.github/scripts/
         npm install mime
         echo $DATA
-        ls $DATA
 
     - name: Upload Libraries
       id: deploy
