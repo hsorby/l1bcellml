@@ -162,8 +162,8 @@ jobs:
         - {
             name: "Windows Server 2019 MSVC Py38", deploy_libs: false, deploy_python: true,
             os: windows-2019,
-            libxml2_dir: '-D "LibXml2_DIR=${{GITHUB_WORKSPACE}}/usr/local/libxml2-2.9.10/CMake/"',
-            zlib_dir: '-D "ZLIB_DIR=${{GITHUB_WORKSPACE}}/usr/local/ZLIB-1.2.3/CMake/"',
+            libxml2_dir: '-D "LibXml2_DIR=${{github.env.GITHUB_WORKSPACE}}/usr/local/libxml2-2.9.10/CMake/"',
+            zlib_dir: '-D "ZLIB_DIR=${{github.env.GITHUB_WORKSPACE}}/usr/local/ZLIB-1.2.3/CMake/"',
             build_type: "Release", cc: "cl", cxx: "cl", python_version: 3.8,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
