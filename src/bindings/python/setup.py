@@ -15,6 +15,6 @@ setup(
     cmake_source_dir="../../../",
     cmake_install_target="install-wheel",
     cmake_args=["-DUNIT_TESTS=OFF", "-DCOVERAGE=OFF", "-DMEMCHECK=OFF", "-DLLVM_COVERAGE=OFF"],
-    cmake_install_dir="libcellmlXXXXXX",
+    #cmake_install_dir="libcellmlXXXXXX",
     exclude_package_data={"": ["bin/*", "cmake/*", "include/*", "lib/*"]},
 )

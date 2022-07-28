@@ -36,6 +36,7 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse
         working-directory: src/bindings/python
         env:
+          CIBW_BUILD_VERBOSITY: 1
           CIBW_ARCHS: auto64
           CIBW_BUILD: cp39-*
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel
