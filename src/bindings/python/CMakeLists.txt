@@ -177,3 +177,29 @@ add_custom_command(TARGET python_bindings POST_BUILD
 
 # Add new paths to make clean
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${LIBCELLML_PYTHON_PACKAGE_DIR} ${SWIG_GENERATED_INTERMEDIARIES_FILES_DIR})
+
+if(SKBUILD)
+  message(STATUS "^^^^^ Building with skbuild ^^^^^")
+  install(TARGETS ${SWIG_PYTHON_BINDINGS_TARGETS}
+    COMPONENT wheel
+    DESTINATION libcellml
+    EXCLUDE_FROM_ALL
+  )
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
+    COMPONENT wheel
+    EXCLUDE_FROM_ALL
+    DESTINATION libcellml
+  ) 
+  install(DIRECTORY ${_SWIG_GENERATED_PYTHON_FILES_DIR}/
+    COMPONENT wheel
+    EXCLUDE_FROM_ALL
+    DESTINATION libcellml
+  )
+  add_custom_target(install-wheel
+    ${CMAKE_COMMAND}
+    -DCMAKE_INSTALL_COMPONENT=wheel
+    -P "${PROJECT_BINARY_DIR}/cmake_install.cmake"
+    DEPENDS ${SWIG_PYTHON_BINDINGS_TARGETS}
+  )
+endif()
+
