@@ -19,7 +19,7 @@ jobs:
           - name: 'Linux wheels'
             os: ubuntu-20.04
           - name: 'macOS wheels'
-            os: macos-11
+            os: macos-12
     steps:
       - name: Check out libCellML
         uses: actions/checkout@v2
@@ -40,11 +40,10 @@ jobs:
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_BUILD: cp39-*
+          CIBW_TEST_SKIP: *_arm64
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-          CIBW_ENVIRONMENT_MACOS: >
-            _PYTHON_HOST_PLATFORM=macosx-10.15-x86_64
-          MACOSX_DEPLOYMENT_TARGET: 10.15
+          MACOSX_DEPLOYMENT_TARGET: 11
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
