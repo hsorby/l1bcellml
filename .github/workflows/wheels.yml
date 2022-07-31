@@ -43,6 +43,7 @@ jobs:
           CIBW_TEST_SKIP: "*_arm64"
           CIBW_BEFORE_BUILD_LINUX: ls && ls .. && ls ../.. && ls ../../..
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel
+          CIBW_BEFORE_ALL_WINDOWS: cmake -S wheel -B build-wheel -G Ninja && cd build-wheel && ninja
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           MACOSX_DEPLOYMENT_TARGET: 11
       - name: Upload artifacts
