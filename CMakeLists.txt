@@ -21,6 +21,9 @@ set(PROJECT_DEVELOPER_VERSION -dev.21)
 project(${PROJECT_NAME} VERSION ${_PROJECT_VERSION} LANGUAGES CXX)
 
 # Set policies that affect the build.
+if(POLICY CMP0056)
+  cmake_policy(SET CMP0056 NEW)
+endif()
 if(POLICY CMP0063)
   cmake_policy(SET CMP0063 NEW)
 endif()
