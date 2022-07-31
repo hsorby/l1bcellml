@@ -47,7 +47,7 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: >
             _PYTHON_HOST_PLATFORM=macosx-11-x86_64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-          MACOSX_DEPLOYMENT_TARGET: 11
+          MACOSX_DEPLOYMENT_TARGET: 10.15
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
