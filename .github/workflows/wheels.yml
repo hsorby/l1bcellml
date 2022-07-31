@@ -44,10 +44,10 @@ jobs:
           CIBW_BEFORE_BUILD_LINUX: ls && ls .. && ls ../.. && ls ../../..
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel
           CIBW_BEFORE_ALL_WINDOWS: cmake -S wheel -B build-wheel -G Ninja && cd build-wheel && ninja
-          CIBW_ENVIRONMENT_MACOS: >
-            _PYTHON_HOST_PLATFORM=macosx-11-x86_64
+#          CIBW_ENVIRONMENT_MACOS: >
+#            _PYTHON_HOST_PLATFORM=macosx-11-x86_64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-          MACOSX_DEPLOYMENT_TARGET: 10.15
+          MACOSX_DEPLOYMENT_TARGET: 11.0
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
