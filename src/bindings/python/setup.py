@@ -1,3 +1,4 @@
+import os
 import platform
 
 from skbuild import setup
@@ -8,9 +9,11 @@ if platform.system() == "Windows":
   cmake_args.append("-DLibXml2_DIR=C:/Program Files (x86)/libxml2/libxml2-2.9.10/CMake/")
 
 
+tag = os.environ.get("LIBCELLML_VERSION_TAG", "v0.0.0")
+
 setup(
     name="libcellml",
-    version="0.1.0",
+    version=tag[1:],
     description="libCellML is a library for manipulating CellML models.",
     author="libCellML contributors",
     url="https://libcellml.org",
