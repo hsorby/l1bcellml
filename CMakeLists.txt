@@ -46,6 +46,7 @@ include(common)
 include(environmentchecks)
 include(macros)
 
+message(STATUS "Python_EXECUTABLE: ${Python_EXECUTABLE}")
 # Use the following variables when configuring the build from the command line to
 # set the corresponding cache variables.
 
