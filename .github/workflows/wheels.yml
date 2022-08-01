@@ -50,4 +50,4 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          path: ./src/bindings/python/wheelhouse/*.whl
+          path: ./wheelhouse/*.whl
