@@ -4,7 +4,7 @@ import sys
 
 from skbuild import setup
 
-#sys.path.insert(1, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(1, os.path.abspath(os.path.dirname(__file__)))
 # Try to patch the linux container.
 import patch_cibuildwheel_linux
 
