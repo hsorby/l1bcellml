@@ -8,20 +8,20 @@ on:
 
 jobs:
   wheels:
-    name: ${{ runner.os }} ${{ matrix.py }} wheels
+    name: ${{ matrix.name }} ${{ matrix.py }} wheels
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [macos-12, ubuntu-20.04, windows-2019]
         py: [cp37-*, cp38-*, cp39-*, cp310-*]
-#        include:
-#          - name: 'Windows wheels'
-#            os: windows-2019
-#          - name: 'Linux wheels'
-#            os: ubuntu-20.04
-#          - name: 'macOS wheels'
-#            os: macos-12
+        include:
+          - name: 'Windows'
+            os: windows-2019
+          - name: 'Linux'
+            os: ubuntu-20.04
+          - name: 'macOS'
+            os: macos-12
     steps:
       - name: Check out libCellML
         uses: actions/checkout@v2
