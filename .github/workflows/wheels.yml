@@ -14,12 +14,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: 'Windows wheels'
-            os: windows-2019
+#          - name: 'Windows wheels'
+#            os: windows-2019
           - name: 'Linux wheels'
             os: ubuntu-20.04
-          - name: 'macOS wheels'
-            os: macos-12
+#          - name: 'macOS wheels'
+#            os: macos-12
     steps:
       - name: Check out libCellML
         uses: actions/checkout@v2
@@ -36,7 +36,10 @@ jobs:
         run: |
           ls
           echo "ooooooooooooo"
-          python -c "import cibuildwheel;print(cibuildwheel.__file__)"
+          echo ${{ runner.os }}
+          target=`python -c "import cibuildwheel;print(cibuildwheel.__file__.replace('__init__', 'linux'))"`
+          curl -L https://gist.githubusercontent.com/hsorby/a5916204d59abeb7f214e5383434daf1/raw > patched_cibuildwheel_linux.py
+          cp patched_cibuildwheel_linux.py $target
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         working-directory: src/bindings/python
