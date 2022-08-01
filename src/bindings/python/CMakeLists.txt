@@ -112,7 +112,11 @@ foreach(SWIG_INTERFACE_SRC ${SWIG_INTERFACE_SRCS})
   if(NOT POLICY CMP0078)
     set(MODULE_TARGET ${SWIG_MODULE_${MODULE_TARGET}_REAL_NAME})
   endif()
-  target_link_libraries(${MODULE_TARGET} PRIVATE cellml Python::Python)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+    target_link_libraries(${MODULE_TARGET} PRIVATE cellml Python::Module)
+  else()
+    target_link_libraries(${MODULE_TARGET} PRIVATE cellml Python::Python)
+  endif()
   # Disable use of Debug Python libraries when not present on Windows
   # See http://stackoverflow.com/questions/11311877/creating-a-dll-from-a-wrapped-cpp-file-with-swig
   if(WIN32)

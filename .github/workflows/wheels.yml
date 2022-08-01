@@ -32,32 +32,21 @@ jobs:
           python-version: '3.x'
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.8.1
-      - name: Patch cibuildwheel
-        if: runner.os == 'NotLinux'
-        run: |
-          ls
-          echo "ooooooooooooo"
-          echo ${{ runner.os }}
-          target=`python -c "import cibuildwheel;print(cibuildwheel.__file__.replace('__init__', 'linux'))"`
-          gist_hash=a5916204d59abeb7f214e5383434daf1
-          curl -L https://gist.githubusercontent.com/hsorby/$gist_hash/raw/patch_cibuildwheel_linux.py > patched_cibuildwheel_linux.py
-          cp patched_cibuildwheel_linux.py $target
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse src/bindings/python/
-#        working-directory: src/bindings/python
         env:
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_BUILD: cp39-*
           CIBW_TEST_SKIP: "*_arm64"
-          CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel
+          CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel || (apk add libxml2-dev && rm /usr/lib/cmake/libxml2/libxml2-config.cmake)
           CIBW_BEFORE_ALL_WINDOWS: cmake -S wheel -B build-wheel -G Ninja && cd build-wheel && ninja
           CIBW_BEFORE_BUILD_LINUX: which python && which pip
           CIBW_ENVIRONMENT_MACOS: >
             MACOSX_DEPLOYMENT_TARGET=11.0
-#            _PYTHON_HOST_PLATFORM=macosx-11-x86_64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
