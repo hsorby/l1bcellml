@@ -1,10 +1,12 @@
-
+import os
 import platform
+import sys
 
 from skbuild import setup
 
+#sys.path.insert(1, os.path.abspath(os.path.dirname(__file__)))
 # Try to patch the linux container.
-from . import patch_cibuildwheel_linux
+import patch_cibuildwheel_linux
 
 cmake_args = ["-DUNIT_TESTS=OFF", "-DCOVERAGE=OFF", "-DMEMCHECK=OFF", "-DLLVM_COVERAGE=OFF"]
 
