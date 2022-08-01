@@ -4,7 +4,7 @@ import platform
 from skbuild import setup
 
 # Try to patch the linux container.
-import .patch_cibuildwheel_linux
+from . import patch_cibuildwheel_linux
 
 cmake_args = ["-DUNIT_TESTS=OFF", "-DCOVERAGE=OFF", "-DMEMCHECK=OFF", "-DLLVM_COVERAGE=OFF"]
 
