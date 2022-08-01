@@ -14,12 +14,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - name: 'Windows wheels'
-#            os: windows-2019
+          - name: 'Windows wheels'
+            os: windows-2019
           - name: 'Linux wheels'
             os: ubuntu-20.04
-#          - name: 'macOS wheels'
-#            os: macos-12
+          - name: 'macOS wheels'
+            os: macos-12
     steps:
       - name: Check out libCellML
         uses: actions/checkout@v2
