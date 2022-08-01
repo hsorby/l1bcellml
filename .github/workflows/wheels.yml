@@ -43,7 +43,7 @@ jobs:
           curl -L https://gist.githubusercontent.com/hsorby/$gist_hash/raw/patch_cibuildwheel_linux.py > patched_cibuildwheel_linux.py
           cp patched_cibuildwheel_linux.py $target
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse --config-file "{package}/src/bindings/python/pyproject.toml"
+        run: python -m cibuildwheel --output-dir wheelhouse --config-file "{package}/src/bindings/python"
 #        working-directory: src/bindings/python
         env:
           CIBW_BUILD_VERBOSITY: 1
