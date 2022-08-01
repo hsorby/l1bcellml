@@ -53,6 +53,7 @@ jobs:
           CIBW_ENVIRONMENT: LIBCELLML_VERSION_TAG=v0.2.0-dev.21
           CIBW_ENVIRONMENT_MACOS: >
             MACOSX_DEPLOYMENT_TARGET=11.0
+            LIBCELLML_VERSION_TAG=v0.2.0-dev.21
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
       - name: Upload artifacts
