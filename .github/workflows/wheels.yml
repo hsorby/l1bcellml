@@ -36,7 +36,7 @@ jobs:
         run: |
           ls
           echo "ooooooooooooo"
-          python -m "import cibuildwheel;print(cibuildwheel.__file__)"
+          python -c "import cibuildwheel;print(cibuildwheel.__file__)"
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         working-directory: src/bindings/python
