@@ -22,6 +22,11 @@ jobs:
             os: ubuntu-20.04
           - name: 'macOS'
             os: macos-12
+        exclude:
+          - os: macos-12
+            py: cp37-*
+          - os: macos-12
+            py: cp38-*
     steps:
       - name: Check out libCellML
         uses: actions/checkout@v2
