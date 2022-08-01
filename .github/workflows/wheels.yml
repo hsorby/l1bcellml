@@ -8,18 +8,20 @@ on:
 
 jobs:
   wheels:
-    name: ${{ matrix.name }}
+    name: ${{ runner.os }} ${{ matrix.py }} wheels
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: 'Windows wheels'
-            os: windows-2019
-          - name: 'Linux wheels'
-            os: ubuntu-20.04
-          - name: 'macOS wheels'
-            os: macos-12
+        os: [macos-12, ubuntu-20.04, windows-2019]
+        py: [cp37-*, cp38-*, cp39-*, cp310-*]
+#        include:
+#          - name: 'Windows wheels'
+#            os: windows-2019
+#          - name: 'Linux wheels'
+#            os: ubuntu-20.04
+#          - name: 'macOS wheels'
+#            os: macos-12
     steps:
       - name: Check out libCellML
         uses: actions/checkout@v2
@@ -35,10 +37,10 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse src/bindings/python/
         env:
-          CIBW_BUILD_VERBOSITY: 1
+#          CIBW_BUILD_VERBOSITY: 1
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_BUILD: cp39-*
+          CIBW_BUILD: ${{ matrix.py }}
           CIBW_TEST_SKIP: "*_arm64"
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel || (apk add libxml2-dev && rm /usr/lib/cmake/libxml2/libxml2-config.cmake)
           CIBW_BEFORE_ALL_WINDOWS: cd src/bindings/python && cmake -S wheel_dependencies -B build-wheel_dependencies -G Ninja && cd build-wheel_dependencies && ninja
