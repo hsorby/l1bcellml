@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-12, ubuntu-20.04, windows-2019]
-        py: [cp37-*, cp38-*, cp39-*, cp310-*]
+        py: [3.7, 3.8, 3.9, 3.10]
         include:
           - name: 'Windows'
             os: windows-2019
@@ -24,12 +24,20 @@ jobs:
             os: macos-12
         exclude:
           - os: macos-12
-            py: cp37-*
+            py: 3.7
           - os: macos-12
-            py: cp38-*
+            py: 3.8
     steps:
       - name: Check out libCellML
         uses: actions/checkout@v2
+      - name: Setup for cibuildwheel
+        id: setup
+        shell: bash
+        run: |
+          mkdir src/bindings/python/libcellml
+          v=${{ matrix.py }}
+          echo "BUILD=cp${v/./}-*"
+          echo ::set-output name=BUILD::cp${v/./}-*
       - name: Configure MSVC
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -45,7 +53,7 @@ jobs:
 #          CIBW_BUILD_VERBOSITY: 1
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_BUILD: ${{ matrix.py }}
+          CIBW_BUILD: ${{ steps.setup.outputs.build }}
           CIBW_TEST_SKIP: "*_arm64"
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel || (apk add libxml2-dev && rm /usr/lib/cmake/libxml2/libxml2-config.cmake)
           CIBW_BEFORE_ALL_WINDOWS: cd src/bindings/python && cmake -S wheel_dependencies -B build-wheel_dependencies -G Ninja && cd build-wheel_dependencies && ninja
