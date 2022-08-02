@@ -60,7 +60,7 @@ message(STATUS "Python_INTERPRETER_ID: ${Python_INTERPRETER_ID}")
   find_program(LLVM_COV_EXE NAMES ${PREFERRED_LLVM_COV_NAMES} llvm-cov HINTS ${LLVM_BIN_DIR} /Library/Developer/CommandLineTools/usr/bin/)
   find_program(LLVM_PROFDATA_EXE NAMES ${PREFERRED_LLVM_PROFDATA_NAMES} llvm-profdata HINTS ${LLVM_BIN_DIR} /Library/Developer/CommandLineTools/usr/bin/)
   find_program(VALGRIND_EXE NAMES ${PREFERRED_VALGRIND_NAMES} valgrind)
-
+  find_program(INSTALL_NAME_TOOL_EXE NAMES ${PREFERRED_INSTALL_NAME_TOOL_NAMES} install_name_tool)
 
   if(Python_Interpreter_FOUND)
     if(NOT DEFINED TEST_COVERAGE_RESULT)
@@ -107,6 +107,7 @@ message(STATUS "Python_INTERPRETER_ID: ${Python_INTERPRETER_ID}")
     GCC_COVERAGE_COMPILER_FLAGS_OK
     GCOV_EXE
     GIT_EXE
+    INSTALL_NAME_TOOL_EXE
     LLVM_COV_EXE
     LLVM_COVERAGE_COMPILER_FLAGS_OK
     LLVM_PROFDATA_EXE
@@ -222,6 +223,10 @@ endif()
 
 if(LLVM_PROFDATA_EXE AND LLVM_COV_EXE AND FIND_EXE AND LLVM_COVERAGE_COMPILER_FLAGS_OK)
   set(LLVM_COVERAGE_TESTING_AVAILABLE TRUE CACHE INTERNAL "Executables required to run the llvm coverage testing are available.")
+endif()
+
+if(INSTALL_NAME_TOOL_EXE)
+  set(INSTALL_NAME_TOOL_AVAILABLE TRUE CACHE INTERNAL "Executable required for manipulating dynamic library paths is available.")
 endif()
 
 if(HAVE_COVERAGE)

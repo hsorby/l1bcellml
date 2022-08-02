@@ -179,7 +179,26 @@ add_custom_command(TARGET python_bindings POST_BUILD
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${LIBCELLML_PYTHON_PACKAGE_DIR} ${SWIG_GENERATED_INTERMEDIARIES_FILES_DIR})
 
 if(SKBUILD)
-  message(STATUS "^^^^^ Building with skbuild ^^^^^")
+  if(INSTALL_NAME_TOOL_AVAILABLE)
+    set(LIST_SEPARATOR "<sep>")
+    set(_ARGS)
+    foreach(_SOME ${SWIG_PYTHON_BINDINGS_TARGETS})
+      list(APPEND _ARGS $<TARGET_FILE:${_SOME}>)
+    endforeach()
+
+    set(_ARGS_STR "${_ARGS}")
+    string(REPLACE ";" "${LIST_SEPARATOR}" _ARGS_STR "${_ARGS_STR}")
+    add_custom_command(TARGET python_bindings POST_BUILD
+      COMMAND ${CMAKE_COMMAND}
+        -DSHARED_OBJECT_MODULES="${_ARGS_STR}"
+        -DLIST_SEPARATOR="${LIST_SEPARATOR}"
+        -DINSTALL_NAME_TOOL_EXE="${INSTALL_NAME_TOOL_EXE}"
+        -DPython_VERSION_MAJOR="${Python_VERSION_MAJOR}"
+        -DPython_VERSION_MINOR="${Python_VERSION_MINOR}"
+        -P ${PROJECT_SOURCE_DIR}/cmake/add_rpath_for_python.cmake
+    )
+  endif()
+
   install(TARGETS ${SWIG_PYTHON_BINDINGS_TARGETS}
     COMPONENT wheel
     DESTINATION libcellml
