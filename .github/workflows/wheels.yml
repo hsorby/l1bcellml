@@ -36,11 +36,18 @@ jobs:
         run: |
           mkdir src/bindings/python/libcellml
           v=${{ matrix.py }}
-          echo "Setting tag as: ${GITHUB_REF#refs/tags/}"
+          echo "Setting tag as: TAG=${GITHUB_REF#refs/tags/}"
           #echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
           echo ::set-output name=TAG::v0.2.0-dev.21
-          echo "BUILD=cp${v/./}-*"
+          echo "Setting build as: BUILD=cp${v/./}-*"
           echo ::set-output name=BUILD::cp${v/./}-*
+      - name: Determine release type
+        id: release
+        shell: bash
+        run: |
+          s=${{ github.event.release.prerelease }}
+          echo "this: $s"
+          exit 32
       - name: Configure MSVC
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
