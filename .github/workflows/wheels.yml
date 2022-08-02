@@ -2,9 +2,10 @@ name: wheels
 
 on:
   push
-#    types:
-#      - published
-#  workflow_dispatch:
+  release:
+    types:
+      - created
+
 
 jobs:
   wheels:
