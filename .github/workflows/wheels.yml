@@ -37,7 +37,8 @@ jobs:
           mkdir src/bindings/python/libcellml
           v=${{ matrix.py }}
           echo "Setting tag as: ${GITHUB_REF#refs/tags/}"
-          echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
+#          echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
+          echo ::set-output name=TAG::v0.2.0-dev.21
           echo "BUILD=cp${v/./}-*"
           echo ::set-output name=BUILD::cp${v/./}-*
       - name: Configure MSVC
@@ -59,9 +60,10 @@ jobs:
           CIBW_TEST_SKIP: "*_arm64"
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel || (apk add libxml2-dev && rm /usr/lib/cmake/libxml2/libxml2-config.cmake)
           CIBW_BEFORE_ALL_WINDOWS: cd src/bindings/python && cmake -S wheel_dependencies -B build-wheel_dependencies -G Ninja && cd build-wheel_dependencies && ninja
+          CIBW_ENVIRONMENT: LIBCELLML_VERSION_TAG=${{ steps.setup.outputs.tag }}
           CIBW_ENVIRONMENT_MACOS: >
             MACOSX_DEPLOYMENT_TARGET=11.0
-            LIBCELLML_VERSION_TAG=v0.2.0-dev.21
+            LIBCELLML_VERSION_TAG=${{ steps.setup.outputs.tag }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
       - name: Upload artifacts
