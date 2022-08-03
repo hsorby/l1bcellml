@@ -27,16 +27,21 @@ jobs:
         set(PRERELEASE "${{ github.event.release.prerelease }}")
         if (PRERELEASE STREQUAL "true")
           set(_OUTPUT_LOCATION "artifact")
+        else()
+          set(_OUTPUT_LOCATION "publish")
+        endif()
+        if (_ACTION STREQUAL "edited")
+          set(_OUTPUT_LOCATION "skip")
           set(RELEASE_BODY "${{ github.event.release.body }}")
           string(REPLACE "\n" ";" _PARTS "${RELEASE_BODY}")
           foreach(_PART ${_PARTS})
             string(STRIP "${_PART}" _PART)
-            if ("${_PART}" STREQUAL "[ODD Create Wheels]")
+            if ("${_PART}" STREQUAL "[ODD Publish]")
+              set(_OUTPUT_LOCATION "publish")
+            elseif ("${_PART}" STREQUAL "[ODD Artifact]")
               set(_OUTPUT_LOCATION "artifact")
             endif()
           endforeach()
-        else()
-          set(_OUTPUT_LOCATION "publish")
         endif()
         message(STATUS "Setting wheel destination to '${_OUTPUT_LOCATION}'.")
         message("::set-output name=BINARIES-DESTINATION::${_OUTPUT_LOCATION}")
@@ -45,7 +50,10 @@ jobs:
       id: do-jobs
       shell: cmake -P {0}
       run: |
-        set(_ALLOWED_JOBS "wheel")
+        set(_ALLOWED_JOBS "all")
+        if ("${{ steps.binaries-out.outputs.binaries-destination }}" STREQUAL "skip")
+          set(_ALLOWED_JOBS "none")
+        endif()
         message(STATUS "Setting allowed jobs to '${_ALLOWED_JOBS}'.")
         message("::set-output name=allowed-jobs::${_ALLOWED_JOBS}")
 
@@ -298,16 +306,6 @@ jobs:
           #echo ::set-output name=TAG::v0.2.0-dev.21
           echo "Setting build as: BUILD=cp${v/./}-*"
           echo ::set-output name=BUILD::cp${v/./}-*
-
-      - name: Determine release type
-        id: release
-        shell: bash
-        run: |
-          s=${{ github.event.release.prerelease }}
-          echo "this: $s"
-          echo "that ${{ needs.setup-jobs.outputs.binaries-destination }}"
-          echo "again ${{ github.event.release.tag_name }}"
-          exit 32
 
       - name: Configure MSVC
         if: runner.os == 'Windows'
