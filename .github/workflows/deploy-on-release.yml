@@ -1,7 +1,6 @@
 name: libcellml-deploy-on-release
 
 on:
-#  push
   release:
     types:
       - created
@@ -43,7 +42,7 @@ jobs:
             endif()
           endforeach()
         endif()
-        message(STATUS "Setting wheel destination to '${_OUTPUT_LOCATION}'.")
+        message(STATUS "Setting output destination to '${_OUTPUT_LOCATION}'.")
         message("::set-output name=BINARIES-DESTINATION::${_OUTPUT_LOCATION}")
 
     - name: Determine next jobs
@@ -245,16 +244,7 @@ jobs:
         execute_process(
           COMMAND echo "::set-output name=files::${_DIST_FILES}")
 
-    - name: Prepare environment for uploading assets
-      shell: bash
-      env:
-        DATA: ${{ steps.package.outputs.files }}
-      run: |
-        cd $GITHUB_WORKSPACE/.github/scripts/
-        npm install mime
-        echo $DATA
-
-    - name: Upload Libraries
+    - name: Publish libraries
       if: needs.setup-jobs.outputs.binaries-destination == 'publish'
       uses: softprops/action-gh-release@v1
       with:
