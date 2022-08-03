@@ -1,9 +1,7 @@
 name: wheels
 
 on:
-  release:
-    types:
-      - created
+  fork
 
 
 jobs:
