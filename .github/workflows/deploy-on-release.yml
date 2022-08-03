@@ -57,11 +57,11 @@ jobs:
       matrix:
         config:
         - {
-            name: "Windows Server 2019 MSVC"
+            name: "Windows Server 2019 MSVC",
             os: windows-2019,
             libxml2_dir: '-D "LibXml2_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/"',
             zlib_dir: '-D "ZLIB_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/ZLIB-1.2.3/CMake/"',
-            cc: "cl", cxx: "cl"
+            cc: "cl", cxx: "cl",
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
@@ -316,7 +316,7 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse src/bindings/python/
         env:
-#          CIBW_BUILD_VERBOSITY: 1
+          #CIBW_BUILD_VERBOSITY: 1
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_BUILD: ${{ steps.setup.outputs.build }}
