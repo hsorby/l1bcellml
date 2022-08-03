@@ -23,8 +23,10 @@ jobs:
       shell: cmake -P {0}
       run: |
         set(_OUTPUT_LOCATION "nowhere")
+        set(_ACTION "${{ github.event.action }}")
         set(PRERELEASE "${{ github.event.release.prerelease }}")
         if (PRERELEASE STREQUAL "true")
+          set(_OUTPUT_LOCATION "artifact")
           set(RELEASE_BODY "${{ github.event.release.body }}")
           string(REPLACE "\n" ";" _PARTS "${RELEASE_BODY}")
           foreach(_PART ${_PARTS})
@@ -34,7 +36,7 @@ jobs:
             endif()
           endforeach()
         else()
-          set(_OUTPUT_LOCATION "upload")
+          set(_OUTPUT_LOCATION "publish")
         endif()
         message(STATUS "Setting wheel destination to '${_OUTPUT_LOCATION}'.")
         message("::set-output name=BINARIES-DESTINATION::${_OUTPUT_LOCATION}")
@@ -245,17 +247,13 @@ jobs:
         echo $DATA
 
     - name: Upload Libraries
-      id: deploy
-      uses: actions/github-script@v3
-      if: ${{ matrix.config.deploy_libs }}
-      env:
-        DATA: ${{ steps.package.outputs.files }}
+      if: needs.setup-jobs.outputs.binaries-destination == 'publish'
+      uses: softprops/action-gh-release@v1
       with:
-        github-token: ${{secrets.MAINTAINER_WRITE_TOKEN}}
-        script: |
-          const script = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/upload-asset.js`)
-          script({github, context})
-    - name: Upload artifacts
+        files: ${{ steps.package.outputs.files }}
+        tag_name: ${{ github.event.release.tag_name }}
+
+    - name: Upload libraries as artifacts
       if: needs.setup-jobs.outputs.binaries-destination == 'artifact'
       uses: actions/upload-artifact@v3
       with:
@@ -286,6 +284,9 @@ jobs:
     steps:
       - name: Check out libCellML
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
       - name: Setup for cibuildwheel
         id: setup
         shell: bash
@@ -293,17 +294,21 @@ jobs:
           mkdir src/bindings/python/libcellml
           v=${{ matrix.py }}
           echo "Setting tag as: TAG=${GITHUB_REF#refs/tags/}"
-          #echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
-          echo ::set-output name=TAG::v0.2.0-dev.21
+          echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
+          #echo ::set-output name=TAG::v0.2.0-dev.21
           echo "Setting build as: BUILD=cp${v/./}-*"
           echo ::set-output name=BUILD::cp${v/./}-*
+
       - name: Determine release type
         id: release
         shell: bash
         run: |
           s=${{ github.event.release.prerelease }}
           echo "this: $s"
+          echo "that ${{ needs.setup-jobs.outputs.binaries-destination }}"
+          echo "again ${{ github.event.release.tag_name }}"
           exit 32
+
       - name: Configure MSVC
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -329,11 +334,22 @@ jobs:
             LIBCELLML_VERSION_TAG=${{ steps.setup.outputs.tag }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
-      - name: Upload artifacts
+
+      - name: Upload Python wheels as artifacts
         if: needs.setup-jobs.outputs.binaries-destination == 'artifact'
         uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
+
+      - name: Publish Python wheels
+        if: needs.setup-jobs.outputs.binaries-destination == 'publish'
+        shell: bash
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          twine upload --skip-existing ./wheelhouse/*.whl
+
 
   emscripten:
     needs: setup-jobs
@@ -405,21 +421,17 @@ jobs:
           cd $GITHUB_WORKSPACE/libcellml/.github/scripts/
           npm install mime
 
-      - name: Upload libcellml.js
-        if: "!true"
-        uses: actions/github-script@v3
-        env:
-          DATA: ${{ steps.package-javascript.outputs.files }}
+      - name: Upload libcellml.js as artifacts
+        if: needs.setup-jobs.outputs.binaries-destination == 'artifact'
+        uses: actions/upload-artifact@v3
         with:
-          github-token: ${{secrets.MAINTAINER_WRITE_TOKEN}}
-          script: |
-            # const script = require(`${process.env.GITHUB_WORKSPACE}/libcellml/.github/scripts/upload-asset.js`)
-            # script({github, context})
+          path: ${{ steps.package-javascript.outputs.files }}
 
       - name: Publish libcellml.js
+        if: needs.setup-jobs.outputs.binaries-destination == 'publish'
         shell: bash
         env:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: |
           cd build-libcellml-release/src/bindings/javascript
-          # npm publish --access public
+          npm publish --access public
