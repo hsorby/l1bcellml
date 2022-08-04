@@ -302,8 +302,8 @@ install(TARGETS cellml EXPORT libcellml-targets
 if(SKBUILD)
   install(TARGETS cellml
     COMPONENT wheel
-    RUNTIME DESTINATION libcellml 
-    LIBRARY DESTINATION libcellml 
+    RUNTIME DESTINATION libcellml
+    LIBRARY DESTINATION libcellml
     NAMELINK_SKIP
     EXCLUDE_FROM_ALL
   )
