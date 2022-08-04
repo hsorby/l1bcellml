@@ -131,7 +131,7 @@ foreach(SWIG_INTERFACE_SRC ${SWIG_INTERFACE_SRCS})
     )
   endif()
   if(APPLE)
-    set(RPATH_ORIGIN "@loader_path/.;/usr/local/Frameworks/Python.framework/3.8")
+    set(RPATH_ORIGIN "@loader_path/.")
   elseif(UNIX)
     set(RPATH_ORIGIN "\$ORIGIN")
   else()
@@ -208,7 +208,7 @@ if(SKBUILD)
     COMPONENT wheel
     EXCLUDE_FROM_ALL
     DESTINATION libcellml
-  ) 
+  )
   install(DIRECTORY ${_SWIG_GENERATED_PYTHON_FILES_DIR}/
     COMPONENT wheel
     EXCLUDE_FROM_ALL
