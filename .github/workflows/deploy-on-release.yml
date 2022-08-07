@@ -22,14 +22,13 @@ jobs:
       shell: cmake -P {0}
       run: |
         set(_OUTPUT_LOCATION "nowhere")
-        set(_ACTION "${{ github.event.action }}")
         set(PRERELEASE "${{ github.event.release.prerelease }}")
         if (PRERELEASE STREQUAL "true")
           set(_OUTPUT_LOCATION "Artifact")
         else()
           set(_OUTPUT_LOCATION "Publish")
         endif()
-        if (_ACTION STREQUAL "edited")
+        if ("${{ github.event.action }}" STREQUAL "edited")
           set(_OUTPUT_LOCATION "unknown")
           set(RELEASE_BODY "${{ github.event.release.body }}")
           string(REPLACE "\n" ";" _PARTS "${RELEASE_BODY}")
@@ -51,7 +50,7 @@ jobs:
       shell: cmake -P {0}
       run: |
         set(_ALLOWED_JOBS "All")
-        if (_ACTION STREQUAL "edited")
+        if ("${{ github.event.action }}" STREQUAL "edited")
           set(_ALLOWED_JOBS "none")
           set(RELEASE_BODY "${{ github.event.release.body }}")
           string(REPLACE "\n" ";" _PARTS "${RELEASE_BODY}")
