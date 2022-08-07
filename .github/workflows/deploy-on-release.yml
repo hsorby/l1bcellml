@@ -291,6 +291,7 @@ jobs:
         run: |
           mkdir src/bindings/python/libcellml
           cp src/bindings/python/README.rst src/bindings/python/libcellml/README.rst
+          mv src/bindings/python/cibuildwheel.setup.py src/bindings/python/setup.py
           v=${{ matrix.py }}
           echo "Setting tag as: TAG=${GITHUB_REF#refs/tags/}"
           echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
