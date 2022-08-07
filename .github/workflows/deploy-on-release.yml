@@ -419,12 +419,6 @@ jobs:
           package=`ls $PWD/libcellml.js-*.tgz`
           echo "::set-output name=files::$package"
 
-      - name: Prepare environment for uploading assets
-        shell: bash
-        run: |
-          cd $GITHUB_WORKSPACE/libcellml/.github/scripts/
-          npm install mime
-
       - name: Upload libcellml.js as artifacts
         if: needs.setup-jobs.outputs.binaries-destination == 'Artifact'
         uses: actions/upload-artifact@v3
