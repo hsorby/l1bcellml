@@ -28,10 +28,10 @@ jobs:
     -name: Publish alternate
       uses: meeDamian/github-release@2.0
       with:
-      tag_name: v0.2.0-dev.22
-      token: ${{ secrets.GITHUB_TOKEN }}
-      files: |
-        ${{ steps.package.outputs.files }}
+        tag_name: v0.2.0-dev.22
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: |
+          ${{ steps.package.outputs.files }}
 
     - name: Publish libraries
       uses: softprops/action-gh-release@v1
