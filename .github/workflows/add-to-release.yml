@@ -1,4 +1,4 @@
-name: libcellml-deploy-on-release
+name: libcellml-upload-on-release
 
 on:
   push
@@ -28,6 +28,7 @@ jobs:
     - name: Publish libraries
       uses: softprops/action-gh-release@v1
       with:
-        files: ${{ steps.package.outputs.files }}
         tag_name: v0.2.0-dev.22
+        files: |
+          ${{ steps.package.outputs.files }}
 
