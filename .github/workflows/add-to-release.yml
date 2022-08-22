@@ -1,0 +1,31 @@
+name: libcellml-deploy-on-release
+
+on:
+  push
+
+
+jobs:
+  test-multiline:
+    runs-on: macos-12
+
+    - name: Create files
+      shell: bash
+      run: |
+        mkdir dist
+        touch dist/release.txt
+        touch dist/production.txt
+
+    - name: Package
+      id: package
+      shell: cmake -P {0}
+      run: |
+        file(GLOB _DIST_FILES dist/*)
+        execute_process(
+          COMMAND echo "::set-output name=files::${_DIST_FILES}")
+
+    - name: Publish libraries
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ steps.package.outputs.files }}
+        tag_name: v0.2.0-dev.22
+
