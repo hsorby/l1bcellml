@@ -21,6 +21,7 @@ jobs:
       shell: cmake -P {0}
       run: |
         file(GLOB _DIST_FILES dist/*)
+        string(REPLACE ";" "%0A" _DIST_FILES "${_DIST_FILES}")
         execute_process(
           COMMAND echo "::set-output name=files::${_DIST_FILES}")
 
