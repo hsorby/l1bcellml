@@ -29,6 +29,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v0.2.0-dev.22
+        token: ${{ secrets.GITHUB_TOKEN }}
         files: |
           ${{ steps.package.outputs.files }}
 
