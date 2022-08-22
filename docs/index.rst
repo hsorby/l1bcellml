@@ -32,12 +32,26 @@ While there are many types of contribution, this section focuses on contribution
    :glob:
 
    *
+   changelogs/index
+
+..
+  The following content is automatically generated do not edit between the markers, at some point it will get overwritten.
+
+..
+  # CHANGELOG_TOC_START_MARKER
 
 Changelogs
 ==========
 
 .. toctree::
-   :glob:
 
-   changelogs/*
+   changelogs/changelog_v0.3.2-dev.1
+   changelogs/changelog_v0.3.1
+   changelogs/changelog_v0.3.0
+   changelogs/changelog_v0.2.0
+   changelogs/changelog_v0.2.0-dev.21
+   changelogs/changelog_v0.1.0
+
+..
+  # CHANGELOG_TOC_END_MARKER
 
