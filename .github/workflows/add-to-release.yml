@@ -25,19 +25,10 @@ jobs:
         execute_process(
           COMMAND echo "::set-output name=files::${_DIST_FILES}")
 
-    - name: Publish alternate
-      uses: meeDamian/github-release@2.0
-      with:
-        tag_name: v0.2.0-dev.22
-        token: ${{ secrets.GITHUB_TOKEN }}
-        files: |
-          ${{ steps.package.outputs.files }}
-
     - name: Publish libraries
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v0.2.0-dev.22
-        token: ${{ secrets.GITHUB_TOKEN }}
+        tag_name: v0.2.0-dev.48
         files: |
           ${{ steps.package.outputs.files }}
 
