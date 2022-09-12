@@ -252,7 +252,7 @@ jobs:
         env:
           #CIBW_BUILD_VERBOSITY: 1
           CIBW_ARCHS: auto64
-          CIBW_ARCHS_MACOS: ${{ steps.setup.outputs.archs }}
+          CIBW_ARCHS_MACOS: x86_64 arm64
           CIBW_BUILD: ${{ steps.setup.outputs.build }}
           CIBW_TEST_SKIP: "*_arm64"
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel || (apk add libxml2-dev && rm /usr/lib/cmake/libxml2/libxml2-config.cmake)
@@ -264,20 +264,4 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           CIBW_BEFORE_BUILD_LINUX: pip install renamewheel
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: renamewheel -w {dest_dir} {wheel}
-
-      - name: Upload Python wheels as artifacts
-        if: needs.setup-jobs.outputs.binaries-destination == 'Artifact'
-        uses: actions/upload-artifact@v3
-        with:
-          path: ./wheelhouse/*.whl
-
-      - name: Publish Python wheels
-        if: needs.setup-jobs.outputs.binaries-destination == 'Publish'
-        shell: bash
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          python -m pip install twine
-          twine upload --skip-existing ./wheelhouse/*.whl
 
