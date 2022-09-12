@@ -1,10 +1,7 @@
 name: libcellml-deploy-on-release
 
 on:
-  release:
-    types:
-      - created
-      - edited
+  push
 
 env:
   BUILD_TYPE: Release
@@ -188,91 +185,6 @@ jobs:
           message(FATAL_ERROR "Configure failed.")
         endif()
 
-    - name: Build
-      shell: cmake -P {0}
-      run: |
-        # Build library script
-
-        include(ProcessorCount)
-        ProcessorCount(N)
-
-        math(EXPR JOBS "${N} + 1")
-
-        if ("${{ runner.os }}" STREQUAL "Windows")
-          set(BUILD_COMMMAND msbuild libCellML.sln /t:Build /p:Configuration=$ENV{BUILD_TYPE} /m:${N})
-        else()
-          set(BUILD_COMMMAND make -j ${JOBS})
-        endif()
-
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        execute_process(
-          COMMAND ${BUILD_COMMMAND}
-          WORKING_DIRECTORY "${ACTION_DIR}/build"
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Build failed.")
-        endif()
-
-    - name: Test
-      shell: cmake -P {0}
-      run: |
-        # Test library script
-
-        include(ProcessorCount)
-        ProcessorCount(N)
-
-        math(EXPR JOBS "${N} + 1")
-
-        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        execute_process(
-          COMMAND ${CMAKE_CTEST_COMMAND} -j ${JOBS} -C $ENV{BUILD_TYPE}
-          WORKING_DIRECTORY "${ACTION_DIR}/build"
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Tests failed.")
-        endif()
-
-    - name: Package
-      id: package
-      shell: cmake -P {0}
-      run: |
-        # Package library script
-
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        execute_process(
-          COMMAND ${CMAKE_CPACK_COMMAND} -C $ENV{BUILD_TYPE}
-          WORKING_DIRECTORY "${ACTION_DIR}/build"
-          RESULT_VARIABLE result
-        )
-
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Packaging failed.")
-        endif()
-
-        file(GLOB _DIST_FILES ${ACTION_DIR}/build/dist/*)
-        # softprops action requires a list of newline separated files.
-        # The %0A will be converted by GitHub actions into '\n'.
-        string(REPLACE ";" "%0A" _DIST_FILES "${_DIST_FILES}")
-        execute_process(
-          COMMAND echo "::set-output name=files::${_DIST_FILES}")
-
-    - name: Publish libraries
-      if: needs.setup-jobs.outputs.binaries-destination == 'Publish'
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ${{ steps.package.outputs.files }}
-        tag_name: ${{ github.event.release.tag_name }}
-
-    - name: Upload libraries as artifacts
-      if: needs.setup-jobs.outputs.binaries-destination == 'Artifact'
-      uses: actions/upload-artifact@v3
-      with:
-        path: ./build/dist/*
-
   wheels:
     needs: setup-jobs
     if: needs.setup-jobs.outputs.allowed-jobs == 'Wheels' || needs.setup-jobs.outputs.allowed-jobs == 'All'
@@ -290,11 +202,7 @@ jobs:
             os: ubuntu-20.04
           - name: 'macOS'
             os: macos-12
-        exclude:
-          - os: macos-12
-            py: '3.7'
-          - os: macos-12
-            py: '3.8'
+
     steps:
       - name: Check out libCellML
         uses: actions/checkout@v2
@@ -332,14 +240,14 @@ jobs:
         env:
           #CIBW_BUILD_VERBOSITY: 1
           CIBW_ARCHS: auto64
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_ARCHS_MACOS: x86_64
           CIBW_BUILD: ${{ steps.setup.outputs.build }}
           CIBW_TEST_SKIP: "*_arm64"
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel || (apk add libxml2-dev && rm /usr/lib/cmake/libxml2/libxml2-config.cmake)
           CIBW_BEFORE_ALL_WINDOWS: cd src/bindings/python && cmake -S wheel_dependencies -B build-wheel_dependencies -G Ninja && cd build-wheel_dependencies && ninja
           CIBW_ENVIRONMENT: LIBCELLML_VERSION_TAG=${{ steps.setup.outputs.tag }}
           CIBW_ENVIRONMENT_MACOS: >
-            MACOSX_DEPLOYMENT_TARGET=11.0
+            MACOSX_DEPLOYMENT_TARGET=10.9
             LIBCELLML_VERSION_TAG=${{ steps.setup.outputs.tag }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           CIBW_BEFORE_BUILD_LINUX: pip install renamewheel
@@ -361,82 +269,3 @@ jobs:
           python -m pip install twine
           twine upload --skip-existing ./wheelhouse/*.whl
 
-
-  emscripten:
-    needs: setup-jobs
-    if: needs.setup-jobs.outputs.allowed-jobs == 'Javascript' || needs.setup-jobs.outputs.allowed-jobs == 'All'
-    name: libcellml.js
-    runs-on: macos-12
-    steps:
-      - name: Checkout libCellML
-        uses: actions/checkout@v2
-        with:
-          path: libcellml
-          ref: ${{ github.event.release.tag_name }}
-
-      - name: Checkout zlib
-        uses: actions/checkout@v2
-        with:
-          repository: OpenCMISS-Dependencies/zlib
-          path: zlib
-          ref: v1.2.3
-
-      - name: Checkout LibXml2
-        uses: actions/checkout@v2
-        with:
-          repository: OpenCMISS-Dependencies/libxml2
-          path: libxml2
-          ref: v2.9.10
-
-      - name: Instal emscripten
-        shell: bash
-        run: |
-          brew install emscripten
-
-      - name: Build and instal zlib
-        shell: bash
-        run: |
-          mkdir build-zlib-release
-          cd build-zlib-release
-          emcmake cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/usr/local ../zlib/
-          make -j3 install
-
-      - name: Build and instal libXml2
-        shell: bash
-        run: |
-          mkdir build-libxml2-release
-          cd build-libxml2-release
-          emcmake cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/usr/local -DZLIB_DIR=${GITHUB_WORKSPACE}/usr/local/lib/cmake/ZLIB-1.2.3/ -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF ../libxml2/
-          make -j3 install
-
-      - name: Build libcellml.js
-        shell: bash
-        run: |
-          mkdir build-libcellml-release
-          cd build-libcellml-release
-          emcmake cmake -DLibXml2_DIR=${GITHUB_WORKSPACE}/usr/local/lib/cmake/libxml2-2.9.10/ -DZLIB_DIR=${GITHUB_WORKSPACE}/usr/local/lib/cmake/ZLIB-1.2.3/ -DBUILD_TYPE=Release ../libcellml/
-          make VERBOSE=1 -j3
-
-      - name: Pack libcellml.js
-        id: package-javascript
-        shell: bash
-        run: |
-          cd build-libcellml-release/src/bindings/javascript
-          npm pack
-          package=`ls $PWD/libcellml.js-*.tgz`
-          echo "::set-output name=files::$package"
-
-      - name: Upload libcellml.js as artifacts
-        if: needs.setup-jobs.outputs.binaries-destination == 'Artifact'
-        uses: actions/upload-artifact@v3
-        with:
-          path: ${{ steps.package-javascript.outputs.files }}
-
-      - name: Publish libcellml.js
-        if: needs.setup-jobs.outputs.binaries-destination == 'Publish'
-        shell: bash
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
-        run: |
-          cd build-libcellml-release/src/bindings/javascript
-          npm publish --access public
