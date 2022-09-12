@@ -225,10 +225,10 @@ jobs:
           if [[ "macOS" == "${{ matrix.name }}" ]]; then
             if [[ "${{ matrix.py }}" == "3.9" || "${{ matrix.py }}" == "3.10" ]]; then
               echo "Setting MACOS_ARCHS as: ARCHS='x86_64 arm64'"
-              echo ::set-output name=ARCHS::x86_64
+              echo ::set-output name=ARCHS::"x86_64 arm64"
             else
               echo "Setting MACOS_ARCHS as: ARCHS='x86_64'"
-              echo ::set-output name=ARCHS::x86_64 arm64
+              echo ::set-output name=ARCHS::x86_64
             fi
           else
             echo "Setting OTHER_ARCHS as: ARCHS='x86_64'"
