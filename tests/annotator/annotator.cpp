@@ -1007,6 +1007,18 @@ TEST(Annotator, automaticIdsUndefined)
     EXPECT_TRUE(annotator->hasModel());
 }
 
+TEST(Annotator, automaticIdsMath)
+{
+    // Adding test for coverage purposes.
+    auto parser = libcellml::Parser::create();
+    auto model = parser->parseModel(modelStringNoIds);
+    auto annotator = libcellml::Annotator::create();
+
+    annotator->setModel(model);
+
+    EXPECT_FALSE(annotator->assignIds(libcellml::CellmlElementType::MATH));
+}
+
 TEST(Annotator, automaticIdAllItemsNoId)
 {
     auto parser = libcellml::Parser::create();
@@ -2174,4 +2186,19 @@ TEST(Annotator, retrieveItemByIndex)
     EXPECT_EQ(nullptr, annotator->component("duplicateId4", 5));
     EXPECT_EQ("component1", annotator->component("duplicateId4", 1)->name());
     EXPECT_EQ("component4", annotator->component("duplicateId4", 2)->name());
+}
+
+TEST(Annotator, assignIdByAnyCellmlElement)
+{
+    auto annotator = libcellml::Annotator::create();
+    auto parser = libcellml::Parser::create();
+    auto model = parser->parseModel(modelStringLotsOfDuplicateIds);
+
+    annotator->setModel(model);
+
+    auto item = annotator->item("duplicateId4", 3);
+
+    EXPECT_EQ(size_t(7), annotator->itemCount("duplicateId4"));
+    EXPECT_EQ("b4da55", annotator->assignId(item));
+    EXPECT_EQ(size_t(6), annotator->itemCount("duplicateId4"));
 }

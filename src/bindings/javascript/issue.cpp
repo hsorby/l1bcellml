@@ -1,21 +1,35 @@
+/*
+Copyright libCellML Contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 #include <emscripten/bind.h>
+#include <emscripten/emscripten.h>
 
 #include "libcellml/issue.h"
 
 using namespace emscripten;
 
-
 EMSCRIPTEN_BINDINGS(libcellml_issue) {
 
-    enum_<libcellml::Issue::Level>("Issue_Level")
+    enum_<libcellml::Issue::Level>("Issue.Level")
         .value("ERROR", libcellml::Issue::Level::ERROR)
         .value("WARNING", libcellml::Issue::Level::WARNING)
-        .value("HINT", libcellml::Issue::Level::HINT)
         .value("MESSAGE", libcellml::Issue::Level::MESSAGE)
     ;
 
-    enum_<libcellml::Issue::ReferenceRule>("Issue_ReferenceRule")
+    enum_<libcellml::Issue::ReferenceRule>("Issue.ReferenceRule")
         .value("UNDEFINED", libcellml::Issue::ReferenceRule::UNDEFINED)
         .value("XML", libcellml::Issue::ReferenceRule::XML)
         .value("DATA_REPR_IDENTIFIER_UNICODE", libcellml::Issue::ReferenceRule::DATA_REPR_IDENTIFIER_UNICODE)
@@ -116,29 +130,19 @@ EMSCRIPTEN_BINDINGS(libcellml_issue) {
     ;
 
     class_<libcellml::Issue>("Issue")
-        .smart_ptr_constructor("Issue", select_overload<libcellml::IssuePtr()>(&libcellml::Issue::create))
+        .smart_ptr<std::shared_ptr<libcellml::Issue>>("Issue")
         .function("description", &libcellml::Issue::description)
         .function("level", &libcellml::Issue::level)
         .function("referenceRule", &libcellml::Issue::referenceRule)
         .function("item", &libcellml::Issue::item)
         .function("url", &libcellml::Issue::url)
         .function("referenceHeading", &libcellml::Issue::referenceHeading)
-        .function("component", &libcellml::Issue::component)
-        .function("importSource", &libcellml::Issue::importSource)
-        .function("model", &libcellml::Issue::model)
-        .function("units", &libcellml::Issue::units)
-        .function("variable", &libcellml::Issue::variable)
-        .function("reset", &libcellml::Issue::reset)
-        .function("math", &libcellml::Issue::math)
-        .function("connection", &libcellml::Issue::connection)
-        .function("mapVariables", &libcellml::Issue::mapVariables)
-        .function("resetValue", &libcellml::Issue::resetValue)
-        .function("testValue", &libcellml::Issue::testValue)
-        .function("unitsItem", &libcellml::Issue::unitsItem)
-        .function("encapsulation", &libcellml::Issue::encapsulation)
-        .function("componentRef", &libcellml::Issue::componentRef)
-        .function("cellmlElementType", &libcellml::Issue::cellmlElementType)
-        .function("item", &libcellml::Issue::item)
-        .function("clear", &libcellml::Issue::clear)
     ;
+
+    EM_ASM(
+        Module['Issue']['ReferenceRule'] = Module['Issue.ReferenceRule'];
+        delete Module['Issue.ReferenceRule'];
+        Module['Issue']['Level'] = Module['Issue.Level'];
+        delete Module['Issue.Level'];
+    );
 }
