@@ -222,6 +222,18 @@ jobs:
           #echo ::set-output name=TAG::v0.2.0-dev.21
           echo "Setting build as: BUILD=cp${v/./}-*"
           echo ::set-output name=BUILD::cp${v/./}-*
+          if [[ "macOS" == "${{ matrix.name }}" ]]; then
+            if [[ "${{ matrix.py }}" == "3.9" || "${{ matrix.py }}" == "3.10" ]]; then
+              echo "Setting MACOS_ARCHS as: ARCHS='x86_64 arm64'"
+              echo ::set-output name=ARCHS::x86_64
+            else
+              echo "Setting MACOS_ARCHS as: ARCHS='x86_64'"
+              echo ::set-output name=ARCHS::x86_64 arm64
+            fi
+          else
+            echo "Setting OTHER_ARCHS as: ARCHS='x86_64'"
+            echo ::set-output name=ARCHS::x86_64
+          fi
 
       - name: Configure MSVC
         if: runner.os == 'Windows'
@@ -240,7 +252,7 @@ jobs:
         env:
           #CIBW_BUILD_VERBOSITY: 1
           CIBW_ARCHS: auto64
-          CIBW_ARCHS_MACOS: x86_64
+          CIBW_ARCHS_MACOS: ${{ steps.setup.outputs.archs }}
           CIBW_BUILD: ${{ steps.setup.outputs.build }}
           CIBW_TEST_SKIP: "*_arm64"
           CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel || (apk add libxml2-dev && rm /usr/lib/cmake/libxml2/libxml2-config.cmake)
