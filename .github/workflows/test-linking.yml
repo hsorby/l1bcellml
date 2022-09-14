@@ -32,7 +32,7 @@ jobs:
       run: |
         ls -lh
         cmake --version
-        cmake -S . -B build-libcellml
+        cmake -S . -B build-libcellml -DPython_EXECUTABLE=`which python`
         cd build-libcellml
         make -j4
     - name: Investigate I
