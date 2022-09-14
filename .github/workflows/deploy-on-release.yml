@@ -58,7 +58,8 @@ jobs:
         [ -e /usr/local/Frameworks/Python.framework/Versions/3.9/Python ] && echo "exists" || echo "doesn't exist"
         [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.9/Python ] && echo "exists" || echo "doesn't exist"
         echo "done."
-        install_name_tool -add_rpath /usr/local/Frameworks/. /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so
+        ls -lh /usr/local/Frameworks/
+        # install_name_tool -add_rpath /usr/local/Frameworks/. /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so
         python --version
     - name: Investigate IV
       if: matrix.python-version == '3.10' && matrix.os == 'macos-latest'
@@ -70,9 +71,9 @@ jobs:
         [ -e /usr/local/Frameworks/Python.framework/Versions/3.10/Python ] && echo "exists" || echo "doesn't exist"
         [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.10/Python ] && echo "exists" || echo "doesn't exist"
         echo "done."
-        install_name_tool -add_rpath /usr/local/Frameworks/. /Users/runner/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/libcellml/_analyser.so
+        # install_name_tool -add_rpath /usr/local/Frameworks/. /Users/runner/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/libcellml/_analyser.so
         python --version
     - name: Test libcellml
       run: |
-        DYLD_PRINT_LIBRARIES=1 python -c "import libcellml;print(libcellml.versionString())"
+        python -c "import libcellml;print(libcellml.versionString())"
 
