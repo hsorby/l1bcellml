@@ -71,5 +71,5 @@ jobs:
         python --version
     - name: Test libcellml
       run: |
-        python -c "import libcellml;print(libcellml.versionString())"
+        DYLD_PRINT_LIBRARIES=1 python -c "import libcellml;print(libcellml.versionString())"
 
