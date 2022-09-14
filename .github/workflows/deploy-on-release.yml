@@ -32,6 +32,8 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         ls /Library/Frameworks
+        ls -l /Library/Frameworks/Python.framework/Versions/
+        ls -l /usr/local/Frameworks/Python.framework/Versions/
         echo "find_package(Python)" > test.cmake
         cmake -P test.cmake
     - name: Test libcellml
