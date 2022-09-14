@@ -44,7 +44,11 @@ jobs:
         otool -L build-libcellml/src/bindings/python/libcellml/_analyser.so
         otool -l build-libcellml/src/bindings/python/libcellml/_analyser.so | grep -A3 RPATH
         python --version
+    - name: Investigate III
+      run: |
+        ls -lh /usr/local/opt
     - name: Test libcellml
       run: |
+        pip install build-libcellml/src/bindings/python
         python -c "import libcellml;print(libcellml.versionString())"
 
