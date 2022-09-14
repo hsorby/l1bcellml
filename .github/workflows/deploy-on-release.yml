@@ -58,7 +58,7 @@ jobs:
         [ -e /usr/local/Frameworks/Python.framework/Versions/3.9/Python ] && echo "exists" || echo "doesn't exist"
         [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.9/Python ] && echo "exists" || echo "doesn't exist"
         echo "done."
-        ls -lh /usr/local/Frameworks/
+        ls -lh /usr/local/Frameworks/Python.framework
         # install_name_tool -add_rpath /usr/local/Frameworks/. /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so
         python --version
     - name: Investigate IV
