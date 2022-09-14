@@ -31,7 +31,9 @@ jobs:
     - name: Build
       run: |
         ls -lh
-        cmake -S . -B build-libcellml -G Ninja
+        cmake --version
+        cmake -S . -B build-libcellml
+        cd build-libcellml
         make -j4
     - name: Investigate I
       run: |
