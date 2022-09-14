@@ -8,260 +8,27 @@ env:
   MACOSX_DEPLOYMENT_TARGET: 10.15
 
 jobs:
-  setup-jobs:
-    runs-on: ubuntu-latest
-    outputs:
-      binaries-destination: ${{ steps.binaries-out.outputs.binaries-destination }}
-      allowed-jobs: ${{ steps.do-jobs.outputs.allowed-jobs }}
-    steps:
-    - name: Determine output location
-      id: binaries-out
-      shell: cmake -P {0}
-      run: |
-        set(_OUTPUT_LOCATION "nowhere")
-        set(PRERELEASE "${{ github.event.release.prerelease }}")
-        if (PRERELEASE STREQUAL "true")
-          set(_OUTPUT_LOCATION "Artifact")
-        else()
-          set(_OUTPUT_LOCATION "Publish")
-        endif()
-        if ("${{ github.event.action }}" STREQUAL "edited")
-          set(_OUTPUT_LOCATION "unknown")
-          set(RELEASE_BODY "${{ github.event.release.body }}")
-          string(REPLACE "\n" ";" _PARTS "${RELEASE_BODY}")
-          foreach(_PART ${_PARTS})
-            string(STRIP "${_PART}" _PART)
-            string(REGEX MATCH "^[[]ODD ([a-zA-Z]+) ([a-zA-Z]+)[]]$" _RESULT "${_PART}")
-            if (CMAKE_MATCH_1 STREQUAL "Publish")
-              set(_OUTPUT_LOCATION Publish)
-            elseif(CMAKE_MATCH_1 STREQUAL "Artifact")
-              set(_OUTPUT_LOCATION Artifact)
-            endif()
-          endforeach()
-        endif()
-        message(STATUS "Setting binaries destination to '${_OUTPUT_LOCATION}'.")
-        message("::set-output name=BINARIES-DESTINATION::${_OUTPUT_LOCATION}")
-
-    - name: Determine next jobs
-      id: do-jobs
-      shell: cmake -P {0}
-      run: |
-        set(_ALLOWED_JOBS "All")
-        if ("${{ github.event.action }}" STREQUAL "edited")
-          set(_ALLOWED_JOBS "none")
-          set(RELEASE_BODY "${{ github.event.release.body }}")
-          string(REPLACE "\n" ";" _PARTS "${RELEASE_BODY}")
-          foreach(_PART ${_PARTS})
-            string(STRIP "${_PART}" _PART)
-            string(REGEX MATCH "^[[]ODD ([a-zA-Z]+) ([a-zA-Z]+)[]]$" _RESULT "${_PART}")
-            if (CMAKE_MATCH_2 STREQUAL "Installers")
-              set(_ALLOWED_JOBS Installers)
-            elseif(CMAKE_MATCH_2 STREQUAL "Wheels")
-              set(_ALLOWED_JOBS Wheels)
-            elseif(CMAKE_MATCH_2 STREQUAL "Javascript")
-              set(_ALLOWED_JOBS Javascript)
-            endif()
-          endforeach()
-        endif()
-        message(STATUS "Setting allowed jobs to '${_ALLOWED_JOBS}'.")
-        message("::set-output name=allowed-jobs::${_ALLOWED_JOBS}")
-
-  os-binaries:
-    needs: setup-jobs
-    if: needs.setup-jobs.outputs.allowed-jobs == 'Installers' || needs.setup-jobs.outputs.allowed-jobs == 'All'
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-        - {
-            name: "Windows Server 2019 MSVC",
-            os: windows-2019,
-            libxml2_dir: '-D "LibXml2_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/libxml2-2.9.10/CMake/"',
-            zlib_dir: '-D "ZLIB_DIR=$ENV{GITHUB_WORKSPACE}/usr/local/ZLIB-1.2.3/CMake/"',
-            cc: "cl", cxx: "cl",
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-          }
-        - {
-            name: "Ubuntu 20.04 GCC",
-            os: ubuntu-20.04,
-            build_type: "Release", cc: "gcc", cxx: "g++"
-          }
-        - {
-            name: "macOS 12 Clang",
-            os: macos-12,
-            cc: "clang", cxx: "clang++"
-          }
-
-    steps:
-    - name: Checkout libCellML
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.release.tag_name }}
-
-    - name: Checkout zlib
-      uses: actions/checkout@v2
-      with:
-        repository: OpenCMISS-Dependencies/zlib
-        path: zlib
-        ref: v1.2.3
-
-    - name: Checkout LibXml2
-      uses: actions/checkout@v2
-      with:
-        repository: OpenCMISS-Dependencies/libxml2
-        path: libxml2
-        ref: v2.9.10
-
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-      if: runner.os == 'Windows'
-
-    - name: Prepare Windows environment
-      if: runner.os == 'Windows'
-      shell: cmake -P {0}
-      run: |
-        # Prepare environment script.
-
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        set(WIN_PATH)
-        file(TO_CMAKE_PATH "$ENV{PATH}" ENV_PATH)
-        set(PATH_LIST "")
-        foreach(_PATH ${ENV_PATH})
-          if (NOT "${_PATH}" MATCHES ".*Strawberry")
-            list(APPEND WIN_PATH "${_PATH}")
-          endif()
-        endforeach()
-        file(TO_NATIVE_PATH "${WIN_PATH}" WIN_PATH)
-        set(ENV{PATH} "${WIN_PATH}")
-        execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/zlib" -B "${ACTION_DIR}/build-zlib" -DBUILD_SHARED_LIBS=FALSE -DCMAKE_INSTALL_PREFIX=$ENV{GITHUB_WORKSPACE}/usr/local)
-        execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-zlib" --config Release
-          WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
-        execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-zlib" --config Release
-          WORKING_DIRECTORY "${ACTION_DIR}/build-zlib")
-
-        execute_process(COMMAND ${CMAKE_COMMAND} -S "${ACTION_DIR}/libxml2" -B "${ACTION_DIR}/build-libxml2" ${{ matrix.config.zlib_dir }}  -DCMAKE_INSTALL_PREFIX=$ENV{GITHUB_WORKSPACE}/usr/local -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
-          RESULT_VARIABLE _RESULT OUTPUT_VARIABLE _OUTPUT ERROR_VARIABLE _ERROR)
-        execute_process(COMMAND ${CMAKE_COMMAND} --build "${ACTION_DIR}/build-libxml2" --config Release
-          WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
-        execute_process(COMMAND ${CMAKE_COMMAND} --install "${ACTION_DIR}/build-libxml2" --config Release
-          WORKING_DIRECTORY "${ACTION_DIR}/build-libxml2")
-
-    - name: Configure
-      shell: cmake -P {0}
-      run: |
-        # Configure library script
-        set(OPTIONAL_ARGUMENTS)
-
-        set(ENV{CC} ${{ matrix.config.cc }})
-        set(ENV{CXX} ${{ matrix.config.cxx }})
-
-        set(PYTHON_LOCATION $ENV{pythonLocation})
-
-        set(ACTION_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        if (NOT "${{ runner.os }}" STREQUAL "Windows")
-          list(APPEND OPTIONAL_ARGUMENTS -D BUILD_TYPE=$ENV{BUILD_TYPE})
-          list(APPEND OPTIONAL_ARGUMENTS -D COVERAGE=OFF)
-        endif()
-
-        if ("${{ matrix.config.cc }}" STREQUAL "clang")
-          list(APPEND OPTIONAL_ARGUMENTS -D LLVM_COVERAGE=OFF)
-        endif()
-        if ("${{ matrix.config.os }}" STREQUAL "ubuntu-20.04")
-          list(APPEND OPTIONAL_ARGUMENTS -D PACKAGE_ANY_LINUX=TRUE)
-        endif()
-
-        list(APPEND OPTIONAL_ARGUMENTS ${{ matrix.config.libxml2_dir }})
-
-        execute_process(
-          COMMAND ${CMAKE_COMMAND}
-            -S .
-            -B build
-            ${OPTIONAL_ARGUMENTS}
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Configure failed.")
-        endif()
-
-  wheels:
-    needs: setup-jobs
-    if: needs.setup-jobs.outputs.allowed-jobs == 'Wheels' || needs.setup-jobs.outputs.allowed-jobs == 'All'
-    name: ${{ matrix.name }} ${{ matrix.py }} wheels
+  test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-12, ubuntu-20.04, windows-2019]
-        py: ['3.7', '3.8', '3.9', '3.10']
-        include:
-          - name: 'Windows'
-            os: windows-2019
-          - name: 'Linux'
-            os: ubuntu-20.04
-          - name: 'macOS'
-            os: macos-12
+        # os: [ubuntu-latest]
+        # os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.8", "3.9", "3.10"]
 
     steps:
-      - name: Check out libCellML
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.release.tag_name }}
-
-      - name: Setup for cibuildwheel
-        id: setup
-        shell: bash
-        run: |
-          mkdir src/bindings/python/libcellml
-          cp src/bindings/python/README.rst src/bindings/python/libcellml/README.rst
-          mv src/bindings/python/cibuildwheel.setup.py src/bindings/python/setup.py
-          v=${{ matrix.py }}
-          echo "Setting tag as: TAG=${GITHUB_REF#refs/tags/}"
-          echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
-          #echo ::set-output name=TAG::v0.2.0-dev.21
-          echo "Setting build as: BUILD=cp${v/./}-*"
-          echo ::set-output name=BUILD::cp${v/./}-*
-          if [[ "macOS" == "${{ matrix.name }}" ]]; then
-            if [[ "${{ matrix.py }}" == "3.9" || "${{ matrix.py }}" == "3.10" ]]; then
-              echo "Setting MACOS_ARCHS as: ARCHS='x86_64 arm64'"
-              echo ::set-output name=ARCHS::"x86_64 arm64"
-            else
-              echo "Setting MACOS_ARCHS as: ARCHS='x86_64'"
-              echo ::set-output name=ARCHS::x86_64
-            fi
-          else
-            echo "Setting OTHER_ARCHS as: ARCHS='x86_64'"
-            echo ::set-output name=ARCHS::x86_64
-          fi
-
-      - name: Configure MSVC
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.8.1
-
-      - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse src/bindings/python/
-        env:
-          #CIBW_BUILD_VERBOSITY: 1
-          CIBW_ARCHS: auto64
-          CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_BUILD: ${{ steps.setup.outputs.build }}
-          CIBW_TEST_SKIP: "*_arm64"
-          CIBW_BEFORE_ALL_LINUX: yum install -y libxml2-devel || (apk add libxml2-dev && rm /usr/lib/cmake/libxml2/libxml2-config.cmake)
-          CIBW_BEFORE_ALL_WINDOWS: cd src/bindings/python && cmake -S wheel_dependencies -B build-wheel_dependencies -G Ninja && cd build-wheel_dependencies && ninja
-          CIBW_ENVIRONMENT: LIBCELLML_VERSION_TAG=${{ steps.setup.outputs.tag }}
-          CIBW_ENVIRONMENT_MACOS: >
-            MACOSX_DEPLOYMENT_TARGET=10.15
-            LIBCELLML_VERSION_TAG=${{ steps.setup.outputs.tag }}
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-          CIBW_BEFORE_BUILD_LINUX: pip install renamewheel
-          CIBW_REPAIR_WHEEL_COMMAND_LINUX: renamewheel -w {dest_dir} {wheel}
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install libcellml
+    - name: Test libcellml
+      run: |
+        python -c "import libcellml;print(libcellml.versionString())"
 
