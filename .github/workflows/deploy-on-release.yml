@@ -68,5 +68,8 @@ jobs:
         python --version
     - name: Test libcellml
       run: |
-        python -v -c "import libcellml;print(libcellml.versionString())"
+        python -m venv venv_test_install
+        . venv_test_install/bin/activate
+        pip install libcellml
+        python -c "import libcellml;print(libcellml.versionString())"
 
