@@ -31,7 +31,7 @@ jobs:
     - name: Build
       run: |
         ls -lh
-        cmake -S l1bcellml -B build-libcellml -G Ninja
+        cmake -S . -B build-libcellml -G Ninja
         make -j4
     - name: Investigate I
       run: |
