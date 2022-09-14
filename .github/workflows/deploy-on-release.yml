@@ -41,9 +41,9 @@ jobs:
       run: |
         otool -L /Users/runner/hostedtoolcache/Python/3.8.13/x64/lib/python3.8/site-packages/libcellml/_analyser.so
         otool -l /Users/runner/hostedtoolcache/Python/3.8.13/x64/lib/python3.8/site-packages/libcellml/_analyser.so | grep -A3 RPATH
-        ls -lh /Library/Frameworks/Python.framework/Versions/3.8/Python
-        ls -lh /usr/local/Frameworks/Python.framework/Versions/3.8/Python
-        ls -lh /opt/homebrew/Frameworks/Python.framework/Versions/3.8/Python
+        [ -e /Library/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /usr/local/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
         echo "done."
         python --version
     - name: Investigate III
@@ -51,9 +51,9 @@ jobs:
       run: |
         otool -L /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so
         otool -l /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so | grep -A3 RPATH
-        ls -lh /Library/Frameworks/Python.framework/Versions/3.9/Python
-        ls -lh /usr/local/Frameworks/Python.framework/Versions/3.9/Python
-        ls -lh /opt/homebrew/Frameworks/Python.framework/Versions/3.9/Python
+        [ -e /Library/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /usr/local/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
         echo "done."
         python --version
     - name: Investigate IV
@@ -61,9 +61,9 @@ jobs:
       run: |
         otool -L /Users/runner/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/libcellml/_analyser.so
         otool -l /Users/runner/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/libcellml/_analyser.so | grep -A3 RPATH
-        ls -lh /Library/Frameworks/Python.framework/Versions/3.10/Python
-        ls -lh /usr/local/Frameworks/Python.framework/Versions/3.10/Python
-        ls -lh /opt/homebrew/Frameworks/Python.framework/Versions/3.10/Python
+        [ -e /Library/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /usr/local/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
         echo "done."
         python --version
     - name: Test libcellml
