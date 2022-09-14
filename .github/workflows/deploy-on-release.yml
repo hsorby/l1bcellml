@@ -36,6 +36,18 @@ jobs:
         ls -l /usr/local/Frameworks/Python.framework/Versions/
         echo "find_package(Python)" > test.cmake
         cmake -P test.cmake
+    - name: Investigate II
+      if: matrix.python-version == '3.8'
+      run: |
+        otool -L /Users/runner/hostedtoolcache/Python/3.8.13/x64/lib/python3.8/site-packages/libcellml/_analyser.so
+    - name: Investigate III
+      if: matrix.python-version == '3.9'
+      run: |
+        otool -L /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so
+    - name: Investigate IV
+      if: matrix.python-version == '3.10'
+      run: |
+        otool -L /Users/runner/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/libcellml/_analyser.so
     - name: Test libcellml
       run: |
         python -c "import libcellml;print(libcellml.versionString())"
