@@ -54,9 +54,9 @@ jobs:
         install_name_tool -delete_rpath /Library/Frameworks /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so
         otool -L /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so
         otool -l /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so | grep -A3 RPATH
-        [ -e /Library/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
-        [ -e /usr/local/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
-        [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /Library/Frameworks/Python.framework/Versions/3.9/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /usr/local/Frameworks/Python.framework/Versions/3.9/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.9/Python ] && echo "exists" || echo "doesn't exist"
         echo "done."
         install_name_tool -add_rpath /usr/local/Frameworks/. /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/libcellml/_analyser.so
         python --version
@@ -66,9 +66,9 @@ jobs:
         install_name_tool -delete_rpath /Library/Frameworks /Users/runner/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/libcellml/_analyser.so
         otool -L /Users/runner/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/libcellml/_analyser.so
         otool -l /Users/runner/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/libcellml/_analyser.so | grep -A3 RPATH
-        [ -e /Library/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
-        [ -e /usr/local/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
-        [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.8/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /Library/Frameworks/Python.framework/Versions/3.10/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /usr/local/Frameworks/Python.framework/Versions/3.10/Python ] && echo "exists" || echo "doesn't exist"
+        [ -e /opt/homebrew/Frameworks/Python.framework/Versions/3.10/Python ] && echo "exists" || echo "doesn't exist"
         echo "done."
         install_name_tool -add_rpath /usr/local/Frameworks/. /Users/runner/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/libcellml/_analyser.so
         python --version
