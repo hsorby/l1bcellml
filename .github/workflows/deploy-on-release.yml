@@ -1,7 +1,7 @@
 name: libcellml-deploy-on-release
 
 on:
-  push
+  release
 
 env:
   BUILD_TYPE: Release
