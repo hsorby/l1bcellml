@@ -41,8 +41,8 @@ jobs:
           cp src/bindings/python/README.rst src/bindings/python/libcellml/README.rst
           mv src/bindings/python/cibuildwheel.setup.py src/bindings/python/setup.py
           v=${{ matrix.py }}
-          echo "Setting tag as: TAG=${GITHUB_REF#refs/tags/}"
-          echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
+          echo "Setting tag as: TAG=v0.3.103"
+          echo ::set-output name=TAG::v0.3.103
           #echo ::set-output name=TAG::v0.2.0-dev.21
           echo "Setting build as: BUILD=cp${v/./}-*"
           echo ::set-output name=BUILD::cp${v/./}-*
